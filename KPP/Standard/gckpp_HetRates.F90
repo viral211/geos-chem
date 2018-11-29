@@ -142,15 +142,14 @@ MODULE GCKPP_HETRATES
   REAL(fp) :: HSO3conc_Cld, SO3conc_Cld, fupdateHOBr
 
   ! Arrays
-  REAL(fp) :: XAREA(25)
-  REAL(fp) :: XRADI(25)
+  REAL(fp) :: XAREA(25), XRADI(25), XVOL(25), XH2O(25)
   REAL(fp) :: KHETI_SLA(11)
 
 !$OMP THREADPRIVATE( NAERO,        NATSURFACE, PSCBOX,   STRATBOX )
 !$OMP THREADPRIVATE( TEMPK,        RELHUM,     SPC_NIT,  SPC_SO4  )
 !$OMP THREADPRIVATE( GAMMA_HO2,    XTEMP,      XDENA,    QLIQ     )
-!$OMP THREADPRIVATE( QICE,         XAREA,      XRADI              )
-!$OMP THREADPRIVATE( KHETI_SLA,    SUNCOS                         )
+!$OMP THREADPRIVATE( QICE,         KHETI_SLA,  SUNCOS             )
+!$OMP THREADPRIVATE( XAREA,        XRADI,      XVOL,     XH2O     )
 !$OMP THREADPRIVATE( H_PLUS,       MSO4,       MNO3,     MHSO4    )
 !$OMP THREADPRIVATE( HSO3conc_Cld, SO3conc_Cld, fupdateHOBr       )
 !
@@ -174,7 +173,7 @@ MODULE GCKPP_HETRATES
   REAL(fp), PARAMETER :: con_R = RStarG*1.0e-2_fp
 !
 ! !REMARKS:
-!  Need 
+!  Need
 !  - TOTAREA (previously used for archiving N2O5 hydrolysis in the planeflight
 !             diagnostic only)
 !  - Air NUM. DENSITY
@@ -207,9 +206,9 @@ MODULE GCKPP_HETRATES
 !  Parrella et al, Tropospheric bromine chemistry: implications for present and
 !    pre-industrial ozone and mercury, Atmos. Chem. Phys., 12, 6,723-6,740,
 !    doi:10.5194/acp-12-6723-2012, 2012.
-!  Schmidt, J., et al., “Modelling the observed tropospheric BrO background: 
-!    Importance of multiphase chemistry & implications for ozone, OH, & 
-!    mercury”, J Geophys. Res-Atmos., 121, 024229, 
+!  Schmidt, J., et al., “Modelling the observed tropospheric BrO background:
+!    Importance of multiphase chemistry & implications for ozone, OH, &
+!    mercury”, J Geophys. Res-Atmos., 121, 024229,
 !    https://doi.org/10.1002/2015JD024229, 2016.
 !  Sherwen, T., et al., Global impacts of tropospheric halogens (Cl, Br, I) on
 !    oxidants and composition in GEOS-Chem, Atmos. Chem. Phys., 16, 12239-12271,
@@ -236,9 +235,10 @@ MODULE GCKPP_HETRATES
 !  24 Aug 2017 - M. Sulprizio- Remove support for GCAP, GEOS-4, GEOS-5 and MERRA
 !  15 Nov 2017 - M. Sulprizio- Add modifications for HOBr + S(IV) based on work
 !                              by Qianjie Chen
-!  02 Mar 2018 - M. Sulprizio- Update HSTAR_EPOX following recommendation from 
+!  02 Mar 2018 - M. Sulprizio- Update HSTAR_EPOX following recommendation from
 !                              E. Marais to address SOAIE being a factor of 2
 !                              lower in v11-02d than in Marais et al. [2016]
+!  23 Oct 2018 - C.D. Holmes & V. Shah- N2O5 gamma updates
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -259,13 +259,13 @@ MODULE GCKPP_HETRATES
 !
     SUBROUTINE SET_HET( I, J, L, Input_Opt, State_Chm, State_Met )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       INTEGER,        INTENT(IN)    :: I, J, L    ! Lon, lat, level indices
       TYPE(MetState), INTENT(IN)    :: State_Met  ! Meteorology State object
-      TYPE(OptInput), INTENT(IN)    :: Input_Opt  ! Input Options object 
+      TYPE(OptInput), INTENT(IN)    :: Input_Opt  ! Input Options object
 !
-! !INPUT/OUTPUT PARAMETERS: 
+! !INPUT/OUTPUT PARAMETERS:
 !
       TYPE(ChmState), INTENT(INOUT) :: State_Chm  ! Chemistry State object
 !
@@ -274,7 +274,7 @@ MODULE GCKPP_HETRATES
 ! !REVISION HISTORY:
 !  06 Jan 2015 - R. Yantosca - Initial version
 !  01 Apr 2016 - R. Yantosca - Define many variables locally that don't
-!                              need to be in the THREADPRIVATE statements 
+!                              need to be in the THREADPRIVATE statements
 !  01 Apr 2016 - R. Yantosca - Remove KII_KI; we now declare that locally
 !  31 May 2016 - E. Lundgren - Replace Input_Opt%XNUMOL with emMW_g from species
 !                              database (emitted species g/mol)
@@ -379,8 +379,8 @@ MODULE GCKPP_HETRATES
       RELHUM        = State_Met%AVGW(I,J,L) * State_Met%AIRNUMDEN(I,J,L)
       CONSEXP       = 17.2693882e+0_fp * (State_Met%T(I,J,L) - 273.16e+0_fp) /&
                       (State_Met%T(I,J,L) - 35.86e+0_fp)
-      VPRESH2O      = CONSVAP * EXP(CONSEXP) / State_Met%T(I,J,L) 
-      RELHUM        = RELHUM / VPRESH2O 
+      VPRESH2O      = CONSVAP * EXP(CONSEXP) / State_Met%T(I,J,L)
+      RELHUM        = RELHUM / VPRESH2O
       RELHUM        = RELHUM * 100e+0_fp
 
       !--------------------------------------------------------------------
@@ -476,7 +476,7 @@ MODULE GCKPP_HETRATES
             MW_O3     = State_Chm%SpcData(IND)%Info%MW_g
 
             ! Henry's law parameters
-            H_K0_O3   = 1.1e-2_fp * con_atm_bar 
+            H_K0_O3   = 1.1e-2_fp * con_atm_bar
             H_CR_O3   = 2300.0
             H_O3_T    = 298.15
          ENDIF
@@ -580,14 +580,24 @@ MODULE GCKPP_HETRATES
       MHSO4  = State_Chm%BisulSav(I,J,L)
 
       !--------------------------------------------------------------------
-      ! Get fields from State_Met, State_Chm, and Input_Opt
+      ! Aerosol physical properties
       !--------------------------------------------------------------------
 
-      ! Aerosol area [cm2/cm3]
+      ! Aerosol specific surface area, cm2(aerosol)/cm3(air)
       XAREA(1:State_Chm%nAero) = State_Chm%AeroArea(I,J,L,:)
 
-      ! Aerosol radius [cm]
+      ! Aerosol effective radius, cm
       XRADI(1:State_Chm%nAero) = State_Chm%AeroRadi(I,J,L,:)
+
+      ! Aerosol specific volume, cm3(aerosol)/cm3(air)
+      XVOL(1:State_Chm%nAero)  = XAREA(1:State_Chm%nAero) * XRADI(1:State_Chm%nAero) / 3d0
+
+      ! Aerosol water content, cm3(H2O)/cm3(air)
+      XH2O(1:State_Chm%nAero)  = State_Chm%AeroH2O(I,J,L,:)
+
+      !--------------------------------------------------------------------
+      ! Get fields from State_Met, State_Chm, and Input_Opt
+      !--------------------------------------------------------------------
 
       TEMPK  = State_Met%T(I,J,L)              ! Temperature [K]
       XTEMP  = sqrt(State_Met%T(I,J,L))        ! Square root of temperature
@@ -621,10 +631,10 @@ MODULE GCKPP_HETRATES
       SSAlk(1:2) = State_Chm%SSAlk(I,J,L,1:2)
 
       ! Estimate liquid phase pH (H+ concentration)
-      hConc_Sul = 10.0**(-0.0e+0_fp) 
+      hConc_Sul = 10.0**(-0.0e+0_fp)
       hConc_LCl = 10.0**(-1.0e+0_fp*pHCloud)
-      hConc_ICl = 10.0**(-4.5e+0_fp) 
-      hConc_SSA = 10.0**(-5.0e+0_fp) 
+      hConc_ICl = 10.0**(-4.5e+0_fp)
+      hConc_SSA = 10.0**(-5.0e+0_fp)
       hConc_SSC = 10.0**(-5.0e+0_fp)
 
       ! If not using BrSALA, manually set a depleted Br- concentration (mol/l)
@@ -633,7 +643,7 @@ MODULE GCKPP_HETRATES
          brConc_Base = 0.0e+0_fp
       ELSE
          brConc_Base = 1.0e+4_fp
-      ENDIF 
+      ENDIF
 
       ! Get the concentration of Br/Cl in clouds
       CALL Get_Halide_CldConc(spcVec(Ind_('HBr')),spcVec(Ind_('HCl')),&
@@ -646,7 +656,7 @@ MODULE GCKPP_HETRATES
                               brConc_SSA)
       CALL Get_Halide_SSAConc(spcVec(Ind_('BrSALC')),xArea(12),xRadi(12), &
                               brConc_SSC)
-      
+
       !--------------------------------------------------------------------
       !  Get parameters for HOBr + S(IV)
       !--------------------------------------------------------------------
@@ -739,7 +749,7 @@ MODULE GCKPP_HETRATES
          ! HOBr + BrSalA/C (TMS index: hhc07/08)
          !----------------------------------------------------------------
          ! NOTE: This has not been fully tested, as the initial simulations had
-         ! near-zero BrSALA and BrSALC  
+         ! near-zero BrSALA and BrSALC
          kITemp = HETHOBr_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), TempK, &
                                  hConc_SSA, 0.5e+0_fp, brConc_SSA, 2 )
          HET(ind_HOBr,  4) = kIIR1Ltd( spcVec, Ind_('HOBr'),  Ind_('BrSALA'), &
@@ -754,7 +764,7 @@ MODULE GCKPP_HETRATES
          ! HOBr + ClSALA/C (TMS index: hhc04/05)
          !----------------------------------------------------------------
          ! NOTE: Cl- in salt is assumed to always be in excess, so we assume a
-         ! molarity of 0.5 mol/L. This reaction is also pseudo-first order, so 
+         ! molarity of 0.5 mol/L. This reaction is also pseudo-first order, so
          ! conversion to a second-order rate constant is not necessary.
          kITemp = HETHOBr_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), &
                                  TempK, hConc_SSA, 0.5e+0_fp, brConc_SSA, 1 )
@@ -789,7 +799,7 @@ MODULE GCKPP_HETRATES
          ! ClNO3 + BrSALA/C (TMS index: hhc10/11)
          !----------------------------------------------------------------
          ! NOTE: This has not been fully tested, as the initial simulations had
-         ! near-zero BrSALA and BrSALC  
+         ! near-zero BrSALA and BrSALC
          kITemp = HETClNO3_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), &
                                   TempK, brConc_SSA)
          HET(ind_ClNO3, 4) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('BrSALA'), &
@@ -880,9 +890,9 @@ MODULE GCKPP_HETRATES
          !----------------------------------------------------------------
 	 ! NOTE: this extension of calculation in troposphere has been removed
          !  (TMS 17/04/10)
-         kITemp = HETN2O5_HCl( 1.08E2_fp, 0.0e+0_fp, Input_Opt ) 
+         kITemp = HETN2O5_HCl( 1.08E2_fp, 0.0e+0_fp, Input_Opt )
          HET(ind_N2O5,  2) = kIIR1Ltd( spcVec, Ind_('N2O5'), Ind_('HCl'), &
-                                       kITemp, HetMinLife) 
+                                       kITemp, HetMinLife)
 
          !----------------------------------------------------------------
          ! Reaction of N2O5 with sea-salt Cl-
@@ -928,7 +938,7 @@ MODULE GCKPP_HETRATES
          HET(ind_HOI,  3) = HETIXCycleSSA( MW_HOI,   0.01E+0_fp, SSAlk )
          HET(ind_IONO, 3) = HETIXCycleSSA( MW_IONO,  0.02E+0_fp, SSAlk )
          HET(ind_IONO2,3) = HETIXCycleSSA( MW_IONO2, 0.01E+0_fp, SSAlk )
-         
+
       ENDIF
 
       ! Nullify pointers
@@ -953,7 +963,7 @@ MODULE GCKPP_HETRATES
     FUNCTION kIIR1Ltd( spcVec, indGas, indEduct, kISource, minLife ) &
        RESULT( kII )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN)           :: spcVec(:)
@@ -1029,9 +1039,9 @@ MODULE GCKPP_HETRATES
                   kII = 0.0e+0_fp
                ENDIF
             ENDIF
-         ENDIF    
-      ENDIF    
- 
+         ENDIF
+      ENDIF
+
     END FUNCTION kIIR1Ltd
 !EOC
 !------------------------------------------------------------------------------
@@ -1054,7 +1064,7 @@ MODULE GCKPP_HETRATES
 !
       !USE Error_Mod, ONLY: Is_Safe_Div
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN)    :: spcVec(:)
@@ -1091,7 +1101,7 @@ MODULE GCKPP_HETRATES
       ! Copy the first estimates of kI for each species
       kIA = kIASource
       kIB = kIBSource
- 
+
       ! Assume for now that the reaction will not proceed
       nonZeroRate = .False.
       kII = 0.0e+0_fp
@@ -1139,7 +1149,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETIXCycleSSA( A, B, SSAlk ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -1147,7 +1157,7 @@ MODULE GCKPP_HETRATES
       REAL(fp), INTENT(IN) :: SSAlk(2)
 !
 ! !RETURN VALUE:
-! 
+!
       REAL(fp)             :: kISum
 !
 ! !REMARKS:
@@ -1175,7 +1185,7 @@ MODULE GCKPP_HETRATES
             kISum = kISum + AdjustedRate
          ENDIF
       ENDDO
-      
+
     END FUNCTION HETIXCycleSSA
 !EOC
 !------------------------------------------------------------------------------
@@ -1192,14 +1202,14 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETIUptake( A, B, N, Input_Opt ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp),       INTENT(IN) :: A, B       ! Rate coefficients
       INTEGER,        INTENT(IN) :: N          ! Which aerosol?
       TYPE(OptInput), INTENT(IN) :: Input_Opt  ! Input Options object
 !
 ! !RETURN VALUE:
-! 
+!
       REAL(fp)             :: kISum
 !
 ! !REMARKS:
@@ -1229,7 +1239,7 @@ MODULE GCKPP_HETRATES
                     (A**0.5_fp))
          ENDIF
       ENDIF
-      
+
     END FUNCTION HETIUptake
 !EOC
 !------------------------------------------------------------------------------
@@ -1246,7 +1256,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETNO3( A, B ) RESULT( HET_NO3 )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -1294,19 +1304,19 @@ MODULE GCKPP_HETRATES
             ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP, &
                                (A**0.5_FP))
          ENDIF
-         
+
          IF ( DO_EDUCT .and. N > 12 ) THEN
             ! PSC reaction - prevent excessive reaction rate
             IF (ADJUSTEDRATE.gt.(1.e+0_fp/HetMinLife)) THEN
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_NO3 = HET_NO3 + ADJUSTEDRATE
 
       ENDDO
-      
+
     END FUNCTION HETNO3
 !EOC
 !------------------------------------------------------------------------------
@@ -1323,13 +1333,13 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETNO2( A, B ) RESULT( HET_NO2 )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
 !
 ! !RETURN VALUE:
-! 
+!
       REAL(fp)             :: HET_NO2
 !
 ! !REMARKS:
@@ -1371,19 +1381,19 @@ MODULE GCKPP_HETRATES
             ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP, &
                                (A**0.5_fp))
          ENDIF
-         
+
          IF ( DO_EDUCT .and. N > 12 ) THEN
             ! PSC reaction - prevent excessive reaction rate
             IF (ADJUSTEDRATE.gt.(1.e+0_fp/HetMinLife)) THEN
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_NO2 = HET_NO2 + ADJUSTEDRATE
 
       END DO
-      
+
     END FUNCTION HETNO2
 !EOC
 !------------------------------------------------------------------------------
@@ -1452,14 +1462,14 @@ MODULE GCKPP_HETRATES
             ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP, &
                                (A**0.5_FP))
          ENDIF
-         
+
          IF ( DO_EDUCT .and. N > 12 ) THEN
             ! PSC reaction - prevent excessive reaction rate
             IF (ADJUSTEDRATE.gt.(1.e+0_fp/HetMinLife)) THEN
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_HO2 = HET_HO2 + ADJUSTEDRATE
 
@@ -1481,7 +1491,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETHBr( A, B ) RESULT( HET_HBr )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -1517,10 +1527,10 @@ MODULE GCKPP_HETRATES
       ! Loop over aerosol types
       DO N = 1, NAERO
 
-         ! jpp, 3/22/11: set the sticking coefficient to 
+         ! jpp, 3/22/11: set the sticking coefficient to
          !  ~0 for aerosol types we don't want reactions on
          !  for the HBr and HOBr surface reaction
-         
+
          ! Select proper aerosol type
          IF ( (N == 8) .OR. (N == 11) .OR. (N == 12)) THEN
             ! sulfate, 2 modes of sea-salt
@@ -1572,7 +1582,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETN2O5( A, B ) RESULT( HET_N2O5 )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -1587,6 +1597,7 @@ MODULE GCKPP_HETRATES
 !  29 Mar 2016 - R. Yantosca - Added ProTeX header
 !  01 Apr 2016 - R. Yantosca - Define N, XSTKCF, ADJUSTEDRATE locally
 !  01 Apr 2016 - R. Yantosca - Replace KII_KI with DO_EDUCT local variable
+!  23 Oct 2018 - C. D. Holmes & V. Shah - Update gamma for SO4-NIT-NH4 & OC aerosol
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1596,14 +1607,12 @@ MODULE GCKPP_HETRATES
       LOGICAL  :: DO_EDUCT
       INTEGER  :: N
       REAL(fp) :: XSTKCF, ADJUSTEDRATE
-      REAL(fp) :: TMP1,   TMP2
+      REAL(fp) :: sna_NIT,sna_H2O, sna_Cl
 
       ! Initialize
       HET_N2O5     = 0.0_fp
       ADJUSTEDRATE = 0.0_fp
       XSTKCF       = 0.0_fp
-      TMP1         = 0.0_fp
-      TMP2         = 0.0_fp
 
       ! Always apply PSC rate adjustment
       DO_EDUCT     = .TRUE.
@@ -1628,39 +1637,25 @@ MODULE GCKPP_HETRATES
 	 ! restore route for tropospheric sulfate (TMS 17/04/10)
 	 ! this is to maintain consistancy with Sherwen et al (2016)
          ELSEIF (N.eq.8) THEN
-            ! Fixed gamma?
-            !XSTKCF = 0.1e-4_fp ! Sulfate
-            ! RH dependence
-            XSTKCF = N2O5( N, TEMPK, RELHUM )
+
+            ! Concentration of NO3- in aerosol, molar (mol/L)
+            ! SPC_NO3 is molec/cm3(air), xvol is cm3(aerosol)/cm3(air)
+            sna_NIT = SPC_NIT / XVOL(N) / 6.02d23 * 1d3
+
+            ! Concentration of H2O in aerosol, molar (mol/L)
+            ! XH2O is cm3(H2O)/cm3(air)
+            sna_H2O = XH2O(N) / 18d0 / XVOL(N) * 1d3
+
+            ! Assume [Cl-]=0 for sulfate aerosol for now
+            sna_Cl  = 0.0e+0_fp
+
+            ! Gamma from Bertram and Thornton (2009) expression
+            ! is considered a different aerosol type
+            XSTKCF = N2O5_BT( RELHUM, sna_NIT, sna_Cl, sna_H2O )
+
          ELSE
             ! For UCX-based mechanisms ABSHUMK is set to Spc(I,J,L,id_H2O)
             XSTKCF = N2O5( N, TEMPK, RELHUM )
-         ENDIF
-         ! Nitrate effect; reduce the gamma on nitrate by a
-         ! factor of 10 (lzh, 10/25/2011)
-         IF ( N == 8 ) THEN
-            ! WARNING! It appears that these should be in units of
-            !          mcl/cc. This is discerned from output in
-            !          the old calcrate.F routine which gets the
-            !          tracer concentrations from the state_chm object.
-            !          When the values are dumped in calcrate.F, they were
-            !          in mcl/cc. Still, comments later in calcrate.F indicate
-            !          that Tracers should be in units of kg/box.
-            ! -- As a fix, here, we simply impose the equivalent of a kg to
-            !    mcl/cc conversion using the SO4 and NIT molecular weights.
-            !    This should be investigated and the proper units applied.
-            !    It will and does have a large impct on heterogenous
-            !    N chemistry and on NOx in remote regions.
-            ! -- In any case, the result from below yields the same
-            !    ratio of TMP2/TMP1 as calcrate does with its
-            !    current settings.
-            !    MSL - Feb. 16, 2016
-            TMP1 = SPC_NIT+SPC_SO4
-            TMP2 = SPC_NIT
-            IF ( TMP1 .GT. 0.0 ) THEN
-               XSTKCF = XSTKCF * ( 1.0e+0_fp - 0.9e+0_fp &
-                                   *TMP2/TMP1 )
-            ENDIF
          ENDIF
 
          IF (N.eq.13) THEN
@@ -1673,13 +1668,108 @@ MODULE GCKPP_HETRATES
             ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP, &
                                (A**0.5_FP))
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_N2O5 = HET_N2O5 + ADJUSTEDRATE
 
       END DO
 
     END FUNCTIOn HETN2O5
+!EOC
+!------------------------------------------------------------------------------
+!                  GEOS-Chem Global Chemical Transport Model                  !
+!------------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: N2O5_BT
+!
+! !DESCRIPTION: Function N2O5_BT computes the GAMMA reaction probability
+!  for N2O5 loss in sulfate-nitrate-ammonium (SNA) aerosols based on the
+!  recommendation of
+!  Bertram and Thornton (2009). Toward a general parameterization of N2O5
+!    reactivity on aqueous particles: the competing effects of particle liquid
+!    water, nitrate and chloride. Atmospheric Chemistry and Physics, 9, 8351–8363.
+!
+!\\
+!\\
+! !INTERFACE:
+!
+    FUNCTION N2O5_BT( RH, NIT, CL, H2O ) RESULT( GAMMA )
+!
+! !INPUT PARAMETERS:
+!
+      REAL(fp),  INTENT(IN) :: RH        ! Relative humidity [1]
+      REAL(fp),  INTENT(IN) :: NIT       ! Aerosol nitrate, mol/L
+      REAL(fp),  INTENT(IN) :: CL        ! Aerosol nitrate, mol/L
+      REAL(fp),  INTENT(IN) :: H2O       ! Aerosol H2O, mol/L
+!
+! !RETURN VALUE:
+!
+      REAL(fp)              :: GAMMA
+!
+! !REMARKS:
+!
+! !REVISION HISTORY:
+!  !  23 Aug 2018 - C. D. Holmes & V. Shah - Initial version
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+!
+! !DEFINED PARAMETERS:
+!
+      ! Parameters from Bertram and Thornton (2009 ACP)
+      REAL(fp), parameter :: A     = 3.2d-8, &
+                             k3k2b = 6.0d-2, &
+                             k4k2b = 29.0d0, &
+                             beta  = 1.15d6, &
+                             delta = 1.3d-1
+!
+! !LOCAL VARIABLES:
+!
+      REAL(fp)              :: k2f, NI, CA
+
+!------------------------------------------------------------------------------
+
+      ! Select dry or deliquesced aerosol
+      if ( H2O < 0.1 ) then
+
+         ! When [H2O(l)] is nearly zero, use a dry aerosol value
+         gamma = 0.005
+
+      else
+
+         ! Eq. 11 from Bertram and Thornton, 2009
+         ! Modified to avoid underflow when exp(-delta*H2O)~1
+         if ( delta*H2O < 1e-2 ) then
+            k2f = beta * ( delta * H2O )
+         else
+            k2f   = beta * ( 1d0 - exp( -delta * H2O ) )
+         endif
+
+         ! Nitrate inhibition
+         IF ( NIT .GT. 0.e+0_fp ) THEN
+            NI       = k3k2b * H2O / NIT
+         ELSE
+            NI       = 0.e+0_fp
+         ENDIF
+
+         ! Chloride acceleration
+         IF ( NIT .GT. 0.e+0_fp ) THEN
+            CA       = k4k2b * CL / NIT
+         ELSE
+            CA       = 0.e+0_fp
+         ENDIF
+
+         ! Eq. 12 from Bertram and Thornton, 2009
+         gamma = A * k2f * ( 1d0 - 1d0 / ( 1d0 + NI + CA ) )
+
+         ! Ensure gamma is >= to the dry aerosol value
+         gamma = max( 0.005, gamma )
+
+      endif
+
+    END FUNCTION N2O5_BT
+
 !EOC
 !------------------------------------------------------------------------------
 !                  GEOS-Chem Global Chemical Transport Model                  !
@@ -1695,7 +1785,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETGLYX( A, B ) RESULT( HET_GLYX )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -1777,7 +1867,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_GLYX = HET_GLYX + ADJUSTEDRATE
       END DO
@@ -1798,7 +1888,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETMGLY( A, B ) RESULT( HET_MGLY )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -1863,7 +1953,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_MGLY = HET_MGLY + ADJUSTEDRATE
       END DO
@@ -1884,7 +1974,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETIEPOX( A, B ) RESULT( HET_IEPOX )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -1932,7 +2022,7 @@ MODULE GCKPP_HETRATES
             ! of IEPOX (eam, 07/2015):
             HSTAR = HSTAR_EPOX    ! (Nguyen et al., 2014)
 
-            ! Define first-order particle phase reaction rates 
+            ! Define first-order particle phase reaction rates
             ! specific to IEPOX (from Gaston et al., 2014):
             K_HPLUS = 3.6e-2_fp   ! Alternate: 1.2d-3 (Edding)
             K_NUC   = 2.e-4_fp    ! Alternate: 5.2d-1 (Piletic)
@@ -1965,7 +2055,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_IEPOX = HET_IEPOX + ADJUSTEDRATE
       END DO
@@ -1986,7 +2076,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETIMAE( A, B ) RESULT( HET_IMAE )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2039,7 +2129,7 @@ MODULE GCKPP_HETRATES
             ! of IEPOX (eam, 07/2015):
             HSTAR = HSTAR_EPOX   ! (Nguyen et al., 2014)
 
-            ! Define first-order particle phase reaction rates 
+            ! Define first-order particle phase reaction rates
             ! specific to IEPOX (from Gaston et al., 2014):
             K_HPLUS = 3.6e-2_fp   ! Alternate: 1.2d-3 (Edding)
             K_NUC   = 2.6e-4_fp   ! Alternate: 5.2d-1 (Piletic)
@@ -2078,7 +2168,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_IMAE = HET_IMAE + ADJUSTEDRATE
       END DO
@@ -2100,7 +2190,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETLVOC( A, B ) RESULT( HET_LVOC )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2154,7 +2244,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_LVOC = HET_LVOC + ADJUSTEDRATE
       END DO
@@ -2176,7 +2266,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETISN1OG( A, B ) RESULT( HET_ISN1OG )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2230,7 +2320,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_ISN1OG = HET_ISN1OG + ADJUSTEDRATE
       END DO
@@ -2251,7 +2341,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETISOPND( A, B ) RESULT( HET_ISOPND )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2309,7 +2399,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_ISOPND = HET_ISOPND + ADJUSTEDRATE
       END DO
@@ -2330,7 +2420,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETISOPNB( A, B ) RESULT( HET_ISOPNB )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2388,7 +2478,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_ISOPNB = HET_ISOPNB + ADJUSTEDRATE
       END DO
@@ -2409,7 +2499,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETMACRN( A, B ) RESULT( HET_MACRN )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2467,7 +2557,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_MACRN = HET_MACRN + ADJUSTEDRATE
       END DO
@@ -2488,7 +2578,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETMVKN( A, B ) RESULT( HET_MVKN )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2546,7 +2636,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_MVKN = HET_MVKN + ADJUSTEDRATE
       END DO
@@ -2567,7 +2657,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETR4N2( A, B ) RESULT( HET_R4N2 )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2625,7 +2715,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_R4N2 = HET_R4N2 + ADJUSTEDRATE
       END DO
@@ -2646,7 +2736,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETDHDN( A, B ) RESULT( HET_DHDN )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2704,7 +2794,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_DHDN = HET_DHDN + ADJUSTEDRATE
       END DO
@@ -2725,7 +2815,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETMONITS( A, B ) RESULT( HET_MONITS )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2780,7 +2870,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_MONITS = HET_MONITS + ADJUSTEDRATE
       END DO
@@ -2801,7 +2891,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETMONITU( A, B ) RESULT( HET_MONITU )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2856,7 +2946,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_MONITU = HET_MONITU + ADJUSTEDRATE
       END DO
@@ -2877,7 +2967,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETHONIT( A, B ) RESULT( HET_HONIT )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2932,7 +3022,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_HONIT = HET_HONIT + ADJUSTEDRATE
       END DO
@@ -2954,7 +3044,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETIONITA( A, B ) RESULT( HET_IONITA )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -2989,7 +3079,7 @@ MODULE GCKPP_HETRATES
       ! Loop over aerosol types
       DO N = 1, NAERO
 
-         ! Define gamma for IONITA 
+         ! Define gamma for IONITA
          ! Imposed lifetime = 1 hour (Fisher et al., 2016)
          XSTKCF = 2.78e-4_fp
 
@@ -3010,7 +3100,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_IONITA = HET_IONITA + ADJUSTEDRATE
       END DO
@@ -3032,7 +3122,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETMONITA( A, B ) RESULT( HET_MONITA )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -3067,7 +3157,7 @@ MODULE GCKPP_HETRATES
       ! Loop over aerosol types
       DO N = 1, NAERO
 
-         ! Define gamma for MONITA 
+         ! Define gamma for MONITA
          ! Imposed lifetime = 1 hour (Fisher et al., 2016)
          XSTKCF = 2.78e-4_fp
 
@@ -3088,7 +3178,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE = 1.e+0_fp/HetMinLife
             ENDIF
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_MONITA = HET_MONITA + ADJUSTEDRATE
       END DO
@@ -3110,7 +3200,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETN2O5_SS( A, B ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -3173,7 +3263,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETN2O5_HCl( A, B, Input_Opt ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp),       INTENT(IN) :: A, B       ! Rate coefficients
       TYPE(OptInput), INTENT(IN) :: Input_Opt  ! Input Options object
@@ -3196,6 +3286,7 @@ MODULE GCKPP_HETRATES
 !                              standard N2O5 calculation to establish gamma for
 !                              sulfate, rather than relying on a fixed factor.
 !  03 Jan 2018 - M. Sulprizio  - Replace UCX CPP switch with Input_Opt%LUCX
+!  23 Aug 2018 - C. D. Holmes & V. Shah - Update gamma for SO4-NIT-NH4 aerosol
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -3204,6 +3295,7 @@ MODULE GCKPP_HETRATES
 !
       INTEGER  :: N
       REAL(fp) :: XSTKCF, ADJUSTEDRATE
+      REAL(fp) :: sna_NIT,sna_H2O, sna_Cl
 
       ! Initialize
       kISum        = 0.0_fp
@@ -3222,7 +3314,11 @@ MODULE GCKPP_HETRATES
                ! Fixed gamma?
                !XSTKCF = 0.1e-4_fp ! Sulfate
                ! RH dependence
-      	       XSTKCF = N2O5( N, TEMPK, RELHUM )
+               ! Note gamma calculation on sulfate in troposphere uses
+               ! the Bertram & Thornton parameterization (func: N2O5_BT)
+               ! V.Shah, 2018-10-23
+               XSTKCF = N2O5( N, TEMPK, RELHUM )
+
 	    ENDIF
          ENDIF
 
@@ -3250,7 +3346,7 @@ MODULE GCKPP_HETRATES
                ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP, &
                                   (A**0.5_FP))
             ENDIF
-   
+
             ! Add to overall reaction rate
             kISum = kISum + ADJUSTEDRATE
          ENDIF
@@ -3274,7 +3370,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETHXUptake_JS( denAir, rAer, AAer, TK, X ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rAer        ! Radius of aerosol (cm)
@@ -3315,7 +3411,7 @@ MODULE GCKPP_HETRATES
       ELSEIF (X.eq.2) THEN
          XSqM = XSqMHBr
       ENDIF
-       
+
       XStkCf = Gamma_HX_Uptake( rAer, denAir, X, TK )
 
       ! Reaction rate for surface of aerosol
@@ -3339,7 +3435,7 @@ MODULE GCKPP_HETRATES
     FUNCTION HETO3_SS_JS( denAir, rAer, AAer, alkAer, TK, halConc, O3Conc ) &
                              RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rAer        ! Radius of aerosol (cm)
@@ -3402,7 +3498,7 @@ MODULE GCKPP_HETRATES
     FUNCTION HETClNO3_SS_JS( denAir, rAer, AAer, alkAer, TK, halConc ) &
                              RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rAer        ! Radius of aerosol (cm)
@@ -3465,7 +3561,7 @@ MODULE GCKPP_HETRATES
                             brConc, X ) &
                             RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rAer        ! Radius of aerosol (cm)
@@ -3542,7 +3638,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETO3_HBr_JS( denAir, rLiq, rIce, ALiq, AIce, VAir, TK, brConc, O3Conc ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rLiq        ! Radius of liquid cloud droplets (cm)
@@ -3601,7 +3697,7 @@ MODULE GCKPP_HETRATES
                ! Reaction rate for surface of aerosol
                ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP,XSQM)
             ENDIF
-            
+
             ! Add to overall reaction rate
             kISum = kISum + ADJUSTEDRATE
          ENDIF
@@ -3634,7 +3730,7 @@ MODULE GCKPP_HETRATES
 !\\
 ! !INTERFACE:
 !
-      FUNCTION GAMMA_O3_Br( Radius, n_air, T, C_Y, C_X_g ) RESULT( GAM )  
+      FUNCTION GAMMA_O3_Br( Radius, n_air, T, C_Y, C_X_g ) RESULT( GAM )
 !
 ! !USES:
 !
@@ -3676,10 +3772,10 @@ MODULE GCKPP_HETRATES
                     (cavg * (1.0e0_fp + KLangC * C_X_g) )
 
       k_b = 6.3e8_fp *  dexp(-4.45e3_fp / T) !M-1 s-1
-      D_l = 8.9e-6_fp !cm2 s-1. 
+      D_l = 8.9e-6_fp !cm2 s-1.
       l_r = dsqrt( D_l / (k_b * C_Y ) )! cm
-      gb  = 4.0e0_fp * H_X * con_R * T * l_r * k_b * C_Y / cavg 
-      gb  = gb * REACTODIFF_CORR( Radius, l_r) 
+      gb  = 4.0e0_fp * H_X * con_R * T * l_r * k_b * C_Y / cavg
+      gb  = gb * REACTODIFF_CORR( Radius, l_r)
 
       GAM = gb + gs
 
@@ -3701,7 +3797,7 @@ MODULE GCKPP_HETRATES
     FUNCTION HETClNO3_HBr_JS( denAir, rLiq, rIce, ALiq, AIce, VAir, TK, &
                               brConc, Input_Opt ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rLiq        ! Radius of liquid cloud droplets (cm)
@@ -3777,7 +3873,7 @@ MODULE GCKPP_HETRATES
                ! Reaction rate for surface of aerosol
                ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP,XSQM)
             ENDIF
-            
+
             ! Add to overall reaction rate
             kISum = kISum + ADJUSTEDRATE
          ENDIF
@@ -3812,7 +3908,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETClNO3_JS( denAir, rLiq, rIce, ALiq, AIce, TK ) RESULT( HET_ClNO3 )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rLiq        ! Radius of liquid cloud droplets (cm)
@@ -3883,7 +3979,7 @@ MODULE GCKPP_HETRATES
             ! Reaction rate for surface of aerosol
             ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP,XSQM)
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_ClNO3 = HET_ClNO3 + ADJUSTEDRATE
       END DO
@@ -3902,7 +3998,7 @@ MODULE GCKPP_HETRATES
 !
 ! !IROUTINE: HetHOBr_HCl_JS
 !
-! !DESCRIPTION: Sets the rate of the multiphase reaction HOBr + Cl- in 
+! !DESCRIPTION: Sets the rate of the multiphase reaction HOBr + Cl- in
 !  sulfate aerosols, on cloud droplets and on PSCs
 !\\
 !\\
@@ -3912,7 +4008,7 @@ MODULE GCKPP_HETRATES
                            hConc_Sul, hConc_LCl, hConc_ICl, clConc, brConc, &
                            hso3Conc, so3Conc ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rLiq        ! Radius of liquid cloud droplets (cm)
@@ -3991,7 +4087,7 @@ MODULE GCKPP_HETRATES
             ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP,XSQM)*r_gp
 
          ENDIF
-         
+
          ! Add to overall reaction rate
          kISum = kISum + ADJUSTEDRATE
       END DO
@@ -4021,7 +4117,7 @@ MODULE GCKPP_HETRATES
 !
 ! !IROUTINE: HetHOBr_HBr_JS
 !
-! !DESCRIPTION: Sets the rate of the multiphase reaction HOBr + Br- in 
+! !DESCRIPTION: Sets the rate of the multiphase reaction HOBr + Br- in
 !  sulfate aerosols, on cloud droplets and on PSCs
 !\\
 !\\
@@ -4031,7 +4127,7 @@ MODULE GCKPP_HETRATES
                            hConc_Sul, hConc_LCl, hConc_ICl, clConc, brConc, &
                            hso3Conc, so3Conc ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rLiq        ! Radius of liquid cloud droplets (cm)
@@ -4088,9 +4184,9 @@ MODULE GCKPP_HETRATES
          ELSEIF ( N == 13 ) THEN
             ! SSA/STS
             XSTKCF = KHETI_SLA(6)
-         ELSEIF ( N == 14 ) THEN 
+         ELSEIF ( N == 14 ) THEN
             ! Ice/NAT PSC
-            IF (NATSURFACE) THEN 
+            IF (NATSURFACE) THEN
                XSTKCF = 0.001e+0_fp
             ELSE
                XSTKCF = 0.3e+0_fp
@@ -4110,7 +4206,7 @@ MODULE GCKPP_HETRATES
                                 hConc_Sul, GAM_HOBr, r_gp)
             ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTemp,XSQM)*r_gp
          ENDIF
-         
+
          ! Add to overall reaction rate
          kISum = kISum + ADJUSTEDRATE
       END DO
@@ -4140,7 +4236,7 @@ MODULE GCKPP_HETRATES
 !
 ! !IROUTINE: HetHOBr_HSO3
 !
-! !DESCRIPTION: Sets the rate of the multiphase reaction HOBr + HSO3- in 
+! !DESCRIPTION: Sets the rate of the multiphase reaction HOBr + HSO3- in
 !  sulfate aerosols, on cloud droplets and on PSCs
 !\\
 !\\
@@ -4151,7 +4247,7 @@ MODULE GCKPP_HETRATES
                            hso3Conc, so3Conc ) &
                            RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rLiq        ! Radius of liquid cloud droplets (cm)
@@ -4226,7 +4322,7 @@ MODULE GCKPP_HETRATES
             ! Reaction rate for surface of aerosol
             ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP,XSQM)
          ENDIF
-         
+
          ! Add to overall reaction rate
          kISum = kISum + ADJUSTEDRATE
       END DO
@@ -4256,7 +4352,7 @@ MODULE GCKPP_HETRATES
 !
 ! !IROUTINE: HetHOBr_SO3
 !
-! !DESCRIPTION: Sets the rate of the multiphase reaction HOBr + SO3-- in 
+! !DESCRIPTION: Sets the rate of the multiphase reaction HOBr + SO3-- in
 !  sulfate aerosols, on cloud droplets and on PSCs
 !\\
 !\\
@@ -4267,7 +4363,7 @@ MODULE GCKPP_HETRATES
                           hso3Conc, so3Conc ) &
                           RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rLiq        ! Radius of liquid cloud droplets (cm)
@@ -4342,7 +4438,7 @@ MODULE GCKPP_HETRATES
             ! Reaction rate for surface of aerosol
             ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP,XSQM)
          ENDIF
-         
+
          ! Add to overall reaction rate
          kISum = kISum + ADJUSTEDRATE
       END DO
@@ -4378,7 +4474,7 @@ MODULE GCKPP_HETRATES
 !\\
 ! !INTERFACE:
 !
-      FUNCTION Gamma_HX_Uptake( Radius, n_air, X, T )  RESULT( GAM )  
+      FUNCTION Gamma_HX_Uptake( Radius, n_air, X, T )  RESULT( GAM )
 !
 ! !OUTPUT PARAMETER:
       ! Reactive uptake coefficient (unitless)
@@ -4426,7 +4522,7 @@ MODULE GCKPP_HETRATES
 !\\
 ! !INTERFACE:
 !
-      FUNCTION GAMMA_HOBr_X( Radius, n_air, X, T, C_Y, C_Hp ) RESULT( GAM )  
+      FUNCTION GAMMA_HOBr_X( Radius, n_air, X, T, C_Y, C_Hp ) RESULT( GAM )
 !
 ! !OUTPUT PARAMETERS:
       ! Reactive uptake coefficient (unitless)
@@ -4467,15 +4563,15 @@ MODULE GCKPP_HETRATES
          k_b  = 2.3e+10_fp ! (qjc, 12/28/16)
       ELSEIF ( X==2 ) THEN
          ! Reaction rate coefficient for HOBr + Br- [M-2 s-1]
-         k_b  = 1.6e+10_fp 
+         k_b  = 1.6e+10_fp
       ELSEIF ( X==3 ) THEN
          ! Reaction rate coefficient for HOBr + HSO3- [M-2 s-1]
          ! (Liu and Margerum, Environ. Sci. Tech., 2001)
-         k_b  = 3.2e+9_fp 
+         k_b  = 3.2e+9_fp
       ELSEIF ( X==4 ) THEN
          ! Reaction rate coefficient for HOBr + HSO3-- [M-2 s-1]
          ! (Troy and Margerum, Inorg. Chem., 1991)
-         k_b  = 5.0e+9_fp 
+         k_b  = 5.0e+9_fp
       ENDIF
 
       ! Liquid phase diffusion coefficient [cm2/s] for HOBr
@@ -4495,8 +4591,8 @@ MODULE GCKPP_HETRATES
       l_r  = dsqrt( D_l / (k_b * C_Y * C_Hp ) )
 
       ! Bulk reaction coefficient [unitless]
-      gb = 4.0e0_fp * H_X * con_R * T * l_r * k_b * C_Y * C_Hp / cavg 
-      gb = gb * REACTODIFF_CORR( Radius, l_r) 
+      gb = 4.0e0_fp * H_X * con_R * T * l_r * k_b * C_Y * C_Hp / cavg
+      gb = gb * REACTODIFF_CORR( Radius, l_r)
 
       ! Reactive uptake coefficient [unitless]
       GAM = 1.0e0_fp / (1.0e0_fp/ab  +  1.0e0_fp/gb)
@@ -4557,15 +4653,15 @@ MODULE GCKPP_HETRATES
          k_b1  = 2.3e+10_fp ! (qjc, 12/28/16)
 !      ELSEIF ( X==2 ) THEN
          ! Reaction rate coefficient for HOBr + Br- [M-2 s-1]
-         k_b2  = 1.6e+10_fp 
+         k_b2  = 1.6e+10_fp
 !      ELSEIF ( X==3 ) THEN
          ! Reaction rate coefficient for HOBr + HSO3- [M-2 s-1]
          ! (Liu and Margerum, Environ. Sci. Tech., 2001)
-         k_b3  = 3.2e+9_fp 
+         k_b3  = 3.2e+9_fp
 !      ELSEIF ( X==4 ) THEN
          ! Reaction rate coefficient for HOBr + HSO3-- [M-2 s-1]
          ! (Troy and Margerum, Inorg. Chem., 1991)
-         k_b4  = 5.0e+9_fp 
+         k_b4  = 5.0e+9_fp
 !      ENDIF
 
       ! Liquid phase diffusion coefficient [cm2/s] for HOBr
@@ -4583,26 +4679,26 @@ MODULE GCKPP_HETRATES
 
       ! l_r is diffusive length scale [cm]; gb is Bulk reaction coefficient [unitless]
       l_r1  = dsqrt( D_l / (k_b1 * C_Y1 * C_Hp ) )
-      gb1 = 4.0e0_fp * H_X * con_R * T * l_r1 * k_b1 * C_Y1 * C_Hp / cavg    
-      gb1 = gb1 * REACTODIFF_CORR( Radius, l_r1) 
+      gb1 = 4.0e0_fp * H_X * con_R * T * l_r1 * k_b1 * C_Y1 * C_Hp / cavg
+      gb1 = gb1 * REACTODIFF_CORR( Radius, l_r1)
 
       l_r2  = dsqrt( D_l / (k_b2 * C_Y2 * C_Hp ) )
-      gb2 = 4.0e0_fp * H_X * con_R * T * l_r2 * k_b2 * C_Y2 * C_Hp / cavg    
-      gb2 = gb2 * REACTODIFF_CORR( Radius, l_r2) 
+      gb2 = 4.0e0_fp * H_X * con_R * T * l_r2 * k_b2 * C_Y2 * C_Hp / cavg
+      gb2 = gb2 * REACTODIFF_CORR( Radius, l_r2)
 
       l_r3  = dsqrt( D_l / (k_b3 * C_Y3 ) )
-      gb3 = 4.0e0_fp * H_X * con_R * T * l_r3 * k_b3 * C_Y3 / cavg    
-      gb3 = gb3 * REACTODIFF_CORR( Radius, l_r3) 
+      gb3 = 4.0e0_fp * H_X * con_R * T * l_r3 * k_b3 * C_Y3 / cavg
+      gb3 = gb3 * REACTODIFF_CORR( Radius, l_r3)
 
       l_r4  = dsqrt( D_l / (k_b4 * C_Y4 ) )
-      gb4 = 4.0e0_fp * H_X * con_R * T * l_r4 * k_b4 * C_Y4 / cavg    
-      gb4 = gb4 * REACTODIFF_CORR( Radius, l_r4) 
+      gb4 = 4.0e0_fp * H_X * con_R * T * l_r4 * k_b4 * C_Y4 / cavg
+      gb4 = gb4 * REACTODIFF_CORR( Radius, l_r4)
 
       gb_tot = gb1 + gb2 + gb3 + gb4
-      
+
       ! Reactive uptake coefficient [unitless]
       GAM_HOBr = 1.0e0_fp / (1.0e0_fp/ab  +  1.0e0_fp/gb_tot)
-      
+
       ybr2 = 0.41e0*LOG10(C_Y2/C_Y1)+2.25        ! yield of Br2
       ybr2 = MIN(ybr2, 0.9e0)
       ybr2 = MAX(ybr2, TINY(1.0e0))
@@ -4693,7 +4789,7 @@ MODULE GCKPP_HETRATES
       ! (Liu and Margerum, Environ. Sci. Tech., 2001)
       k_b1  = 2.3e+10_fp ! (qjc, 12/28/16)
       ! Reaction rate coefficient for HOBr + Br- [M-2 s-1]
-      k_b2  = 1.6e+10_fp 
+      k_b2  = 1.6e+10_fp
 
       ! Liquid phase diffusion coefficient [cm2/s] for HOBr
       ! (Ammann et al., Atmos. Chem. Phys., 2013)
@@ -4710,18 +4806,18 @@ MODULE GCKPP_HETRATES
 
       ! l_r is diffusive length scale [cm]; gb is Bulk reaction coefficient [unitless]
       l_r1  = dsqrt( D_l / (k_b1 * C_Y1 * C_Hp ) )
-      gb1 = 4.0e0_fp * H_X * con_R * T * l_r1 * k_b1 * C_Y1 * C_Hp / cavg    
-      gb1 = gb1 * REACTODIFF_CORR( Radius, l_r1) 
+      gb1 = 4.0e0_fp * H_X * con_R * T * l_r1 * k_b1 * C_Y1 * C_Hp / cavg
+      gb1 = gb1 * REACTODIFF_CORR( Radius, l_r1)
 
       l_r2  = dsqrt( D_l / (k_b2 * C_Y2 * C_Hp ) )
-      gb2 = 4.0e0_fp * H_X * con_R * T * l_r2 * k_b2 * C_Y2 * C_Hp / cavg    
-      gb2 = gb2 * REACTODIFF_CORR( Radius, l_r2) 
+      gb2 = 4.0e0_fp * H_X * con_R * T * l_r2 * k_b2 * C_Y2 * C_Hp / cavg
+      gb2 = gb2 * REACTODIFF_CORR( Radius, l_r2)
 
       gb_tot = gb1 + gb2
-      
+
       ! Reactive uptake coefficient [unitless]
       GAM_HOBr = 1.0e0_fp / (1.0e0_fp/ab  +  1.0e0_fp/gb_tot)
-      
+
       ybr2 = 0.41e0*LOG10(C_Y2/C_Y1)+2.25        ! yield of Br2
       ybr2 = MIN(ybr2, 0.9e0)
       ybr2 = MAX(ybr2, TINY(1.0e0))
@@ -4763,7 +4859,7 @@ MODULE GCKPP_HETRATES
 !\\
 ! !INTERFACE:
 !
-      FUNCTION GAMMA_ClNO3_Br( Radius, n_air, T, C_Y ) RESULT( GAM )  
+      FUNCTION GAMMA_ClNO3_Br( Radius, n_air, T, C_Y ) RESULT( GAM )
 !
 ! !USES:
 !
@@ -4793,7 +4889,7 @@ MODULE GCKPP_HETRATES
 
       cavg = dsqrt(8.0e+0_fp*RStarG*T/(Pi*M_X)) *1.0e2_fp ! thermal velocity (cm/s)
 
-      D_l  = 5.0e-6_fp !cm2 s-1. 
+      D_l  = 5.0e-6_fp !cm2 s-1.
       gb   = 4.0e0_fp * con_R * T * 1.0e6_fp * dsqrt(C_Y*D_l) / cavg ! H*sqrt(kb)=10^6 (M/s)^½ s-1
 
       GAM = 1.0e0_fp / (1.0e0_fp/ab  +  1.0e0_fp/gb)
@@ -4813,8 +4909,8 @@ MODULE GCKPP_HETRATES
 !\\
 ! !INTERFACE:
 !
-      REAL(fp) FUNCTION COTH( X) 
-! 
+      REAL(fp) FUNCTION COTH( X)
+!
 ! !INPUT PARAMETERS:
 !
       REAL(fp),         INTENT(IN)  :: X           ! The argument
@@ -4844,7 +4940,7 @@ MODULE GCKPP_HETRATES
 !
 ! !IROUTINE: REACTODIFF_CORR
 !
-! !DESCRIPTION: REACTODIFF\_CORR 
+! !DESCRIPTION: REACTODIFF\_CORR
 !     Correction =  COTH( x ) - ( 1/x )
 !              x = radius / l
 !     Correction approaches 1 as x becomes large, corr(x>1000)~1
@@ -4852,9 +4948,9 @@ MODULE GCKPP_HETRATES
 !\\
 !\\
 ! !INTERFACE:
-! 
-      REAL(fp) FUNCTION REACTODIFF_CORR( radius, l) 
-! 
+!
+      REAL(fp) FUNCTION REACTODIFF_CORR( radius, l)
+!
 ! !INPUT PARAMETERS:
 !
       REAL(fp),         INTENT(IN)  :: radius, l           ! [cm] and [cm]
@@ -4869,9 +4965,9 @@ MODULE GCKPP_HETRATES
 !
 
       REAL(fp)                 :: x
- 
+
       x = radius / l
- 
+
       IF (x<0.0e0_fp) THEN
          PRINT *, 'ERROR x<0, particle radius or C_Y is neg!'
       ELSEIF (x>1.0e3_fp) THEN
@@ -4902,7 +4998,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETBrNO3_JS( denAir, rLiq, rIce, ALiq, AIce, TK ) RESULT( HET_BrNO3 )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: denAir      ! Density of air (#/cm3)
       REAL(fp), INTENT(IN) :: rLiq        ! Radius of liquid cloud droplets (cm)
@@ -4955,9 +5051,9 @@ MODULE GCKPP_HETRATES
          ELSEIF ( N == 13 ) THEN
             ! SSA/STS
             XSTKCF = KHETI_SLA(6)
-         ELSEIF ( N == 14 ) THEN 
+         ELSEIF ( N == 14 ) THEN
             ! Ice/NAT PSC
-            IF (NATSURFACE) THEN 
+            IF (NATSURFACE) THEN
                XSTKCF = 0.001e+0_fp
             ELSE
                XSTKCF = 0.3e+0_fp
@@ -4975,7 +5071,7 @@ MODULE GCKPP_HETRATES
             ! Reaction rate for surface of aerosol
             ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP,XSQM)
          ENDIF
-         
+
          ! Add to overall reaction rate
          HET_BrNO3 = HET_BrNO3 + ADJUSTEDRATE
       END DO
@@ -5002,7 +5098,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETClNO3_HCl( A, B ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
@@ -5094,12 +5190,12 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETBrNO3_HCl( A, B ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Rate coefficients
       REAL(fp), INTENT(IN) :: A, B
 !
-! !RETURN VALUE: 
+! !RETURN VALUE:
 !
       REAL(fp)             :: kISum
 !
@@ -5184,7 +5280,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETHOCl_HCl( A, B, Input_Opt ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp),       INTENT(IN) :: A, B       ! Rate coefficients
       TYPE(OptInput), INTENT(IN) :: Input_Opt  ! Input Options object
@@ -5275,7 +5371,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION HETHOCl_HBr( A, B, Input_Opt ) RESULT( kISum )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp),       INTENT(IN) :: A, B       ! Rate coefficients
       TYPE(OptInput), INTENT(IN) :: Input_Opt  ! Input Options object
@@ -5366,7 +5462,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION N2O5( AEROTYPE, TEMP, RH ) RESULT( GAMMA )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       INTEGER,   INTENT(IN) :: AEROTYPE  ! Denoting aerosol type (cf FAST_JX)
       REAL(fp),  INTENT(IN) :: TEMP      ! Temperature [K]
@@ -5384,6 +5480,7 @@ MODULE GCKPP_HETRATES
 !  29 Mar 2016 - R. Yantosca - Added ProTeX headers
 !  15 Jun 2017 - M. Sulprizio- Move conversion of RH from fraction to % to
 !                              SET_HET above
+!  23 Oct 2018 - V. Shah - Updated Gamma values for organic aerosols
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -5407,22 +5504,25 @@ MODULE GCKPP_HETRATES
       SELECT CASE ( AEROTYPE )
 
          !----------------
-         ! Dust 
+         ! Dust
          !----------------
-         CASE ( 1, 2, 3, 4, 5, 6, 7 )      
-                                
+         CASE ( 1, 2, 3, 4, 5, 6, 7 )
+
             ! Based on unpublished Crowley work
             GAMMA = 0.01e+0_fp
 
          !----------------
          ! Sulfate
          !----------------
-         CASE ( 8 )            
-    
+         CASE ( 8 )
+           ! The following calculation for sulfate aerosols is
+           ! done only for the stratosphere following the UCX implementation.
+           ! For troposphere, we use the Bertram and Thornton parameterization
+           ! (func: N2O5_BT) V.Shah, 2018-10-23
             !===========================================================
-            ! RH dependence from Kane et al., Heterogenous uptake of 
+            ! RH dependence from Kane et al., Heterogenous uptake of
             ! gaseous N2O5 by (NH4)2SO4, NH4HSO4 and H2SO4 aerosols
-            ! J. Phys. Chem. A , 2001, 105, 6465-6470 
+            ! J. Phys. Chem. A , 2001, 105, 6465-6470
             !===========================================================
             ! No RH dependence above 50.0% (lzh, 10/26/2011)
             ! According to Bertram and Thornton, ACP, 9, 8351-8363, 2009
@@ -5433,7 +5533,7 @@ MODULE GCKPP_HETRATES
                               RH_P*(  7.52e-8_fp ) ) )
 
             !===========================================================
-            ! Temperature dependence factor (Cox et al, Cambridge UK) 
+            ! Temperature dependence factor (Cox et al, Cambridge UK)
             ! is of the form:
             !
             !          10^( LOG10( G294 ) - 0.04 * ( TTEMP - 294 ) )
@@ -5441,9 +5541,9 @@ MODULE GCKPP_HETRATES
             !                     10^( LOG10( G294 ) )
             !
             ! Where G294 = 1e-2 and TTEMP is MAX( TEMP, 282 ).
-            ! 
+            !
             ! For computational speed, replace LOG10( 1e-2 ) with -2
-            ! and replace 10^( LOG10( G294 ) ) with G294 
+            ! and replace 10^( LOG10( G294 ) ) with G294
             !===========================================================
             TTEMP = MAX( TEMP, 282e0_fp )
             FACT  = 10.e0_fp**( -2e+0_fp - 4e-2_fp       &
@@ -5455,35 +5555,36 @@ MODULE GCKPP_HETRATES
          !----------------
          ! Black Carbon
          !----------------
-         CASE ( 9 )  
+         CASE ( 9 )
 
              ! From IUPAC
              GAMMA = 0.005e+0_fp
 
          !----------------
          ! Organic Carbon
-         !----------------           
-         CASE ( 10 )          
+         !----------------
+         CASE ( 10 )
 
             !===========================================================
-            ! Based on Thornton, Braban and Abbatt, 2003
-            ! N2O5 hydrolysis on sub-micron organic aerosol: the effect
-            ! of relative humidity, particle phase and particle size
+            ! Based on Badger et al. 2006 (J. Phys. Chem.) for humic acid
+            ! Badger CL, et al. Reactive uptake of N2O5 by aerosol particles
+            ! containing mixtures of humic acid and ammonium sulfate.
+            ! The Journal of Physical Chemistry A. 2006 Jun 1;110(21):6986-94.
             !===========================================================
-            IF ( RH_P >= 57e+0_fp ) THEN
-               GAMMA = 0.03e+0_fp
+            IF ( RH_P >= 50.e+0_fp ) THEN
+                 GAMMA = 0.001d0
             ELSE
-               GAMMA = RH_P * 5.2e-4_fp
+                GAMMA = 0.0001D0
             ENDIF
 
          !----------------
          ! Sea salt
          ! accum & coarse
          !----------------
-         CASE ( 11, 12 )        
-          
+         CASE ( 11, 12 )
+
             ! Based on IUPAC recomendation
-            IF ( RH_P >= 62 ) THEN 
+            IF ( RH_P >= 62 ) THEN
                GAMMA = 0.03e+0_fp
             ELSE
                GAMMA = 0.005e+0_fp
@@ -5493,7 +5594,7 @@ MODULE GCKPP_HETRATES
          ! Strat. aerosols
          !----------------
          CASE ( 13, 14 )
-       
+
             ! These are handled outside this routine - something
             ! is wrong if AEROTYPE=13 or 14 reaches this point
             WRITE (6,*) 'Stratospheric aerosols should not '
@@ -5502,7 +5603,7 @@ MODULE GCKPP_HETRATES
             WRITE (6,*) 'AEROSOL TYPE =',AEROTYPE
             CALL GEOS_CHEM_STOP
 
-         !----------------         
+         !----------------
          ! Default
          !----------------
          CASE DEFAULT
@@ -5511,8 +5612,8 @@ MODULE GCKPP_HETRATES
             WRITE (6,*) 'AEROSOL TYPE =',AEROTYPE
             CALL GEOS_CHEM_STOP
 
-      END SELECT   
-         
+      END SELECT
+
     END FUNCTION N2O5
 !EOC
 !------------------------------------------------------------------------------
@@ -5523,10 +5624,10 @@ MODULE GCKPP_HETRATES
 ! !IROUTINE: HO2
 !
 ! !DESCRIPTION: Function HO2 computes the GAMMA reaction probability
-!  for HO2 loss in aerosols based on the recommendation of 
-!  Thornton, Jaegle, and McNeill, "Assessing Known Pathways For HO2 Loss in 
-!  Aqueous Atmospheric Aerosols: Regional and Global Impacts on Tropospheric 
-!  Oxidants" J. Geophys. Res.,  doi:10.1029/2007JD009236, 2008  
+!  for HO2 loss in aerosols based on the recommendation of
+!  Thornton, Jaegle, and McNeill, "Assessing Known Pathways For HO2 Loss in
+!  Aqueous Atmospheric Aerosols: Regional and Global Impacts on Tropospheric
+!  Oxidants" J. Geophys. Res.,  doi:10.1029/2007JD009236, 2008
 !\\
 !\\
 ! !INTERFACE:
@@ -5541,7 +5642,7 @@ MODULE GCKPP_HETRATES
       USE Input_Opt_Mod, ONLY : OptInput
       Use PhysConstants, ONLY : AVO, RGASLATM
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Arguments
       REAL(fp),       INTENT(IN) :: RADIUS          ! Aerosol radius [cm]
@@ -5551,18 +5652,18 @@ MODULE GCKPP_HETRATES
       REAL(fp),       INTENT(IN) :: SQM             ! Square root of MW [g/mol]
       INTEGER,        INTENT(IN) :: AEROTYPE        ! Aerosol type (cf FAST-JX)
       INTEGER,        INTENT(IN) :: CONTINENTAL_PBL ! Flag set to 1 if the box
-                                                    !  box is located in the 
-                                                    !  continenal boundary 
+                                                    !  box is located in the
+                                                    !  continenal boundary
                                                     !  layer, otherwise 0.
                                                     !  Also check for ICE/SNOW
-                                                    !  (to disable this at 
+                                                    !  (to disable this at
                                                     !  high latitudes).
       TYPE(OptInput), INTENT(IN) :: Input_Opt       ! Input Options object
 !
 ! !RETURN VALUE:
 !
       REAL(fp)                   :: GAMMA           ! Reaction probability
-      
+
 ! !REMARKS:
 !  Taken from the old SMVGEAR routine calcrate.F.
 !  Gamma(HO2) is a function of aerosol type, radius, temperature.
@@ -5617,10 +5718,10 @@ MODULE GCKPP_HETRATES
       SELECT CASE ( AEROTYPE )
 
          !----------------
-         ! Dust 
+         ! Dust
          !----------------
-         CASE ( 1, 2, 3, 4, 5, 6, 7 )      
-                                
+         CASE ( 1, 2, 3, 4, 5, 6, 7 )
+
             ! Assume default gamma=0.1 on dust aerosols
             ! This is tentative as no lab measurements presently exist
             ! for gamma(HO2) on dust aerosols. We assume the rate to
@@ -5630,17 +5731,17 @@ MODULE GCKPP_HETRATES
 
          !----------------
          ! For Sulfate(8), Black Carbon (9), Organic Carbon (10),
-         ! Sea-salt accum & coarse (11,12) calculate the 
-         ! reaction probability due to self reaction 
+         ! Sea-salt accum & coarse (11,12) calculate the
+         ! reaction probability due to self reaction
          ! by using the algebraic expression in Thornton et al.  (2008)
          ! (equation 7) which is a function of temperature, aerosol radius,
-         ! air density and HO2 concentration. 
+         ! air density and HO2 concentration.
          !
-         ! Transition metal ions (such as copper and iron) in sea-salt and 
-         ! carbonaceous aerosols are complexed to ligands and/or exist at 
-         ! a concentration too low to catalyze HO2 loss efficiently, so we 
+         ! Transition metal ions (such as copper and iron) in sea-salt and
+         ! carbonaceous aerosols are complexed to ligands and/or exist at
+         ! a concentration too low to catalyze HO2 loss efficiently, so we
          ! apply the HO2 self reaction expression directly for these aerosols.
-         ! 
+         !
          ! In the case of sulfate aerosol, the aerosols likely
          ! contain copper in the continental boundary layer and
          ! HO2 uptake proceeds rapidly. To account for the metal catalyzed
@@ -5652,7 +5753,7 @@ MODULE GCKPP_HETRATES
          ! SDE 04/18/13: Added stratospheric sulfur aerosols
          !
          !----------------
-         CASE ( 8, 9, 10, 11, 12, 13 )  
+         CASE ( 8, 9, 10, 11, 12, 13 )
 
             ! Mean molecular speed [cm/s]
             w = 14550.5e+0_fp * sqrt(TEMP/(SQM*SQM))
@@ -5663,8 +5764,8 @@ MODULE GCKPP_HETRATES
 
             !calculate T-dependent solubility and aq. reaction rate constants
             ! hydronium ion concentration
-            ! A1 = 1.+(Keq/hplus) 
-            ! with Keq = 2.1d-5 [M], Equilibrium constant for 
+            ! A1 = 1.+(Keq/hplus)
+            ! with Keq = 2.1d-5 [M], Equilibrium constant for
             ! HO2aq = H+ + O2- (Jacob, 2000)
             !      hplus=10.e+0_fp^(-pH), with pH = 5
             ! B1 = Req * TEMP
@@ -5680,16 +5781,16 @@ MODULE GCKPP_HETRATES
             delG  = -4.9e+0_fp - (TEMP-298.e+0_fp) * (-0.023)
             H_eff = exp( -delG / B1 ) * A1
 
-            ! Estimated temp dependent value for HO2 + O2- (k1) and 
+            ! Estimated temp dependent value for HO2 + O2- (k1) and
             ! HO2+HO2 (see Jacob 1989)
             k1  =   1.58e+10_fp * exp( -3. / B1 )
             k2  =   2.4e+9_fp   * exp( -4.7 / B1 )
             kaq = ( k1 * (A1 - 1.e+0_fp) + k2) / (A1**2)
 
-            ! Calculate the mass transfer rate constant and s.s. conc. of 
+            ! Calculate the mass transfer rate constant and s.s. conc. of
             ! total HO2 in the aqueous phase:
             ! kmt = (RADIUS/DFKG + 4e+0_fp/w/alpha)^(-1)
-            ! with alpha = mass accomodation coefficient, assumed 
+            ! with alpha = mass accomodation coefficient, assumed
             ! to be 1 (Thornton et al.)
             kmt = 1.e+0_fp/( RADIUS/DFKG + 4e+0_fp/w/1. )
 
@@ -5726,13 +5827,13 @@ MODULE GCKPP_HETRATES
             !
             IF ( AEROTYPE == 8 .and. CONTINENTAL_PBL == 1) THEN
                 GAMMA = 0.07
-            ENDIF 
+            ENDIF
 
          !----------------
          ! NAT/ice (SDE 04/18/13)
          !----------------
          CASE ( 14 )
-       
+
             GAMMA = 0.e+0_fp
 
          !----------------
@@ -5745,7 +5846,7 @@ MODULE GCKPP_HETRATES
             CALL GEOS_CHEM_STOP
 
       END SELECT
-     
+
       ! If negative value is calculated, set it to zero
       IF ( GAMMA  <= 0e+0_fp ) GAMMA = 0e+0_fp
 
@@ -5778,7 +5879,7 @@ MODULE GCKPP_HETRATES
       USE PhysConstants, ONLY : RGASLATM
       USE ERROR_MOD,     ONLY : IT_IS_NAN
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: AERRAD   ! Aerosol radius [cm]
       REAL(fp), INTENT(IN) :: AERAREA  ! Aerosol surf. area [cm2/cm3]
@@ -5788,7 +5889,7 @@ MODULE GCKPP_HETRATES
       REAL(fp), INTENT(IN) :: KHPLUS   ! 1st order rxn rate (acid-catalyzed ring
                                        ! opening)
       REAL(fp), INTENT(IN) :: HPLUS    ! Proton activity [unitless] and [H+] [M]
-      REAL(fp), INTENT(IN) :: KNUC     ! 1st order rxn rate due to specific 
+      REAL(fp), INTENT(IN) :: KNUC     ! 1st order rxn rate due to specific
                                        ! nucleophiles (SO4, NO3)
       REAL(fp), INTENT(IN) :: SULF     ! Sulfate concentration [M]
       REAL(fp), INTENT(IN) :: NITR     ! Nitrate concentration [M]
@@ -5800,7 +5901,7 @@ MODULE GCKPP_HETRATES
 ! !RETURN VALUE:
 !
       REAL(fp)             :: GAMMA    ! Reaction probability
-      
+
 ! !REMARKS:
 ! Calculation is only done for inorganic aqueous phase aerosols
 !                                                                             .
@@ -5846,7 +5947,7 @@ MODULE GCKPP_HETRATES
       VAL2   = 0.0_fp
       VAL3   = 0.0_fp
       VALTMP = 0.0_fp
-      
+
       ! Calculate aerosol volume (use formula in aerosol_mod.F):
       AERVOL = (AERAREA * AERRAD)/3.0e+0_fp
 
@@ -5860,10 +5961,10 @@ MODULE GCKPP_HETRATES
               ( KNUC*HPLUS*( NITR + SULF ) ) + &
               ( KGACID*BISULF )              + &
               ( KHYDRO )
-      
+
       ! Calculate the first uptake parameterization term:
       VAL1 = ( AERRAD * XMMS )/( 4.e+0_fp * DIFF_N2O5_STD )
-      
+
       ! Calculate the second uptake parameterization term:
       VAL2 = ( 1.e+0_fp/MACOEFF )
 
@@ -5884,7 +5985,7 @@ MODULE GCKPP_HETRATES
          GAMMA = TINY(1e+0_fp)
 
       ELSE
-         
+
          ! Calculate the uptake coefficient:
          GAMMA = 1.e+0_fp/( VAL1 + VAL2 + VAL3 )
 
@@ -5904,7 +6005,7 @@ MODULE GCKPP_HETRATES
 !
 ! !IROUTINE: Cld_Params
 !
-! !DESCRIPTION: Subroutine CLD\_PARAMS returns ice and liquid cloud 
+! !DESCRIPTION: Subroutine CLD\_PARAMS returns ice and liquid cloud
 !  parameters based on State\_Met off of cloud particles.
 !\\
 !\\
@@ -5978,7 +6079,7 @@ MODULE GCKPP_HETRATES
       REAL(fp)            :: AREA_I     ! Surface area (ice) )         [cm2/cm3]
       REAL(fp)            :: Vcl, Vci   ! Volume of the cloud (liq and ice) [cm3]
       LOGICAL             :: IS_LAND, IS_ICE, Is_Warm
-   
+
       ! Pointers
       REAL(fp), POINTER   :: AD(:,:,:)
       REAL(fp), POINTER   :: CLDF(:,:,:)
@@ -6012,7 +6113,7 @@ MODULE GCKPP_HETRATES
       ENDIF
 
       ! Is this land?
-      ! LWI=1 and ALBEDO less than 69.5% is a LAND box 
+      ! LWI=1 and ALBEDO less than 69.5% is a LAND box
       IS_LAND = ( NINT( State_Met%LWI(I,J) ) == 1       .and. &
                      State_Met%ALBD(I,J)  <  0.695e+0_fp )
 
@@ -6081,7 +6182,7 @@ MODULE GCKPP_HETRATES
       !                RADIUS (in cm)
       !
       !
-      !    or    
+      !    or
       !                   3 x Vc
       !     AREA =  -----------------
       !              AIRVOL x RADIUS      (in cm)
@@ -6098,7 +6199,7 @@ MODULE GCKPP_HETRATES
       ! QL is [g/g]
       VLiq = QL * AD(I,J,L) / dens_h2o
       VIce = QI * AD(I,J,L) / dens_h2o
-  
+
       ! Only want warm (continental or marine) liquid clouds
       IF ( .not. Is_Warm ) THEN
          VLiq = 0.e+0_fp
@@ -6124,7 +6225,7 @@ MODULE GCKPP_HETRATES
 !
 ! !IROUTINE: Get_Halide_CldConc
 !
-! !DESCRIPTION: Subroutine GET\_HALIDE\_CLDCONC returns the in-cloud 
+! !DESCRIPTION: Subroutine GET\_HALIDE\_CLDCONC returns the in-cloud
 !  concentration of bromide and chloride (Br- and Cl-).
 !\\
 !\\
@@ -6143,7 +6244,7 @@ MODULE GCKPP_HETRATES
       REAL(fp),  INTENT(IN) :: VAir    ! Volume of air [cm3]
       REAL(fp),  INTENT(IN) :: SA_SULF, R_SULF! Sulfate aerosol surface area (cm2/cm3) and radius (cm)
       REAL(fp),  INTENT(IN) :: VLiq, VIce ! Volume of the cloud (liq and ice) [cm3]
-      REAL(fp),  INTENT(IN) :: CLDFr ! cloud fraction 
+      REAL(fp),  INTENT(IN) :: CLDFr ! cloud fraction
       REAL(fp),  INTENT(IN) :: TK      ! Air temperature [K]
 
 !
@@ -6164,9 +6265,9 @@ MODULE GCKPP_HETRATES
 ! !LOCAL VARIABLES:
 !
       REAL(fp)            :: n_br, n_cl ! dissolved bromide and chloride [#/cm3(air)]
-      REAL(fp)            :: V_tot, dr_ratio, t2l ! 
+      REAL(fp)            :: V_tot, dr_ratio, t2l !
       REAL(fp)            :: L2G, F_L
-   
+
       !=================================================================
       ! GET_HALIDE_CLDCONC begins here!
       !=================================================================
@@ -6260,7 +6361,7 @@ MODULE GCKPP_HETRATES
 !
 ! !IROUTINE: Compute_L2G_Local
 !
-! !DESCRIPTION: Subroutine COMPUTE\_L2G\_LOCAL is a local copy of the 
+! !DESCRIPTION: Subroutine COMPUTE\_L2G\_LOCAL is a local copy of the
 !  liquid-gas partitioning routine in GEOS-Chem's wetscav\_mod.F file.
 !\\
 !\\
@@ -6272,25 +6373,25 @@ MODULE GCKPP_HETRATES
 !
       USE Henry_Mod, ONLY : Calc_KH
       USE Henry_Mod, ONLY : Calc_Heff
-!     
-! !INPUT PARAMETERS: 
+!
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN)  :: K0     ! Henry's solubility constant [M/atm]
-      REAL(fp), INTENT(IN)  :: CR     ! Henry's volatility constant [K] 
+      REAL(fp), INTENT(IN)  :: CR     ! Henry's volatility constant [K]
       REAL(fp), INTENT(IN)  :: pKa    ! Henry's pH correction factor [1]
       REAL(fp), INTENT(IN)  :: TK     ! Temperature [K]
       REAL(fp), INTENT(IN)  :: H2OLIQ ! Liquid water content [cm3 H2O/cm3 air]
-!                                     
-! !OUTPUT PARAMETERS:                 
-!                                     
+!
+! !OUTPUT PARAMETERS:
+!
       REAL(fp), INTENT(OUT) :: L2G    ! Cliq/Cgas ratio [1]
 !
 ! !REMARKS:
-!  The ratio Cliq / Cgas is obtained via Henry's law.  The appropriate 
-!  values of Kstar298 and H298_R must be supplied for each species.  
+!  The ratio Cliq / Cgas is obtained via Henry's law.  The appropriate
+!  values of Kstar298 and H298_R must be supplied for each species.
 !  (cf Jacob et al 2000, p. 3)
-! 
-! !REVISION HISTORY: 
+!
+! !REVISION HISTORY:
 !  23 Feb 2000 - R. Yantosca - Initial version
 !  (1 ) Bundled into "wetscav_mod.f" (bmy, 11/8/02)
 !  16 Sep 2010 - R. Yantosca - Added ProTeX headers
@@ -6364,7 +6465,7 @@ MODULE GCKPP_HETRATES
 ! !RETURN VALUE:
 !
       REAL(fp)                   :: cld1k    ! Rate constant for heterogeneous
-                                             ! cycling of BrNO3 off of cloud 
+                                             ! cycling of BrNO3 off of cloud
                                              ! particles
 !
 ! !REMARKS:
@@ -6444,7 +6545,7 @@ MODULE GCKPP_HETRATES
 !BOC
 
       FC_RO2HO2 = 1E+0_fp - EXP( -0.245E+0_fp * XCARBN )
-     
+
     END FUNCTION FCRO2HO2
 !EOC
 !------------------------------------------------------------------------------
@@ -6455,25 +6556,25 @@ MODULE GCKPP_HETRATES
 ! !IROUTINE: FyHORO
 !
 ! !DESCRIPTION: \subsection*{Overview}
-!  Function FYHORO returns returns the branching ratio between 
+!  Function FYHORO returns returns the branching ratio between
 !  HOC2H4O oxidation and dissociation:
 !  (1) HOC2H4 --O2--> HO2 + GLYC
 !  (2) HOC2H4 ------> HO2 + 2CH2O
 !
 !\subsection*{References}
 !  \begin{enumerate}
-!  \item Orlando et al., 1998: \emph{Laboratory and theoretical study of the 
-!         oxyradicals in the OH- and Cl-initiated oxidation of ethene}, 
+!  \item Orlando et al., 1998: \emph{Laboratory and theoretical study of the
+!         oxyradicals in the OH- and Cl-initiated oxidation of ethene},
 !        \underline{J. Phys. Chem. A}, \textbf{102}, 8116-8123.
-!  \item Orlando et al., 2003: \emph{The atmospheric chemistry of alkoxy 
+!  \item Orlando et al., 2003: \emph{The atmospheric chemistry of alkoxy
 !         radicals}, \underline{Chem. Rev.}, \textbf{103}, 4657-4689.
 !  \end{enumerate}
 !
-! !INTERFACE: 
+! !INTERFACE:
 !
     FUNCTION FYHORO( ZDNUM, TT ) RESULT( FY_HORO )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: ZDNUM   ! Air density   [molec/cm3 ]
       REAL(fp), INTENT(IN) :: TT      ! Temperature   [K         ]
@@ -6499,10 +6600,10 @@ MODULE GCKPP_HETRATES
       !=================================================================
       O2DNUM  = ZDNUM * 0.21E+0_fp
       K1      = 6.0E-14_fp * EXP(-550.E+0_fp/TT) * O2DNUM
-      K2      = 9.5E+13_fp * EXP(-5988.E+0_fp/TT) 
+      K2      = 9.5E+13_fp * EXP(-5988.E+0_fp/TT)
 
       FY_HORO = K1 / (K1 + K2)
-        
+
     END FUNCTION FYHORO
 !EOC
 !------------------------------------------------------------------------------
@@ -6512,8 +6613,8 @@ MODULE GCKPP_HETRATES
 !
 ! !IROUTINE: FyrNO3
 !
-! !DESCRIPTION: Function FYRNO3 returns organic nitrate yields 
-!  YN = RKA/(RKA+RKB) from RO2+NO reactions as a function of the number 
+! !DESCRIPTION: Function FYRNO3 returns organic nitrate yields
+!  YN = RKA/(RKA+RKB) from RO2+NO reactions as a function of the number
 !  N of carbon atoms.
 !\\
 !\\
@@ -6521,7 +6622,7 @@ MODULE GCKPP_HETRATES
 !
     FUNCTION FYRNO3( XCARBN, ZDNUM, TT ) RESULT( FYR_NO3 )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       REAL(fp), INTENT(IN) :: XCARBN   ! Number of C atoms in RO2
       REAL(fp), INTENT(IN) :: ZDNUM    ! Air density   [molec/cm3 ]
@@ -6529,9 +6630,9 @@ MODULE GCKPP_HETRATES
 !
 ! !RETURN VALUE:
 !
-      REAL(fp)             :: FYR_NO3 
-! 
-! !REVISION HISTORY: 
+      REAL(fp)             :: FYR_NO3
+!
+! !REVISION HISTORY:
 !  (1 ) Original code from Larry Horowitz, Jinyou Liang, Gerry Gardner,
 !        and Daniel Jacob circa 1989/1990.
 !  (2 ) Updated following Atkinson 1990.
@@ -6562,7 +6663,7 @@ MODULE GCKPP_HETRATES
       ZZYN    = 1./(1.+ AAA*AAA )
       RARB    = (XXYN/(1.+ (XXYN/YYYN)))*(XF**ZZYN)
       FYR_NO3 = RARB/(1. + RARB)
-     
+
     END FUNCTION FYRNO3
 !EOC
 !------------------------------------------------------------------------------
@@ -6572,7 +6673,7 @@ MODULE GCKPP_HETRATES
 !
 ! !ROUTINE: Arsl1k
 !
-! !DESCRIPTION: Function ARSL1K calculates the 1st-order loss rate of species 
+! !DESCRIPTION: Function ARSL1K calculates the 1st-order loss rate of species
 !  on wet aerosol surface.
 !\\
 !\\
@@ -6581,26 +6682,26 @@ MODULE GCKPP_HETRATES
     FUNCTION ARSL1K( AREA, RADIUS, DENAIR, STKCF, STK, SQM ) &
          RESULT( ARS_L1K )
 !
-! !INPUT PARAMETERS: 
+! !INPUT PARAMETERS:
 !
       ! Surface  area of wet aerosols/volume of air [cm2/cm3]
-      REAL(fp), INTENT(IN) :: AREA     
+      REAL(fp), INTENT(IN) :: AREA
 
       ! Radius of wet aerosol [cm], order of 0.01-10 um;
       ! Note that radius here is Rd, not Ro
-      REAL(fp), INTENT(IN) :: RADIUS 
-  
+      REAL(fp), INTENT(IN) :: RADIUS
+
       ! Density of air [#/cm3]
-      REAL(fp), INTENT(IN) :: DENAIR  
- 
+      REAL(fp), INTENT(IN) :: DENAIR
+
       ! Sticking coefficient [unitless], order of 0.1
-      REAL(fp), INTENT(IN) :: STKCF  
-  
+      REAL(fp), INTENT(IN) :: STKCF
+
       ! Square root of temperature [K]
-      REAL(fp), INTENT(IN) :: STK  
-    
+      REAL(fp), INTENT(IN) :: STK
+
       ! Square root of molecular weight [g/mole]
-      REAL(fp), INTENT(IN) :: SQM      
+      REAL(fp), INTENT(IN) :: SQM
 !
 ! !RETURN VALUE:
 !
@@ -6610,18 +6711,18 @@ MODULE GCKPP_HETRATES
 !  The 1st-order loss rate on wet aerosol (Dentener's Thesis, p. 14)
 !  is computed as:
 !                                                                             .
-!      ARSL1K [1/s] = area / [ radius/dfkg + 4./(stkcf * xmms) ]        
+!      ARSL1K [1/s] = area / [ radius/dfkg + 4./(stkcf * xmms) ]
 !                                                                             .
-!  where XMMS = Mean molecular speed [cm/s] = sqrt(8R*TK/pi/M) for Maxwell 
+!  where XMMS = Mean molecular speed [cm/s] = sqrt(8R*TK/pi/M) for Maxwell
 !        DFKG = Gas phase diffusion coeff [cm2/s] (order of 0.1)
 
 ! !REVISION HISTORY:
-!  01 Jul 1994 - lwh, jyl, gmg, djj - Initial version 
+!  01 Jul 1994 - lwh, jyl, gmg, djj - Initial version
 !  04 Apr 2003 - R. Yantosca - Updated comments, cosmetic changes
-!  07 Apr 2004 - R. Yantosca - Now return w/ default value if RADIUS is zero 
+!  07 Apr 2004 - R. Yantosca - Now return w/ default value if RADIUS is zero
 !                              (i.e. is smaller than a very small number)
 !  03 Dec 2009 - R. Yantosca - Prevent div-by-zero errors by returning the
-!                              default value if any of the args are zero 
+!                              default value if any of the args are zero
 !  03 Dec 2009 - R. Yantosca - Added ProTeX Header
 !  20 Aug 2013 - R. Yantosca - Removed "define.h", this is now obsolete
 !EOP
@@ -6635,7 +6736,7 @@ MODULE GCKPP_HETRATES
       !=================================================================
       ! ARSL1K begins here!
       !=================================================================
-      IF ( AREA < 0e0_fp      .or. DENAIR < 1e-30_fp    .or.  & 
+      IF ( AREA < 0e0_fp      .or. DENAIR < 1e-30_fp    .or.  &
            RADIUS < 1e-30_fp  .or. SQM  < 1e-30_fp      .or.  &
            STK    < 1e-30_fp  .or.  STKCF  < 1e-30_fp ) THEN
 
@@ -6664,7 +6765,7 @@ MODULE GCKPP_HETRATES
 !
 ! !IROUTINE: Check_Nat
 !
-! !DESCRIPTION: Subroutine CHECK\_NAT determines whether the solid PSC is 
+! !DESCRIPTION: Subroutine CHECK\_NAT determines whether the solid PSC is
 !  composed of ice or NAT (nitric acid trihydrate) (needed for heterogeneous
 !  chemistry), or indeed if there is any direct PSC calculation at all. This
 !  is important for determining whether to use the JPP or Kirner scheme for
