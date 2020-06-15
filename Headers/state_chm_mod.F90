@@ -729,7 +729,7 @@ CONTAINS
 
        ! GEOS-Chem Species Database entry for species # N
        ThisSpc => State_Chm%SpcData(N)%Info
-
+       PRINT *, 'ThisSpc', ThisSpc%Name, ThisSpc%Is_Kpp
        !--------------------------------------------------------------------
        ! Set up the mapping for ADVECTED SPECIES
        !--------------------------------------------------------------------
@@ -900,7 +900,8 @@ CONTAINS
     ! Allocate and initialize quantities that are only relevant for the
     ! the various fullchem simulations or the aerosol-only simulation
     !=======================================================================
-    IF ( Input_Opt%ITS_A_FULLCHEM_SIM .or. Input_Opt%ITS_AN_AEROSOL_SIM ) THEN
+    IF ( Input_Opt%ITS_A_FULLCHEM_SIM .or. Input_Opt%ITS_AN_AEROSOL_SIM &
+         .or. Input_Opt%ITS_A_MERCURY_SIM ) THEN
 
        ! Save nAerosol to State_Chm
        State_Chm%nAeroType = nAerosol
@@ -1471,7 +1472,8 @@ CONTAINS
     !=======================================================================
     ! Allocate and initialize fields for KPP solver
     !=======================================================================
-    IF ( Input_Opt%ITS_A_FULLCHEM_SIM ) THEN
+    IF ( Input_Opt%ITS_A_FULLCHEM_SIM .OR. &
+         Input_Opt%ITS_A_MERCURY_SIM ) THEN
 
        !--------------------------------------------------------------------
        ! KPPHvalue
@@ -3865,7 +3867,8 @@ CONTAINS
     !=======================================================================
     ! Get the number of prod and loss species depending on the simulation
     !=======================================================================
-    IF ( Input_Opt%ITS_A_FULLCHEM_SIM ) THEN
+    IF ( Input_Opt%ITS_A_FULLCHEM_SIM .or. &
+         Input_Opt%ITS_A_MERCURY_SIM ) THEN
 
        !------------------------------
        ! Full-chemistry simulations
@@ -3976,7 +3979,8 @@ CONTAINS
     !=======================================================================
     ! Get the number of prod and loss species depending on the simulation
     !=======================================================================
-    IF ( Input_Opt%ITS_A_FULLCHEM_SIM ) THEN
+    IF ( Input_Opt%ITS_A_FULLCHEM_SIM .or. &
+         Input_Opt%ITS_A_MERCURY_SIM ) THEN
 
        !--------------------------------------------------------------------
        ! Full-chemistry simulations

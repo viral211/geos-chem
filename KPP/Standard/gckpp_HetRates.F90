@@ -21,7 +21,7 @@ MODULE GCKPP_HETRATES
   USE ERROR_MOD,          ONLY : IS_SAFE_DIV, SAFE_DIV
   USE gckpp_Precision
   USE gckpp_Parameters
-  USE gckpp_Global,       ONLY : HET
+  !USE gckpp_Global,       ONLY : HET
   USE State_Chm_Mod,      ONLY : ChmState
   USE State_Chm_Mod,      ONLY : Ind_
   USE State_Met_Mod,      ONLY : MetState
@@ -145,6 +145,7 @@ MODULE GCKPP_HETRATES
   ! Arrays
   REAL(fp) :: XAREA(25), XRADI(25), XVOL(25), XH2O(25)
   REAL(fp) :: KHETI_SLA(11)
+  REAL(fp) :: HET
 
 !$OMP THREADPRIVATE( NAEROTYPE,        NATSURFACE, PSCBOX,   STRATBOX )
 !$OMP THREADPRIVATE( TEMPK,        RELHUM,     SPC_NIT,  SPC_SO4  )
@@ -396,165 +397,165 @@ MODULE GCKPP_HETRATES
          ! Hardcode HO2 for now
          ! MW_g is not defined for HO2 in the species database but model
          ! output changes when it is added there (mps, 7/26/17)
-         MW_HO2    = 33.0_fp
+         ! MW_HO2    = 33.0_fp
 
-         IND = Ind_( 'NO2' )
-         IF ( IND > 0 ) MW_NO2    = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'NO2' )
+         ! IF ( IND > 0 ) MW_NO2    = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'NO3' )
-         IF ( IND > 0 ) MW_NO3    = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'NO3' )
+         ! IF ( IND > 0 ) MW_NO3    = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'N2O5' )
-         IF ( IND > 0 ) MW_N2O5   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'N2O5' )
+         ! IF ( IND > 0 ) MW_N2O5   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'GLYX' )
-         IF ( IND > 0 ) MW_GLYX   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'GLYX' )
+         ! IF ( IND > 0 ) MW_GLYX   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'MGLY' )
-         IF ( IND > 0 ) MW_MGLY   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'MGLY' )
+         ! IF ( IND > 0 ) MW_MGLY   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IEPOXA' )
-         IF ( IND > 0 ) MW_IEPOXA = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IEPOXA' )
+         ! IF ( IND > 0 ) MW_IEPOXA = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IEPOXB' )
-         IF ( IND > 0 ) MW_IEPOXB = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IEPOXB' )
+         ! IF ( IND > 0 ) MW_IEPOXB = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IEPOXD' )
-         IF ( IND > 0 ) MW_IEPOXD = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IEPOXD' )
+         ! IF ( IND > 0 ) MW_IEPOXD = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'HMML' )
-         IF ( IND > 0 ) MW_HMML   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'HMML' )
+         ! IF ( IND > 0 ) MW_HMML   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'PYAC' )
-         IF ( IND > 0 ) MW_PYAC   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'PYAC' )
+         ! IF ( IND > 0 ) MW_PYAC   = State_Chm%SpcData(IND)%Info%MW_g
 	 
-         IND = Ind_( 'LVOC' )
-         IF ( IND > 0 ) MW_LVOC   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'LVOC' )
+         ! IF ( IND > 0 ) MW_LVOC   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'MVKN' )
-         IF ( IND > 0 ) MW_MVKN   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'MVKN' )
+         ! IF ( IND > 0 ) MW_MVKN   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'R4N2' )
-         IF ( IND > 0 ) MW_R4N2   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'R4N2' )
+         ! IF ( IND > 0 ) MW_R4N2   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'ICHE' )
-         IF ( IND > 0 ) MW_ICHE   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'ICHE' )
+         ! IF ( IND > 0 ) MW_ICHE   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'ITHN' )
-         IF ( IND > 0 ) MW_ITHN   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'ITHN' )
+         ! IF ( IND > 0 ) MW_ITHN   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'ITCN' )
-         IF ( IND > 0 ) MW_ITCN   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'ITCN' )
+         ! IF ( IND > 0 ) MW_ITCN   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IDN' )
-         IF ( IND > 0 ) MW_IDN    = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IDN' )
+         ! IF ( IND > 0 ) MW_IDN    = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'MCRHN' )
-         IF ( IND > 0 ) MW_MCRHN  = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'MCRHN' )
+         ! IF ( IND > 0 ) MW_MCRHN  = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'MCRHNB' )
-         IF ( IND > 0 ) MW_MCRHNB = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'MCRHNB' )
+         ! IF ( IND > 0 ) MW_MCRHNB = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'INPB' )
-         IF ( IND > 0 ) MW_INPB   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'INPB' )
+         ! IF ( IND > 0 ) MW_INPB   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'INPD' )
-         IF ( IND > 0 ) MW_INPD   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'INPD' )
+         ! IF ( IND > 0 ) MW_INPD   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IHN1' )
-         IF ( IND > 0 ) MW_IHN1   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IHN1' )
+         ! IF ( IND > 0 ) MW_IHN1   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IHN2' )
-         IF ( IND > 0 ) MW_IHN2   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IHN2' )
+         ! IF ( IND > 0 ) MW_IHN2   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IHN3' )
-         IF ( IND > 0 ) MW_IHN3   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IHN3' )
+         ! IF ( IND > 0 ) MW_IHN3   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IHN4' )
-         IF ( IND > 0 ) MW_IHN4   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IHN4' )
+         ! IF ( IND > 0 ) MW_IHN4   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'MONITS' )
-         IF ( IND > 0 ) MW_MONITS = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'MONITS' )
+         ! IF ( IND > 0 ) MW_MONITS = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'MONITU' )
-         IF ( IND > 0 ) MW_MONITU = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'MONITU' )
+         ! IF ( IND > 0 ) MW_MONITU = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'HONIT' )
-         IF ( IND > 0 ) MW_HONIT  = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'HONIT' )
+         ! IF ( IND > 0 ) MW_HONIT  = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IONITA' )
-         IF ( IND > 0 ) MW_IONITA = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IONITA' )
+         ! IF ( IND > 0 ) MW_IONITA = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'MONITA' )
-         IF ( IND > 0 ) MW_MONITA = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'MONITA' )
+         ! IF ( IND > 0 ) MW_MONITA = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'BrNO3' )
-         IF ( IND > 0 ) MW_BrNO3  = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'BrNO3' )
+         ! IF ( IND > 0 ) MW_BrNO3  = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'HOBr' )
-         IF ( IND > 0 ) THEN
-            MW_HOBr   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'HOBr' )
+         ! IF ( IND > 0 ) THEN
+         !    MW_HOBr   = State_Chm%SpcData(IND)%Info%MW_g
 
-            ! Henry's law parameters
-            H_K0_HOBr = State_Chm%SpcData(IND)%Info%Henry_K0 * con_atm_bar
-            H_CR_HOBr = State_Chm%SpcData(IND)%Info%Henry_CR
-            H_HOBr_T  = 298.15
-         ENDIF
+         !    ! Henry's law parameters
+         !    H_K0_HOBr = State_Chm%SpcData(IND)%Info%Henry_K0 * con_atm_bar
+         !    H_CR_HOBr = State_Chm%SpcData(IND)%Info%Henry_CR
+         !    H_HOBr_T  = 298.15
+         ! ENDIF
 
-         IND = Ind_( 'O3' )
-         IF ( IND > 0 ) THEN
-            MW_O3     = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'O3' )
+         ! IF ( IND > 0 ) THEN
+         !    MW_O3     = State_Chm%SpcData(IND)%Info%MW_g
 
-            ! Henry's law parameters
-            H_K0_O3   = 1.1e-2_fp * con_atm_bar
-            H_CR_O3   = 2300.0
-            H_O3_T    = 298.15
-         ENDIF
+         !    ! Henry's law parameters
+         !    H_K0_O3   = 1.1e-2_fp * con_atm_bar
+         !    H_CR_O3   = 2300.0
+         !    H_O3_T    = 298.15
+         ! ENDIF
 
-         IND = Ind_( 'HBr' )
-         IF ( IND > 0 ) THEN
-            MW_HBr    = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'HBr' )
+         ! IF ( IND > 0 ) THEN
+         !    MW_HBr    = State_Chm%SpcData(IND)%Info%MW_g
 
-            ! Henry's law parameters
-            H_K0_HBr  = State_Chm%SpcData(IND)%Info%Henry_K0
-            H_CR_HBr  = State_Chm%SpcData(IND)%Info%Henry_CR
-         ENDIF
+         !    ! Henry's law parameters
+         !    H_K0_HBr  = State_Chm%SpcData(IND)%Info%Henry_K0
+         !    H_CR_HBr  = State_Chm%SpcData(IND)%Info%Henry_CR
+         ! ENDIF
 
-         IND = Ind_( 'HCl' )
-         IF ( IND > 0 ) THEN
-            MW_HCl    = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'HCl' )
+         ! IF ( IND > 0 ) THEN
+         !    MW_HCl    = State_Chm%SpcData(IND)%Info%MW_g
 
-            ! Henry's law parameters
-            H_K0_HCl  = State_Chm%SpcData(IND)%Info%Henry_K0
-            H_CR_HCl  = State_Chm%SpcData(IND)%Info%Henry_CR
-         ENDIF
+         !    ! Henry's law parameters
+         !    H_K0_HCl  = State_Chm%SpcData(IND)%Info%Henry_K0
+         !    H_CR_HCl  = State_Chm%SpcData(IND)%Info%Henry_CR
+         ! ENDIF
 
-         IND = Ind_( 'ClNO3' )
-         IF ( IND > 0 ) MW_ClNO3  = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'ClNO3' )
+         ! IF ( IND > 0 ) MW_ClNO3  = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'HOCl' )
-         IF ( IND > 0 ) MW_HOCl   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'HOCl' )
+         ! IF ( IND > 0 ) MW_HOCl   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'HI' )
-         IF ( IND > 0 ) MW_HI     = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'HI' )
+         ! IF ( IND > 0 ) MW_HI     = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'HOI' )
-         IF ( IND > 0 ) MW_HOI    = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'HOI' )
+         ! IF ( IND > 0 ) MW_HOI    = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'I2O2' )
-         IF ( IND > 0 ) MW_I2O2   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'I2O2' )
+         ! IF ( IND > 0 ) MW_I2O2   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'I2O3' )
-         IF ( IND > 0 ) MW_I2O3   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'I2O3' )
+         ! IF ( IND > 0 ) MW_I2O3   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'I2O4' )
-         IF ( IND > 0 ) MW_I2O4   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'I2O4' )
+         ! IF ( IND > 0 ) MW_I2O4   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IONO' )
-         IF ( IND > 0 ) MW_IONO   = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IONO' )
+         ! IF ( IND > 0 ) MW_IONO   = State_Chm%SpcData(IND)%Info%MW_g
 
-         IND = Ind_( 'IONO2' )
-         IF ( IND > 0 ) MW_IONO2  = State_Chm%SpcData(IND)%Info%MW_g
+         ! IND = Ind_( 'IONO2' )
+         ! IF ( IND > 0 ) MW_IONO2  = State_Chm%SpcData(IND)%Info%MW_g
 
          ! Reset flag
          FIRST = .FALSE.
@@ -564,41 +565,41 @@ MODULE GCKPP_HETRATES
       !--------------------------------------------------------------------
       ! Get species concentrations [molec/cm3]
       !--------------------------------------------------------------------
-      IND = Ind_( 'NIT' )
-      IF (IND .le. 0) THEN
-         SPC_NIT    = 0.0e+0_fp
-      ELSE
-         SPC_NIT    = spcVec(IND)
-      ENDIF
+      ! IND = Ind_( 'NIT' )
+      ! IF (IND .le. 0) THEN
+      !    SPC_NIT    = 0.0e+0_fp
+      ! ELSE
+      !    SPC_NIT    = spcVec(IND)
+      ! ENDIF
 
-      !EEM: Add for ClNO2 yield calculation
-      IND = Ind_( 'SALA' )
-      IF (IND .le. 0) THEN
-         SPC_SALA    = 0.0e+0_fp
-      ELSE
-         SPC_SALA    = spcVec(IND)
-      ENDIF
+      ! !EEM: Add for ClNO2 yield calculation
+      ! IND = Ind_( 'SALA' )
+      ! IF (IND .le. 0) THEN
+      !    SPC_SALA    = 0.0e+0_fp
+      ! ELSE
+      !    SPC_SALA    = spcVec(IND)
+      ! ENDIF
 
-      IND = Ind_('SO4')
-      IF (IND .le. 0) THEN
-         SPC_SO4    = 0.0e+0_fp
-      ELSE
-         SPC_SO4    = spcVec(IND)
-      ENDIF
+      ! IND = Ind_('SO4')
+      ! IF (IND .le. 0) THEN
+      !    SPC_SO4    = 0.0e+0_fp
+      ! ELSE
+      !    SPC_SO4    = spcVec(IND)
+      ! ENDIF
 
-      IND = Ind_('HBr')
-      IF (IND .le. 0) THEN
-         SPC_HBr    = 0.0e+0_fp
-      ELSE
-         SPC_HBr    = spcVec(IND)
-      ENDIF
+      ! IND = Ind_('HBr')
+      ! IF (IND .le. 0) THEN
+      !    SPC_HBr    = 0.0e+0_fp
+      ! ELSE
+      !    SPC_HBr    = spcVec(IND)
+      ! ENDIF
 
-      IND = Ind_('HOBr')
-      IF (IND .le. 0) THEN
-         SPC_HOBr   = 0.0e+0_fp
-      ELSE
-         SPC_HOBr   = spcVec(IND)
-      ENDIF
+      ! IND = Ind_('HOBr')
+      ! IF (IND .le. 0) THEN
+      !    SPC_HOBr   = 0.0e+0_fp
+      ! ELSE
+      !    SPC_HOBr   = spcVec(IND)
+      ! ENDIF
 
       !--------------------------------------------------------------------
       ! Get fields required for epoxide uptake hydrolysis (EPOXUPTK)
@@ -677,24 +678,24 @@ MODULE GCKPP_HETRATES
       hConc_SSC = 10.0**(-5.0e+0_fp)
 
       ! If not using BrSALA, manually set a depleted Br- concentration (mol/l)
-      useSaltBr = ((.not.fixedSaltBr).and.(Ind_('BrSALA') > 0))
-      IF (useSaltBr) THEN
-         brConc_Base = 0.0e+0_fp
-      ELSE
-         brConc_Base = 1.0e+4_fp
-      ENDIF
+      ! useSaltBr = ((.not.fixedSaltBr).and.(Ind_('BrSALA') > 0))
+      ! IF (useSaltBr) THEN
+      !    brConc_Base = 0.0e+0_fp
+      ! ELSE
+      !    brConc_Base = 1.0e+4_fp
+      ! ENDIF
 
-      ! Get the concentration of Br/Cl in clouds
-      CALL Get_Halide_CldConc(spcVec(Ind_('HBr')),spcVec(Ind_('HCl')),&
-                              VLiq, VIce, VAir, CLDFr, TempK, xArea(8),&
-                              xRadi(8), brConc_Cld, clConc_Cld)
+      ! ! Get the concentration of Br/Cl in clouds
+      ! CALL Get_Halide_CldConc(spcVec(Ind_('HBr')),spcVec(Ind_('HCl')),&
+      !                         VLiq, VIce, VAir, CLDFr, TempK, xArea(8),&
+      !                         xRadi(8), brConc_Cld, clConc_Cld)
 
-      ! Get the concentration of Br in sea-salt (in excess of any assumed
-      ! baseline)
-      CALL Get_Halide_SSAConc(spcVec(Ind_('BrSALA')),xArea(11),xRadi(11), &
-                              brConc_SSA)
-      CALL Get_Halide_SSAConc(spcVec(Ind_('BrSALC')),xArea(12),xRadi(12), &
-                              brConc_SSC)
+      ! ! Get the concentration of Br in sea-salt (in excess of any assumed
+      ! ! baseline)
+      ! CALL Get_Halide_SSAConc(spcVec(Ind_('BrSALA')),xArea(11),xRadi(11), &
+      !                         brConc_SSA)
+      ! CALL Get_Halide_SSAConc(spcVec(Ind_('BrSALC')),xArea(12),xRadi(12), &
+      !                         brConc_SSC)
 
       !--------------------------------------------------------------------
       !  Get parameters for HOBr + S(IV)
@@ -718,288 +719,288 @@ MODULE GCKPP_HETRATES
       !--------------------------------------------------------------------
 
       ! Zero the HET array
-      HET = 0.0_dp
+       HET = 0.0_dp
 
-      ! Calculate genuine first-order uptake reactions first
-      HET(ind_HO2,    1) = HetHO2(        MW_HO2,    2E-1_fp)
-      HET(ind_NO2,    1) = HetNO2(        MW_NO2,    1E-4_fp)
-      HET(ind_NO3,    1) = HetNO3(        MW_NO3,    1E-1_fp)
-      HET(ind_GLYX,   1) = HetGLYX(       MW_GLYX,   1E-1_fp)
-      HET(ind_MGLY,   1) = HetMGLY(       MW_MGLY,   1E-1_fp)
-      HET(ind_IEPOXA, 1) = HetIEPOX(      MW_IEPOXA, 1E-1_fp)
-      HET(ind_IEPOXB, 1) = HetIEPOX(      MW_IEPOXB, 1E-1_fp)
-      HET(ind_IEPOXD, 1) = HetIEPOX(      MW_IEPOXD, 1E-1_fp)
-      HET(ind_HMML,   1) = HetIMAE(       MW_HMML,   1E-1_fp)
-      HET(ind_PYAC,   1) = HetMGLY(       MW_PYAC,   1E-1_fp)
-      HET(ind_ICHE,   1) = HetIEPOX(      MW_ICHE,   1E-1_fp)
-      HET(ind_LVOC,   1) = HetLVOC(       MW_LVOC,   1E+0_fp)
-      HET(ind_IHN1,   1) = HetISOPND(     MW_IHN1,   5E-3_fp)
-      HET(ind_IHN2,   1) = HetISOPNB(     MW_IHN2,   5E-2_fp)
-      HET(ind_IHN3,   1) = HetISOPNB(     MW_IHN3,   5E-3_fp)
-      HET(ind_IHN4,   1) = HetISOPND(     MW_IHN4,   5E-3_fp)
-      HET(ind_INPB,   1) = HetISOPNB(     MW_INPB,   5E-3_fp)
-      HET(ind_INPD,   1) = HetISOPND(     MW_INPD,   5E-3_fp)
-      HET(ind_MCRHN,  1) = HetMACRN(      MW_MCRHN,  5E-3_fp)
-      HET(ind_MCRHNB, 1) = HetMACRN(      MW_MCRHNB, 5E-3_fp)
-      HET(ind_MVKN,   1) = HetMVKN(       MW_MVKN,   5E-3_fp)
-      HET(ind_R4N2,   1) = HetR4N2(       MW_R4N2,   5E-3_fp)
-      HET(ind_IDN,    1) = HetDHDN(       MW_IDN,    5E-3_fp)
-      HET(ind_ITHN,   1) = HetDHDN(       MW_ITHN,   5E-3_fp)
-      HET(ind_ITCN,   1) = HetDHDN(       MW_ITCN,   5E-3_fp)
-      HET(ind_MONITS, 1) = HetMONITS(     MW_MONITS, 1E-2_fp)
-      HET(ind_MONITU, 1) = HetMONITU(     MW_MONITU, 1E-2_fp)
-      HET(ind_HONIT,  1) = HetHONIT(      MW_HONIT,  1E-2_fp)
-      HET(ind_IONITA, 1) = HetIONITA(     MW_IONITA, 1E-1_fp)
-      HET(ind_MONITA, 1) = HetMONITA(     MW_MONITA, 1E-1_fp)
+      ! ! Calculate genuine first-order uptake reactions first
+      ! HET(ind_HO2,    1) = HetHO2(        MW_HO2,    2E-1_fp)
+      ! HET(ind_NO2,    1) = HetNO2(        MW_NO2,    1E-4_fp)
+      ! HET(ind_NO3,    1) = HetNO3(        MW_NO3,    1E-1_fp)
+      ! HET(ind_GLYX,   1) = HetGLYX(       MW_GLYX,   1E-1_fp)
+      ! HET(ind_MGLY,   1) = HetMGLY(       MW_MGLY,   1E-1_fp)
+      ! HET(ind_IEPOXA, 1) = HetIEPOX(      MW_IEPOXA, 1E-1_fp)
+      ! HET(ind_IEPOXB, 1) = HetIEPOX(      MW_IEPOXB, 1E-1_fp)
+      ! HET(ind_IEPOXD, 1) = HetIEPOX(      MW_IEPOXD, 1E-1_fp)
+      ! HET(ind_HMML,   1) = HetIMAE(       MW_HMML,   1E-1_fp)
+      ! HET(ind_PYAC,   1) = HetMGLY(       MW_PYAC,   1E-1_fp)
+      ! HET(ind_ICHE,   1) = HetIEPOX(      MW_ICHE,   1E-1_fp)
+      ! HET(ind_LVOC,   1) = HetLVOC(       MW_LVOC,   1E+0_fp)
+      ! HET(ind_IHN1,   1) = HetISOPND(     MW_IHN1,   5E-3_fp)
+      ! HET(ind_IHN2,   1) = HetISOPNB(     MW_IHN2,   5E-2_fp)
+      ! HET(ind_IHN3,   1) = HetISOPNB(     MW_IHN3,   5E-3_fp)
+      ! HET(ind_IHN4,   1) = HetISOPND(     MW_IHN4,   5E-3_fp)
+      ! HET(ind_INPB,   1) = HetISOPNB(     MW_INPB,   5E-3_fp)
+      ! HET(ind_INPD,   1) = HetISOPND(     MW_INPD,   5E-3_fp)
+      ! HET(ind_MCRHN,  1) = HetMACRN(      MW_MCRHN,  5E-3_fp)
+      ! HET(ind_MCRHNB, 1) = HetMACRN(      MW_MCRHNB, 5E-3_fp)
+      ! HET(ind_MVKN,   1) = HetMVKN(       MW_MVKN,   5E-3_fp)
+      ! HET(ind_R4N2,   1) = HetR4N2(       MW_R4N2,   5E-3_fp)
+      ! HET(ind_IDN,    1) = HetDHDN(       MW_IDN,    5E-3_fp)
+      ! HET(ind_ITHN,   1) = HetDHDN(       MW_ITHN,   5E-3_fp)
+      ! HET(ind_ITCN,   1) = HetDHDN(       MW_ITCN,   5E-3_fp)
+      ! HET(ind_MONITS, 1) = HetMONITS(     MW_MONITS, 1E-2_fp)
+      ! HET(ind_MONITU, 1) = HetMONITU(     MW_MONITU, 1E-2_fp)
+      ! HET(ind_HONIT,  1) = HetHONIT(      MW_HONIT,  1E-2_fp)
+      ! HET(ind_IONITA, 1) = HetIONITA(     MW_IONITA, 1E-1_fp)
+      ! HET(ind_MONITA, 1) = HetMONITA(     MW_MONITA, 1E-1_fp)
 
-      ! First-order loss in clouds
-      HET(ind_NO3,    1) = HET(ind_NO3, 1) + &
-                           CloudHet( 'NO3', CldFr, Aliq, Aice, rLiq, rIce, TempK, XDenA )
-      HET(ind_N2O5,   4) = CloudHet( 'N2O5',CldFr, Aliq, Aice, rLiq, rIce, TempK, XDenA )
+      ! ! First-order loss in clouds
+      ! HET(ind_NO3,    1) = HET(ind_NO3, 1) + &
+      !                      CloudHet( 'NO3', CldFr, Aliq, Aice, rLiq, rIce, TempK, XDenA )
+      ! HET(ind_N2O5,   4) = CloudHet( 'N2O5',CldFr, Aliq, Aice, rLiq, rIce, TempK, XDenA )
 
-      ! Now calculate reaction rates where the educt can be consumed.
-      ! kIIR1Ltd: Assume that the first reactant is limiting. Assume that the
-      ! second reactant is "abundant" and calculate the overall rate based on
-      ! the uptake rate of the first reactant only.
-      HetTemp(1:2) = HETN2O5(1.08E2_fp, 1E-1_fp)
-      HET(ind_N2O5,  1) = kIIR1Ltd( spcVec, Ind_('N2O5'), Ind_('H2O'), &
-                                        HetTemp(1))
-      State_Chm%GammaN2O5(I,J,L,1) = HetTemp(2)
+      ! ! Now calculate reaction rates where the educt can be consumed.
+      ! ! kIIR1Ltd: Assume that the first reactant is limiting. Assume that the
+      ! ! second reactant is "abundant" and calculate the overall rate based on
+      ! ! the uptake rate of the first reactant only.
+      ! HetTemp(1:2) = HETN2O5(1.08E2_fp, 1E-1_fp)
+      ! HET(ind_N2O5,  1) = kIIR1Ltd( spcVec, Ind_('N2O5'), Ind_('H2O'), &
+      !                                   HetTemp(1))
+      ! State_Chm%GammaN2O5(I,J,L,1) = HetTemp(2)
 
       !--------------------------------------------------------------------
       ! Br/Cl heterogeneous chemistry
       !--------------------------------------------------------------------
-      IF (Ind_('ClNO3') > 0) THEN
+      ! IF (Ind_('ClNO3') > 0) THEN
 
-         !----------------------------------------------------------------
-         ! ClNO3 and BrNO3 hydrolysis (SDE 2016-12-21)
-         !----------------------------------------------------------------
-         kITemp = HETBrNO3_JS( XDenA, rLiq, rIce, ALiq, AIce, TempK )
-         HET(ind_BrNO3, 1) = kIIR1Ltd( spcVec, Ind_('BrNO3'), Ind_('H2O'), &
-                                       kITemp, HetMinLife)
-         kITemp = HETClNO3_JS( XDenA, rLiq, rIce, ALiq, AIce, TempK )
-         HET(ind_ClNO3, 1) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('H2O'), &
-                                       kITemp, HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! ClNO3 and BrNO3 hydrolysis (SDE 2016-12-21)
+      !    !----------------------------------------------------------------
+      !    kITemp = HETBrNO3_JS( XDenA, rLiq, rIce, ALiq, AIce, TempK )
+      !    HET(ind_BrNO3, 1) = kIIR1Ltd( spcVec, Ind_('BrNO3'), Ind_('H2O'), &
+      !                                  kITemp, HetMinLife)
+      !    kITemp = HETClNO3_JS( XDenA, rLiq, rIce, ALiq, AIce, TempK )
+      !    HET(ind_ClNO3, 1) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('H2O'), &
+      !                                  kITemp, HetMinLife)
 
-         !----------------------------------------------------------------
-         ! HOBr + HBr (TMS index: hhc06)
-         !----------------------------------------------------------------
-         kITemp = HETHOBr_HBr_JS( XDenA, rLiq, rIce, ALiq, AIce, VAir, TempK, &
-                           hConc_Sul, hConc_LCl, hConc_ICl, clConc_Cld, &
-                           brConc_Cld, HSO3conc_Cld, SO3conc_Cld )
-         HET(ind_HOBr,  1) = kIIR1Ltd( spcVec, Ind_('HOBr'),  Ind_('HBr'), &
-                                       kITemp, HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! HOBr + HBr (TMS index: hhc06)
+      !    !----------------------------------------------------------------
+      !    kITemp = HETHOBr_HBr_JS( XDenA, rLiq, rIce, ALiq, AIce, VAir, TempK, &
+      !                      hConc_Sul, hConc_LCl, hConc_ICl, clConc_Cld, &
+      !                      brConc_Cld, HSO3conc_Cld, SO3conc_Cld )
+      !    HET(ind_HOBr,  1) = kIIR1Ltd( spcVec, Ind_('HOBr'),  Ind_('HBr'), &
+      !                                  kITemp, HetMinLife)
 
-         !----------------------------------------------------------------
-         ! HOBr + HCl (TMS index: hhc03)
-         !----------------------------------------------------------------
-         kITemp = HETHOBr_HCl_JS( XDenA, rLiq, rIce, ALiq, AIce, VAir, TempK, &
-                                  hConc_Sul, hConc_LCl, hConc_ICl, clConc_Cld, &
-                                  brConc_Cld, HSO3conc_Cld, SO3conc_Cld )
-         HET(ind_HOBr,  2) = kIIR1Ltd( spcVec, Ind_('HOBr'),  Ind_('HCl'), &
-                                       kITemp, HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! HOBr + HCl (TMS index: hhc03)
+      !    !----------------------------------------------------------------
+      !    kITemp = HETHOBr_HCl_JS( XDenA, rLiq, rIce, ALiq, AIce, VAir, TempK, &
+      !                             hConc_Sul, hConc_LCl, hConc_ICl, clConc_Cld, &
+      !                             brConc_Cld, HSO3conc_Cld, SO3conc_Cld )
+      !    HET(ind_HOBr,  2) = kIIR1Ltd( spcVec, Ind_('HOBr'),  Ind_('HCl'), &
+      !                                  kITemp, HetMinLife)
 
-         !----------------------------------------------------------------
-         ! HOBr + BrSalA/C (TMS index: hhc07/08)
-         !----------------------------------------------------------------
-         ! NOTE: This has not been fully tested, as the initial simulations had
-         ! near-zero BrSALA and BrSALC
-         kITemp = HETHOBr_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), TempK, &
-                                 hConc_SSA, 0.5e+0_fp, brConc_SSA, 2 )
-         HET(ind_HOBr,  4) = kIIR1Ltd( spcVec, Ind_('HOBr'),  Ind_('BrSALA'), &
-                                       kITemp, HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! HOBr + BrSalA/C (TMS index: hhc07/08)
+      !    !----------------------------------------------------------------
+      !    ! NOTE: This has not been fully tested, as the initial simulations had
+      !    ! near-zero BrSALA and BrSALC
+      !    kITemp = HETHOBr_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), TempK, &
+      !                            hConc_SSA, 0.5e+0_fp, brConc_SSA, 2 )
+      !    HET(ind_HOBr,  4) = kIIR1Ltd( spcVec, Ind_('HOBr'),  Ind_('BrSALA'), &
+      !                                  kITemp, HetMinLife)
 
-         kITemp = HETHOBr_SS_JS( XDenA, xRadi(12), xArea(12), SSAlk(2), TempK, &
-                                 hConc_SSC, 0.5e+0_fp, brConc_SSC, 2 )
-         HET(ind_HOBr,  5) = kIIR1Ltd( spcVec, Ind_('HOBr'),  Ind_('BrSALC'), &
-                                       kITemp, HetMinLife)
+      !    kITemp = HETHOBr_SS_JS( XDenA, xRadi(12), xArea(12), SSAlk(2), TempK, &
+      !                            hConc_SSC, 0.5e+0_fp, brConc_SSC, 2 )
+      !    HET(ind_HOBr,  5) = kIIR1Ltd( spcVec, Ind_('HOBr'),  Ind_('BrSALC'), &
+      !                                  kITemp, HetMinLife)
 
-         !----------------------------------------------------------------
-         ! HOBr + ClSALA/C (TMS index: hhc04/05)
-         !----------------------------------------------------------------
-         ! NOTE: Cl- in salt is assumed to always be in excess, so we assume a
-         ! molarity of 0.5 mol/L. This reaction is also pseudo-first order, so
-         ! conversion to a second-order rate constant is not necessary.
-         kITemp = HETHOBr_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), &
-                                 TempK, hConc_SSA, 0.5e+0_fp, brConc_SSA, 1 )
-         kITemp = kITemp + &
-                  HETHOBr_SS_JS( XDenA, xRadi(12), xArea(12), SSAlk(2), &
-                                 TempK, hConc_SSC, 0.5e+0_fp, brConc_SSC, 1 )
-         HET(ind_HOBr,  3) = kITemp
+      !    !----------------------------------------------------------------
+      !    ! HOBr + ClSALA/C (TMS index: hhc04/05)
+      !    !----------------------------------------------------------------
+      !    ! NOTE: Cl- in salt is assumed to always be in excess, so we assume a
+      !    ! molarity of 0.5 mol/L. This reaction is also pseudo-first order, so
+      !    ! conversion to a second-order rate constant is not necessary.
+      !    kITemp = HETHOBr_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), &
+      !                            TempK, hConc_SSA, 0.5e+0_fp, brConc_SSA, 1 )
+      !    kITemp = kITemp + &
+      !             HETHOBr_SS_JS( XDenA, xRadi(12), xArea(12), SSAlk(2), &
+      !                            TempK, hConc_SSC, 0.5e+0_fp, brConc_SSC, 1 )
+      !    HET(ind_HOBr,  3) = kITemp
 
-         !----------------------------------------------------------------
-         ! HOBr + HSO3-(aq) (QJC index: EhcHSHOBCld)
-         !----------------------------------------------------------------
-         ! This reaction is first order, so no kII calculation is required
-         kITemp = HETHOBr_HSO3( XDenA, rLiq, rIce, ALiq, AIce, VAir, TempK, &
-                             hConc_Sul, hConc_LCl, hConc_ICl, clConc_Cld, &
-                             brConc_Cld, HSO3conc_Cld, SO3conc_Cld )
+      !    !----------------------------------------------------------------
+      !    ! HOBr + HSO3-(aq) (QJC index: EhcHSHOBCld)
+      !    !----------------------------------------------------------------
+      !    ! This reaction is first order, so no kII calculation is required
+      !    kITemp = HETHOBr_HSO3( XDenA, rLiq, rIce, ALiq, AIce, VAir, TempK, &
+      !                        hConc_Sul, hConc_LCl, hConc_ICl, clConc_Cld, &
+      !                        brConc_Cld, HSO3conc_Cld, SO3conc_Cld )
 
-         ! Make sure sulfate produced is less than SO2 available (qjc, 06/20/16)
-         HET(ind_HOBr,  6) = kITemp * fupdateHOBr
+      !    ! Make sure sulfate produced is less than SO2 available (qjc, 06/20/16)
+      !    HET(ind_HOBr,  6) = kITemp * fupdateHOBr
 
-         !----------------------------------------------------------------
-         ! HOBr + SO3--(aq) (QJC index: EhcSOHOBCld)
-         !----------------------------------------------------------------
-         ! This reaction is first order, so no kII calculation is required
-         kITemp = HETHOBr_SO3( XDenA, rLiq, rIce, ALiq, AIce, VAir, TempK, &
-                             hConc_Sul, hConc_LCl, hConc_ICl, clConc_Cld, &
-                             brConc_Cld, HSO3conc_Cld, SO3conc_Cld )
+      !    !----------------------------------------------------------------
+      !    ! HOBr + SO3--(aq) (QJC index: EhcSOHOBCld)
+      !    !----------------------------------------------------------------
+      !    ! This reaction is first order, so no kII calculation is required
+      !    kITemp = HETHOBr_SO3( XDenA, rLiq, rIce, ALiq, AIce, VAir, TempK, &
+      !                        hConc_Sul, hConc_LCl, hConc_ICl, clConc_Cld, &
+      !                        brConc_Cld, HSO3conc_Cld, SO3conc_Cld )
 
-         ! Make sure sulfate produced is less than SO2 available (qjc, 06/20/16)
-         HET(ind_HOBr,  7) = kITemp * fupdateHOBr
+      !    ! Make sure sulfate produced is less than SO2 available (qjc, 06/20/16)
+      !    HET(ind_HOBr,  7) = kITemp * fupdateHOBr
 
-         !----------------------------------------------------------------
-         ! ClNO3 + BrSALA/C (TMS index: hhc10/11)
-         !----------------------------------------------------------------
-         ! NOTE: This has not been fully tested, as the initial simulations had
-         ! near-zero BrSALA and BrSALC
-         kITemp = HETClNO3_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), &
-                                  TempK, brConc_SSA)
-         HET(ind_ClNO3, 4) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('BrSALA'), &
-                                       kITemp, HetMinLife)
-         kITemp = HETClNO3_SS_JS( XDenA, xRadi(12), xArea(12), SSAlk(2), &
-                                  TempK, brConc_SSC)
-         HET(ind_ClNO3, 5) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('BrSALC'), &
-                                       kITemp, HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! ClNO3 + BrSALA/C (TMS index: hhc10/11)
+      !    !----------------------------------------------------------------
+      !    ! NOTE: This has not been fully tested, as the initial simulations had
+      !    ! near-zero BrSALA and BrSALC
+      !    kITemp = HETClNO3_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), &
+      !                             TempK, brConc_SSA)
+      !    HET(ind_ClNO3, 4) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('BrSALA'), &
+      !                                  kITemp, HetMinLife)
+      !    kITemp = HETClNO3_SS_JS( XDenA, xRadi(12), xArea(12), SSAlk(2), &
+      !                             TempK, brConc_SSC)
+      !    HET(ind_ClNO3, 5) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('BrSALC'), &
+      !                                  kITemp, HetMinLife)
 
-         !----------------------------------------------------------------
-         ! ClNO3 + HCl
-         !----------------------------------------------------------------
-	 ! NOTE: the restriction of these reactions to the troposphere has been
-         ! restored - TMS (2017/04/06 )
-         HET(ind_ClNO3, 2) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('HCl'), &
-                             HETClNO3_HCl( 0.97E2_fp, 0E+0_fp), HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! ClNO3 + HCl
+      !    !----------------------------------------------------------------
+      !    ! NOTE: the restriction of these reactions to the troposphere has been
+      !    ! restored - TMS (2017/04/06 )
+      !    HET(ind_ClNO3, 2) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('HCl'), &
+      !                        HETClNO3_HCl( 0.97E2_fp, 0E+0_fp), HetMinLife)
 
-         !----------------------------------------------------------------
-         ! ClNO3 + HBr (TMS index: hhc09)
-         !----------------------------------------------------------------
-         kITemp = HETClNO3_HBr_JS( xDenA, rLiq, rIce, ALiq, AIce, VAir, &
-                                   TempK, brConc_Cld, Input_Opt )
-         HET(ind_ClNO3, 3) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('HBr'), &
-                                       kITemp, HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! ClNO3 + HBr (TMS index: hhc09)
+      !    !----------------------------------------------------------------
+      !    kITemp = HETClNO3_HBr_JS( xDenA, rLiq, rIce, ALiq, AIce, VAir, &
+      !                              TempK, brConc_Cld, Input_Opt )
+      !    HET(ind_ClNO3, 3) = kIIR1Ltd( spcVec, Ind_('ClNO3'), Ind_('HBr'), &
+      !                                  kITemp, HetMinLife)
 
-         !----------------------------------------------------------------
-         ! HOCl + HCl and HOCl + HBr to take place in the troposphere
-         !----------------------------------------------------------------
-	 ! NOTE: the restriction of these reactions to the troposphere has been
-         ! restored - TMS (2017/04/06 )
-         HET(ind_HOCl,  1) = kIIR1Ltd( spcVec, Ind_('HOCl'),  Ind_('HCl'), &
-                             HETHOCl_HCl(  0.52E2_fp, 0E+0_fp, Input_Opt), &
-                             HetMinLife)
-         HET(ind_HOCl,  2) = kIIR1Ltd( spcVec, Ind_('HOCl'),  Ind_('HBr'), &
-                             HETHOCl_HBr(  0.52E2_fp, 0E+0_fp, Input_Opt), &
-                             HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! HOCl + HCl and HOCl + HBr to take place in the troposphere
+      !    !----------------------------------------------------------------
+      !    ! NOTE: the restriction of these reactions to the troposphere has been
+      !    ! restored - TMS (2017/04/06 )
+      !    HET(ind_HOCl,  1) = kIIR1Ltd( spcVec, Ind_('HOCl'),  Ind_('HCl'), &
+      !                        HETHOCl_HCl(  0.52E2_fp, 0E+0_fp, Input_Opt), &
+      !                        HetMinLife)
+      !    HET(ind_HOCl,  2) = kIIR1Ltd( spcVec, Ind_('HOCl'),  Ind_('HBr'), &
+      !                        HETHOCl_HBr(  0.52E2_fp, 0E+0_fp, Input_Opt), &
+      !                        HetMinLife)
 
-         !----------------------------------------------------------------
-         ! O3 + Br- calculation (TMS index: hhc12)
-         !----------------------------------------------------------------
-         kITemp = HETO3_HBr_JS( XDenA, rLiq, rIce, ALiq, AIce, VAir, &
-                                TempK, brConc_Cld, spcVec(Ind_('O3')))
-         HET(ind_O3,    1) = kIIR1Ltd( spcVec, Ind_('O3'), Ind_('HBr'), &
-                                       kITemp, HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! O3 + Br- calculation (TMS index: hhc12)
+      !    !----------------------------------------------------------------
+      !    kITemp = HETO3_HBr_JS( XDenA, rLiq, rIce, ALiq, AIce, VAir, &
+      !                           TempK, brConc_Cld, spcVec(Ind_('O3')))
+      !    HET(ind_O3,    1) = kIIR1Ltd( spcVec, Ind_('O3'), Ind_('HBr'), &
+      !                                  kITemp, HetMinLife)
 
-         !----------------------------------------------------------------
-         ! O3 + BrSALA/C calculations (TMS index: hhc13/14)
-         !----------------------------------------------------------------
-         kITemp = HETO3_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), &
-                               TempK, brConc_SSA, spcVec(Ind_('O3')))
-         HET(ind_O3,    2) = kIIR1Ltd( spcVec, Ind_('O3'), Ind_('BrSALA'), &
-                                       kITemp, HetMinLife)
-         kITemp = HETO3_SS_JS( XDenA, xRadi(12), xArea(12), SSAlk(2), &
-                               TempK, brConc_SSC, spcVec(Ind_('O3')))
-         HET(ind_O3,    3) = kIIR1Ltd( spcVec, Ind_('O3'), Ind_('BrSALC'), &
-                                       kITemp, HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! O3 + BrSALA/C calculations (TMS index: hhc13/14)
+      !    !----------------------------------------------------------------
+      !    kITemp = HETO3_SS_JS( XDenA, xRadi(11), xArea(11), SSAlk(1), &
+      !                          TempK, brConc_SSA, spcVec(Ind_('O3')))
+      !    HET(ind_O3,    2) = kIIR1Ltd( spcVec, Ind_('O3'), Ind_('BrSALA'), &
+      !                                  kITemp, HetMinLife)
+      !    kITemp = HETO3_SS_JS( XDenA, xRadi(12), xArea(12), SSAlk(2), &
+      !                          TempK, brConc_SSC, spcVec(Ind_('O3')))
+      !    HET(ind_O3,    3) = kIIR1Ltd( spcVec, Ind_('O3'), Ind_('BrSALC'), &
+      !                                  kITemp, HetMinLife)
 
-         !----------------------------------------------------------------
-         ! Cl uptake calculations (TMS index: hhc15/16)
-         !----------------------------------------------------------------
-         ! Cl is always assumed to be in excess in sea salt, so any HCl "taken
-         ! up" is just removed. This may change in the future. This reaction is
-         ! also first order, so no kII calculation is required
-         kITemp = HETHXUptake_JS( XDenA, xRadi(11), xArea(11), TempK, 1)
-         HET(ind_HCl,   1) = kITemp
-         kITemp = HETHXUptake_JS( XDenA, xRadi(12), xArea(12), TempK, 1)
-         HET(ind_HCl,   2) = kITemp
+      !    !----------------------------------------------------------------
+      !    ! Cl uptake calculations (TMS index: hhc15/16)
+      !    !----------------------------------------------------------------
+      !    ! Cl is always assumed to be in excess in sea salt, so any HCl "taken
+      !    ! up" is just removed. This may change in the future. This reaction is
+      !    ! also first order, so no kII calculation is required
+      !    kITemp = HETHXUptake_JS( XDenA, xRadi(11), xArea(11), TempK, 1)
+      !    HET(ind_HCl,   1) = kITemp
+      !    kITemp = HETHXUptake_JS( XDenA, xRadi(12), xArea(12), TempK, 1)
+      !    HET(ind_HCl,   2) = kITemp
 
-         !----------------------------------------------------------------
-         ! Br uptake calculation - forms BrSALA/C (TMS index: hhc17/18)
-         !----------------------------------------------------------------
-         ! First-order reactions, no calculation of kII required
-         kITemp = HETHXUptake_JS( XDenA, xRadi(11), xArea(11), TempK, 2)
-         HET(ind_HBr,   1) = kITemp
-         kITemp = HETHXUptake_JS( XDenA, xRadi(12), xArea(12), TempK, 2)
-         HET(ind_HBr,   2) = kITemp
+      !    !----------------------------------------------------------------
+      !    ! Br uptake calculation - forms BrSALA/C (TMS index: hhc17/18)
+      !    !----------------------------------------------------------------
+      !    ! First-order reactions, no calculation of kII required
+      !    kITemp = HETHXUptake_JS( XDenA, xRadi(11), xArea(11), TempK, 2)
+      !    HET(ind_HBr,   1) = kITemp
+      !    kITemp = HETHXUptake_JS( XDenA, xRadi(12), xArea(12), TempK, 2)
+      !    HET(ind_HBr,   2) = kITemp
 
-         !----------------------------------------------------------------
-         ! BrNO3 + HCl into the troposphere
-         !----------------------------------------------------------------
-	 ! NOTE: the restriction of these reactions to the troposphere has been
-         ! restored - TMS (2017/04/06 )
-         HET(ind_BrNO3, 2) = kIIR1Ltd( spcVec, Ind_('BrNO3'), Ind_('HCl'), &
-                             HETBrNO3_HCl(  1.42E2_fp, 0E+0_fp), HetMinLife)
+      !    !----------------------------------------------------------------
+      !    ! BrNO3 + HCl into the troposphere
+      !    !----------------------------------------------------------------
+      !    ! NOTE: the restriction of these reactions to the troposphere has been
+      !    ! restored - TMS (2017/04/06 )
+      !    HET(ind_BrNO3, 2) = kIIR1Ltd( spcVec, Ind_('BrNO3'), Ind_('HCl'), &
+      !                        HETBrNO3_HCl(  1.42E2_fp, 0E+0_fp), HetMinLife)
 
-         !----------------------------------------------------------------
-         ! N2O5 + HCl on sulfate
-         !----------------------------------------------------------------
-	 ! NOTE: this extension of calculation in troposphere has been removed
-         !  (TMS 17/04/10)
-         ! 1st HetTemp() parameter is kN2O5 loss rate coefficient, 2nd is gamma
-         HetTemp(1:2) = HETN2O5_HCl( 1.08E2_fp, 0.0e+0_fp, Input_Opt )
-         HET(ind_N2O5,  2) = kIIR1Ltd( spcVec, Ind_('N2O5'), Ind_('HCl'), &
-                                       HetTemp(1), HetMinLife)
-         State_Chm%GammaN2O5(I,J,L,2) = HetTemp(2)
+      !    !----------------------------------------------------------------
+      !    ! N2O5 + HCl on sulfate
+      !    !----------------------------------------------------------------
+      !    ! NOTE: this extension of calculation in troposphere has been removed
+      !    !  (TMS 17/04/10)
+      !    ! 1st HetTemp() parameter is kN2O5 loss rate coefficient, 2nd is gamma
+      !    HetTemp(1:2) = HETN2O5_HCl( 1.08E2_fp, 0.0e+0_fp, Input_Opt )
+      !    HET(ind_N2O5,  2) = kIIR1Ltd( spcVec, Ind_('N2O5'), Ind_('HCl'), &
+      !                                  HetTemp(1), HetMinLife)
+      !    State_Chm%GammaN2O5(I,J,L,2) = HetTemp(2)
 
-         !----------------------------------------------------------------
-         ! Reaction of N2O5 with sea-salt Cl-
-         ! (assumed to be in excess, so no kII calculation)
-         !----------------------------------------------------------------
-         ! 1st HetTemp() parameter is kN2O5 loss rate coefficient, 2nd is gamma
-         ! 3rd is the ClNO2 yield (currently set to zero, add in future update)
-         HetTemp(1:3) = HETN2O5_SS(1.08E2_fp, 1E-1_fp)
-         HET(ind_N2O5,  3) = HetTemp(1)
-         State_Chm%GammaN2O5(I,J,L,3) = HetTemp(2)
-         State_Chm%GammaN2O5(I,J,L,4) = HetTemp(3)
-      ENDIF
+      !    !----------------------------------------------------------------
+      !    ! Reaction of N2O5 with sea-salt Cl-
+      !    ! (assumed to be in excess, so no kII calculation)
+      !    !----------------------------------------------------------------
+      !    ! 1st HetTemp() parameter is kN2O5 loss rate coefficient, 2nd is gamma
+      !    ! 3rd is the ClNO2 yield (currently set to zero, add in future update)
+      !    HetTemp(1:3) = HETN2O5_SS(1.08E2_fp, 1E-1_fp)
+      !    HET(ind_N2O5,  3) = HetTemp(1)
+      !    State_Chm%GammaN2O5(I,J,L,3) = HetTemp(2)
+      !    State_Chm%GammaN2O5(I,J,L,4) = HetTemp(3)
+      ! ENDIF
 
-      ! Iodine chemistry
-      IF (Ind_('I2').gt.0) THEN
+      ! ! Iodine chemistry
+      ! IF (Ind_('I2').gt.0) THEN
 
-         ! Uptake reactions (forming AERI, ISALA and ISALC)
-         HET(ind_HI,   1) = HETIUptake( MW_HI,   0.10e+0_fp,  8, Input_Opt )
-         HET(ind_HI,   2) = HETIUptake( MW_HI,   0.10e+0_fp, 11, Input_Opt )
-         HET(ind_HI,   3) = HETIUptake( MW_HI,   0.10e+0_fp, 12, Input_Opt )
-         HET(ind_I2O2, 1) = HETIUptake( MW_I2O2, 0.02e+0_fp,  8, Input_Opt )
-         HET(ind_I2O2, 2) = HETIUptake( MW_I2O2, 0.02e+0_fp, 11, Input_Opt )
-         HET(ind_I2O2, 3) = HETIUptake( MW_I2O2, 0.02e+0_fp, 12, Input_Opt )
-         HET(ind_I2O3, 1) = HETIUptake( MW_I2O3, 0.02e+0_fp,  8, Input_Opt )
-         HET(ind_I2O3, 2) = HETIUptake( MW_I2O3, 0.02e+0_fp, 11, Input_Opt )
-         HET(ind_I2O3, 3) = HETIUptake( MW_I2O3, 0.02e+0_fp, 12, Input_Opt )
-         HET(ind_I2O4, 1) = HETIUptake( MW_I2O4, 0.02e+0_fp,  8, Input_Opt )
-         HET(ind_I2O4, 2) = HETIUptake( MW_I2O4, 0.02e+0_fp, 11, Input_Opt )
-         HET(ind_I2O4, 3) = HETIUptake( MW_I2O4, 0.02e+0_fp, 12, Input_Opt )
+      !    ! Uptake reactions (forming AERI, ISALA and ISALC)
+      !    HET(ind_HI,   1) = HETIUptake( MW_HI,   0.10e+0_fp,  8, Input_Opt )
+      !    HET(ind_HI,   2) = HETIUptake( MW_HI,   0.10e+0_fp, 11, Input_Opt )
+      !    HET(ind_HI,   3) = HETIUptake( MW_HI,   0.10e+0_fp, 12, Input_Opt )
+      !    HET(ind_I2O2, 1) = HETIUptake( MW_I2O2, 0.02e+0_fp,  8, Input_Opt )
+      !    HET(ind_I2O2, 2) = HETIUptake( MW_I2O2, 0.02e+0_fp, 11, Input_Opt )
+      !    HET(ind_I2O2, 3) = HETIUptake( MW_I2O2, 0.02e+0_fp, 12, Input_Opt )
+      !    HET(ind_I2O3, 1) = HETIUptake( MW_I2O3, 0.02e+0_fp,  8, Input_Opt )
+      !    HET(ind_I2O3, 2) = HETIUptake( MW_I2O3, 0.02e+0_fp, 11, Input_Opt )
+      !    HET(ind_I2O3, 3) = HETIUptake( MW_I2O3, 0.02e+0_fp, 12, Input_Opt )
+      !    HET(ind_I2O4, 1) = HETIUptake( MW_I2O4, 0.02e+0_fp,  8, Input_Opt )
+      !    HET(ind_I2O4, 2) = HETIUptake( MW_I2O4, 0.02e+0_fp, 11, Input_Opt )
+      !    HET(ind_I2O4, 3) = HETIUptake( MW_I2O4, 0.02e+0_fp, 12, Input_Opt )
 
-         ! These uptake reactions require non-acidic aerosol
-         ! Fine sea salt first
-         IF (SSAlk(1).gt.0.05) THEN
-            HET(ind_HOI,  1) = HETIUptake( MW_HOI,   0.01e+0_fp, 11, Input_Opt )
-            HET(ind_IONO, 1) = HETIUptake( MW_IONO,  0.02e+0_fp, 11, Input_Opt )
-            HET(ind_IONO2,1) = HETIUptake( MW_IONO2, 0.01e+0_fp, 11, Input_Opt )
-         ENDIF
+      !    ! These uptake reactions require non-acidic aerosol
+      !    ! Fine sea salt first
+      !    IF (SSAlk(1).gt.0.05) THEN
+      !       HET(ind_HOI,  1) = HETIUptake( MW_HOI,   0.01e+0_fp, 11, Input_Opt )
+      !       HET(ind_IONO, 1) = HETIUptake( MW_IONO,  0.02e+0_fp, 11, Input_Opt )
+      !       HET(ind_IONO2,1) = HETIUptake( MW_IONO2, 0.01e+0_fp, 11, Input_Opt )
+      !    ENDIF
 
-         ! Now coarse sea salt
-         IF (SSAlk(2).gt.0.05) THEN
-            HET(ind_HOI,  2) = HETIUptake( MW_HOI,   0.01e+0_fp, 12, Input_Opt )
-            HET(ind_IONO, 2) = HETIUptake( MW_IONO,  0.02e+0_fp, 12, Input_Opt )
-            HET(ind_IONO2,2) = HETIUptake( MW_IONO2, 0.01e+0_fp, 12, Input_Opt )
-         ENDIF
+      !    ! Now coarse sea salt
+      !    IF (SSAlk(2).gt.0.05) THEN
+      !       HET(ind_HOI,  2) = HETIUptake( MW_HOI,   0.01e+0_fp, 12, Input_Opt )
+      !       HET(ind_IONO, 2) = HETIUptake( MW_IONO,  0.02e+0_fp, 12, Input_Opt )
+      !       HET(ind_IONO2,2) = HETIUptake( MW_IONO2, 0.01e+0_fp, 12, Input_Opt )
+      !    ENDIF
 
-         ! Breakdown of iodine compounds on sea-salt
-         HET(ind_HOI,  3) = HETIXCycleSSA( MW_HOI,   0.01E+0_fp, SSAlk )
-         HET(ind_IONO, 3) = HETIXCycleSSA( MW_IONO,  0.02E+0_fp, SSAlk )
-         HET(ind_IONO2,3) = HETIXCycleSSA( MW_IONO2, 0.01E+0_fp, SSAlk )
+      !    ! Breakdown of iodine compounds on sea-salt
+      !    HET(ind_HOI,  3) = HETIXCycleSSA( MW_HOI,   0.01E+0_fp, SSAlk )
+      !    HET(ind_IONO, 3) = HETIXCycleSSA( MW_IONO,  0.02E+0_fp, SSAlk )
+      !    HET(ind_IONO2,3) = HETIXCycleSSA( MW_IONO2, 0.01E+0_fp, SSAlk )
 
-      ENDIF
+      ! ENDIF
 
       ! Nullify pointers
       NULLIFY( spcVec )

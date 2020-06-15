@@ -342,7 +342,7 @@ CONTAINS
 
        ! Get info about this species from the species database
        SpcInfo => State_Chm%SpcData(N)%Info
-
+       !PRINT *, SpcInfo, '----'
        ! isoprene oxidation counter species
        IF ( TRIM( SpcInfo%Name ) == 'LISOPOH' .or. &
             TRIM( SpcInfo%Name ) == 'LISOPNO3' ) THEN
@@ -365,6 +365,10 @@ CONTAINS
           State_Chm%Species(:,:,:,N) = 0e+0_fp
        ENDIF
 
+       IF ( TRIM( SpcInfo%Name ) == 'OH' ) THEN
+          State_Chm%Species(:,:,:,N) = 1e+6_fp
+       ENDIF
+
        ! Free pointer
        SpcInfo => NULL()
 
@@ -379,21 +383,21 @@ CONTAINS
     ENDIF
 
     ! Call RDAER to compute AOD for FAST-JX (skim, 02/03/11)
-    WAVELENGTH = 0
-    CALL RDAER( Input_Opt, State_Chm, State_Diag, State_Grid, State_Met, RC,  &
-                MONTH,     YEAR,       WAVELENGTH )
+    ! WAVELENGTH = 0
+    ! CALL RDAER( Input_Opt, State_Chm, State_Diag, State_Grid, State_Met, RC,  &
+    !             MONTH,     YEAR,       WAVELENGTH )
 
-    ! Trap potential errors
-    IF ( RC /= GC_SUCCESS ) THEN
-       ErrMsg = 'Error encountered in "RDAER"!'
-       CALL GC_Error( ErrMsg, RC, ThisLoc )
-       RETURN
-    ENDIF
+    ! ! Trap potential errors
+    ! IF ( RC /= GC_SUCCESS ) THEN
+    !    ErrMsg = 'Error encountered in "RDAER"!'
+    !    CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !    RETURN
+    ! ENDIF
 
-    !### Debug
-    IF ( prtDebug ) THEN
-       CALL DEBUG_MSG( '### Do_FlexChem: after RDAER' )
-    ENDIF
+    ! !### Debug
+    ! IF ( prtDebug ) THEN
+    !    CALL DEBUG_MSG( '### Do_FlexChem: after RDAER' )
+    ! ENDIF
 
     !=======================================================================
     ! If LDUST is turned on, then we have online dust aerosol in
@@ -461,26 +465,26 @@ CONTAINS
     !=======================================================================
     ! Call photolysis routine to compute J-Values
     !=======================================================================
-    IF ( Input_Opt%useTimers ) THEN
-       CALL Timer_End  ( "=> Gas-phase chem",     RC )
-       CALL Timer_Start( "=> FAST-JX photolysis", RC )
-    ENDIF
+    ! IF ( Input_Opt%useTimers ) THEN
+    !    CALL Timer_End  ( "=> Gas-phase chem",     RC )
+    !    CALL Timer_Start( "=> FAST-JX photolysis", RC )
+    ! ENDIF
 
     ! Do Photolysis
-    CALL FAST_JX( WAVELENGTH, Input_Opt,  State_Chm, &
-                  State_Diag, State_Grid, State_Met, RC )
+    ! CALL FAST_JX( WAVELENGTH, Input_Opt,  State_Chm, &
+    !               State_Diag, State_Grid, State_Met, RC )
 
-    ! Trap potential errors
-    IF ( RC /= GC_SUCCESS ) THEN
-       ErrMsg = 'Error encountered in "FAST_JX"!'
-       CALL GC_Error( ErrMsg, RC, ThisLoc )
-       RETURN
-    ENDIF
+    ! ! Trap potential errors
+    ! IF ( RC /= GC_SUCCESS ) THEN
+    !    ErrMsg = 'Error encountered in "FAST_JX"!'
+    !    CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !    RETURN
+    ! ENDIF
 
-    IF ( Input_Opt%useTimers ) THEN
-       CALL Timer_End  ( "=> FAST-JX photolysis", RC )
-       CALL Timer_Start( "=> Gas-phase chem",     RC )
-    ENDIF
+    ! IF ( Input_Opt%useTimers ) THEN
+    !    CALL Timer_End  ( "=> FAST-JX photolysis", RC )
+    !    CALL Timer_Start( "=> Gas-phase chem",     RC )
+    ! ENDIF
 
     !### Debug
     IF ( prtDebug ) THEN
@@ -775,9 +779,9 @@ CONTAINS
        !====================================================================
        ! Get rates for heterogeneous chemistry
        !====================================================================
-       IF ( DO_HETCHEM ) THEN
-          CALL SET_HET( I, J, L, Input_Opt, State_Chm, State_Met )
-       ENDIF
+        !IF ( DO_HETCHEM ) THEN
+        !   CALL SET_HET( I, J, L, Input_Opt, State_Chm, State_Met )
+        !ENDIF
 
        !====================================================================
        ! Initialize species concentrations
@@ -788,7 +792,9 @@ CONTAINS
 
           ! GEOS-Chem species ID
           SpcID = State_Chm%Map_KppSpc(N)
-
+          !PRINT *, N, SpcID, State_Chm%Map_KppSpc
+          SpcInfo => State_Chm%SpcData(N)%Info
+!          PRINT *, 'Name', SpcInfo%Name
           ! Initialize KPP species concentration array
           IF ( SpcID .eq. 0) THEN
              C(N) = 0.0_dp
@@ -800,15 +806,15 @@ CONTAINS
 
        ! Zero out dummy species index in KPP
        DO F = 1, NFAM
-          KppID = PL_Kpp_Id(F)
-          IF ( KppID > 0 ) C(KppID) = 0.0_dp
+         KppID = PL_Kpp_Id(F)
+         IF ( KppID > 0 ) C(KppID) = 0.0_dp
        ENDDO
 
-       IF ( .not. Input_Opt%LUCX ) THEN
+       !IF ( .not. Input_Opt%LUCX ) THEN
           ! Need to copy H2O to the C array for KPP (mps, 4/25/16)
           ! NOTE: H2O is a tracer in UCX and is obtained from State_Chm%Species
-          C(ind_H2O) = H2O
-       ENDIF
+       !   C(ind_H2O) = H2O
+       !ENDIF
 
        !==================================================================
        ! Update KPP rates
@@ -850,6 +856,8 @@ CONTAINS
 
        ! Zero all slots of RCNTRL
        RCNTRL    = 0.0_fp
+       !PRINT *, FIX
+       !PRINT *, VAR
 
        ! Starting value for integration time step
        RCNTRL(3) = State_Chm%KPPHvalue(I,J,L)
@@ -857,7 +865,8 @@ CONTAINS
        !=================================================================
        ! Integrate the box forwards
        !=================================================================
-
+       !PRINT *, '!', FIX
+       !PRINT *, VAR
        ! Call the KPP integrator
        CALL Integrate( TIN,    TOUT,    ICNTRL,      &
                        RCNTRL, ISTATUS, RSTATE, IERR )
@@ -1598,6 +1607,7 @@ CONTAINS
     USE ErrCode_Mod
     USE Gckpp_Monitor,    ONLY : Eqn_Names, Fam_Names
     USE Gckpp_Parameters, ONLY : nFam, nReact
+    !USE Gckpp_Parameters, ONLY : nReact
     USE Input_Opt_Mod,    ONLY : OptInput
     USE State_Chm_Mod,    ONLY : ChmState
     USE State_Chm_Mod,    ONLY : Ind_
@@ -1632,14 +1642,67 @@ CONTAINS
     !=======================================================================
     ! Init_FlexChem begins here!
     !=======================================================================
-
     ! Assume success
     RC       = GC_SUCCESS
 
     ! Do the following only if it is a full-chemistry simulation
     ! NOTE: If future specialty simulations use the KPP solver,
     ! modify the IF statement accordingly to allow initialization
-    IF ( .not. Input_Opt%ITS_A_FULLCHEM_SIM ) RETURN
+    IF ( Input_Opt%ITS_A_MERCURY_SIM ) THEN
+    !=======================================================================
+    ! Initialize variables
+    !=======================================================================
+    ErrMsg   = ''
+    ThisLoc  = ' -> at Init_FlexChem (in module GeosCore/flexchem_mod.F90)'
+    prtDebug = ( Input_Opt%LPRT .and. Input_Opt%amIRoot )
+
+    ! Debug output
+!    IF ( prtDebug ) THEN
+    IF ( .TRUE. ) THEN
+       WRITE( 6, 101 )
+101    FORMAT( '     - INIT_FLEXCHEM: Allocating arrays for FLEX_CHEMISTRY' )
+
+       WRITE( 6 ,'(a)' ) ' KPP Reaction Reference '
+       DO N = 1, NREACT
+          WRITE( 6, '(i8,a3,a85)' ) N,' | ',EQN_NAMES(N)
+       END DO
+    ENDIF
+
+    !--------------------------------------------------------------------
+    ! Pre-store the KPP indices for each KPP prod/loss species or family
+    !--------------------------------------------------------------------
+    
+    IF ( nFam > 0 ) THEN
+
+       ! Allocate mapping array for KPP Ids for ND65 bpch diagnostic
+       ALLOCATE( PL_Kpp_Id( nFam ), STAT=RC )
+       CALL GC_CheckVar( 'flexchem_mod.F90:PL_Kpp_Id', 0, RC )
+       IF ( RC /= GC_SUCCESS ) RETURN
+
+       ! Loop over all KPP prod/loss species
+       DO N = 1, nFam
+          ! NOTE: KppId is the KPP ID # for each of the prod and loss
+          ! diagnostic species.  This is the value used to index the
+          ! KPP "VAR" array (in module gckpp_Global.F90).
+          KppID = Ind_( TRIM ( Fam_Names(N) ), 'K' )
+
+          ! Exit if an invalid ID is encountered
+          ! IF ( KppId <= 0 ) THEN
+          !    ErrMsg = 'Invalid KPP ID for prod/loss species: '            // &
+          !              TRIM( Fam_Names(N) )
+          !    CALL GC_Error( ErrMsg, RC, ThisLoc )
+          !    RETURN
+          ! ENDIF
+
+          ! If the species ID is OK, save in ND65_Kpp_Id
+          PL_Kpp_Id(N) = KppId
+       ENDDO
+
+    ENDIF                       
+    ENDIF
+
+!    IF ( .not. Input_Opt%ITS_A_FULLCHEM_SIM ) RETURN
+    IF ( Input_Opt%ITS_A_FULLCHEM_SIM ) THEN
 
     !=======================================================================
     ! Initialize variables
@@ -1813,6 +1876,7 @@ CONTAINS
           RETURN
        ENDIF
 
+    ENDIF
     ENDIF
 
   END SUBROUTINE Init_FlexChem

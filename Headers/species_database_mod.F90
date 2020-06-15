@@ -6406,7 +6406,8 @@ CONTAINS
     ! For full-chemistry simulations with KPP, get the list of all of
     ! species names in the KPP mechanism, and their indices
     !=======================================================================
-    IF ( Input_Opt%ITS_A_FULLCHEM_SIM ) THEN
+    IF ( ( Input_Opt%ITS_A_FULLCHEM_SIM ) .OR. &
+         ( Input_Opt%ITS_A_MERCURY_SIM ) ) THEN
 
        ! Allocate a temporary array large enough to hold all of the
        ! advected species listed in input.geos as well as all of the

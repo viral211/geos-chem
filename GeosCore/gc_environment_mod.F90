@@ -265,6 +265,7 @@ CONTAINS
                           State_Grid = State_Grid,  &  ! Grid State
                           RC         = RC          )   ! Success or failure
 
+    PRINT *, State_Chm%Map_KppSpc, 'AO'
     ! Trap potential errors
     IF ( RC /= GC_SUCCESS ) THEN
        ErrMsg = 'Error encountered within call to "Init_State_Chm"!'
@@ -729,9 +730,9 @@ CONTAINS
        ! Main mercury module
        CALL Init_Mercury( Input_Opt, State_Chm, State_Grid, RC )
        IF ( RC /= GC_SUCCESS ) THEN
-          ErrMsg = 'Error encountered in "Init_Mercury"!'
-          CALL GC_Error( ErrMsg, RC, ThisLoc )
-          RETURN
+         ErrMsg = 'Error encountered in "Init_Mercury"!'
+         CALL GC_Error( ErrMsg, RC, ThisLoc )
+         RETURN
        ENDIF
 
        ! Land mercury module

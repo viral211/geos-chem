@@ -839,6 +839,31 @@ CONTAINS
              CALL Timer_Start( "=> Gas-phase chem", RC )
           ENDIF
 
+          !---------------------------
+          ! Call gas-phase chemistry
+          !---------------------------
+          CALL Do_FlexChem( Input_Opt,  State_Chm, State_Diag, &
+                            State_Grid, State_Met, RC )
+
+          ! Check units (ewl, 10/5/15)
+          IF ( TRIM( State_Chm%Spc_Units ) /= 'kg' ) THEN
+             ErrMsg = 'Incorrect species units after FLEX_CHEMDR:Hg!'
+             CALL GC_Error( ErrMsg, RC, ThisLoc )
+             RETURN
+          ENDIF
+
+          ! Trap potential errors
+          IF ( RC /= GC_SUCCESS ) THEN
+             ErrMsg = 'Error encountered in "Do_FlexChem:Hg"!'
+             CALL GC_Error( ErrMsg, RC, ThisLoc )
+             RETURN
+          ENDIF
+
+          IF ( Input_Opt%useTimers ) THEN
+             CALL Timer_End( "=> Gas-phase chem", RC )
+          ENDIF
+
+
           ! Do Hg chemistry
           CALL ChemMercury( Input_Opt,  State_Chm, State_Diag, &
                             State_Grid, State_Met, RC )
@@ -1368,14 +1393,14 @@ CONTAINS
        ! NOTE: we need to call this for a dry-run so that we can get
        ! a list of all of the lookup tables etc. that FAST-JX reads
        !--------------------------------------------------------------------
-       CALL Init_FJX( Input_Opt, State_Chm, State_Diag, State_Grid, RC )
+       ! CALL Init_FJX( Input_Opt, State_Chm, State_Diag, State_Grid, RC )
 
-       ! Trap potential errors
-       IF ( RC /= GC_SUCCESS ) THEN
-          ErrMsg = 'Error encountered in "Init_FJX"!'
-          CALL GC_Error( ErrMsg, RC, ThisLoc )
-          RETURN
-       ENDIF
+       ! ! Trap potential errors
+       ! IF ( RC /= GC_SUCCESS ) THEN
+       !    ErrMsg = 'Error encountered in "Init_FJX"!'
+       !    CALL GC_Error( ErrMsg, RC, ThisLoc )
+       !    RETURN
+       ! ENDIF
 
     ENDIF
 
