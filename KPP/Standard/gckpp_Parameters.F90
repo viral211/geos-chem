@@ -13,7 +13,7 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 ! 
 ! File                 : gckpp_Parameters.f90
-! Time                 : Sat Jun 13 16:28:15 2020
+! Time                 : Mon Jun 15 15:13:47 2020
 ! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
@@ -30,29 +30,29 @@ MODULE gckpp_Parameters
 
 
 ! NSPEC - Number of chemical species
-  INTEGER, PARAMETER :: NSPEC = 6 
+  INTEGER, PARAMETER :: NSPEC = 34 
 ! NVAR - Number of Variable species
-  INTEGER, PARAMETER :: NVAR = 5 
+  INTEGER, PARAMETER :: NVAR = 18 
 ! NFLUX - Number of Reaction Flux species
   INTEGER, PARAMETER :: NFLUX = 1 
 ! NFAM - Number of Prod/Loss Families
   INTEGER, PARAMETER :: NFAM = 1 
 ! NVARACT - Number of Active species
-  INTEGER, PARAMETER :: NVARACT = 2 
+  INTEGER, PARAMETER :: NVARACT = 17 
 ! NFIX - Number of Fixed species
-  INTEGER, PARAMETER :: NFIX = 1 
+  INTEGER, PARAMETER :: NFIX = 16 
 ! NREACT - Number of reactions
-  INTEGER, PARAMETER :: NREACT = 4 
+  INTEGER, PARAMETER :: NREACT = 57 
 ! NVARST - Starting of variables in conc. vect.
   INTEGER, PARAMETER :: NVARST = 1 
 ! NFIXST - Starting of fixed in conc. vect.
-  INTEGER, PARAMETER :: NFIXST = 6 
+  INTEGER, PARAMETER :: NFIXST = 19 
 ! NONZERO - Number of nonzero entries in Jacobian
-  INTEGER, PARAMETER :: NONZERO = 9 
+  INTEGER, PARAMETER :: NONZERO = 86 
 ! LU_NONZERO - Number of nonzero entries in LU factoriz. of Jacobian
-  INTEGER, PARAMETER :: LU_NONZERO = 9 
+  INTEGER, PARAMETER :: LU_NONZERO = 92 
 ! CNVAR - (NVAR+1) Number of elements in compressed row format
-  INTEGER, PARAMETER :: CNVAR = 6 
+  INTEGER, PARAMETER :: CNVAR = 19 
 ! NLOOKAT - Number of species to look at
   INTEGER, PARAMETER :: NLOOKAT = 0 
 ! NMONITOR - Number of species to monitor
@@ -63,21 +63,64 @@ MODULE gckpp_Parameters
 ! Index declaration for variable species in C and VAR
 !   VAR(ind_spc) = C(ind_spc)
 
-  INTEGER, PARAMETER :: ind_Hg0 = 1 
-  INTEGER, PARAMETER :: ind_Hg2 = 2 
-  INTEGER, PARAMETER :: ind_HgP = 3 
-  INTEGER, PARAMETER :: ind_NO2 = 4 
-  INTEGER, PARAMETER :: ind_PHg = 5 
+  INTEGER, PARAMETER :: ind_PHg = 1 
+  INTEGER, PARAMETER :: ind_HGBRNO2 = 2 
+  INTEGER, PARAMETER :: ind_HGBRHO2 = 3 
+  INTEGER, PARAMETER :: ind_HGBRCLO = 4 
+  INTEGER, PARAMETER :: ind_HGBRBRO = 5 
+  INTEGER, PARAMETER :: ind_HGBR2 = 6 
+  INTEGER, PARAMETER :: ind_HGBROH = 7 
+  INTEGER, PARAMETER :: ind_HGBR = 8 
+  INTEGER, PARAMETER :: ind_HGCLNO2 = 9 
+  INTEGER, PARAMETER :: ind_HGCLHO2 = 10 
+  INTEGER, PARAMETER :: ind_HGCLCLO = 11 
+  INTEGER, PARAMETER :: ind_HGCLBRO = 12 
+  INTEGER, PARAMETER :: ind_HGCLBR = 13 
+  INTEGER, PARAMETER :: ind_HGCLOH = 14 
+  INTEGER, PARAMETER :: ind_HGCL = 15 
+  INTEGER, PARAMETER :: ind_HGORG = 16 
+  INTEGER, PARAMETER :: ind_HgP = 17 
+  INTEGER, PARAMETER :: ind_Hg0 = 18 
 
 ! Index declaration for fixed species in C
 !   C(ind_spc)
 
-  INTEGER, PARAMETER :: ind_OH = 6 
+  INTEGER, PARAMETER :: ind_Br = 19 
+  INTEGER, PARAMETER :: ind_Cl = 20 
+  INTEGER, PARAMETER :: ind_OH = 21 
+  INTEGER, PARAMETER :: ind_NO2 = 22 
+  INTEGER, PARAMETER :: ind_HO2 = 23 
+  INTEGER, PARAMETER :: ind_BrO = 24 
+  INTEGER, PARAMETER :: ind_ClO = 25 
+  INTEGER, PARAMETER :: ind_JHGHO2 = 26 
+  INTEGER, PARAMETER :: ind_JHGNO2 = 27 
+  INTEGER, PARAMETER :: ind_JHGOH = 28 
+  INTEGER, PARAMETER :: ind_JHGBRO = 29 
+  INTEGER, PARAMETER :: ind_JHGCLOH = 30 
+  INTEGER, PARAMETER :: ind_JHGBR = 31 
+  INTEGER, PARAMETER :: ind_JHGAQ = 32 
+  INTEGER, PARAMETER :: ind_CLDPROC = 33 
+  INTEGER, PARAMETER :: ind_AERPROC = 34 
 
 ! Index declaration for fixed species in FIX
 !    FIX(indf_spc) = C(ind_spc) = C(NVAR+indf_spc)
 
-  INTEGER, PARAMETER :: indf_OH = 1 
+  INTEGER, PARAMETER :: indf_Br = 1 
+  INTEGER, PARAMETER :: indf_Cl = 2 
+  INTEGER, PARAMETER :: indf_OH = 3 
+  INTEGER, PARAMETER :: indf_NO2 = 4 
+  INTEGER, PARAMETER :: indf_HO2 = 5 
+  INTEGER, PARAMETER :: indf_BrO = 6 
+  INTEGER, PARAMETER :: indf_ClO = 7 
+  INTEGER, PARAMETER :: indf_JHGHO2 = 8 
+  INTEGER, PARAMETER :: indf_JHGNO2 = 9 
+  INTEGER, PARAMETER :: indf_JHGOH = 10 
+  INTEGER, PARAMETER :: indf_JHGBRO = 11 
+  INTEGER, PARAMETER :: indf_JHGCLOH = 12 
+  INTEGER, PARAMETER :: indf_JHGBR = 13 
+  INTEGER, PARAMETER :: indf_JHGAQ = 14 
+  INTEGER, PARAMETER :: indf_CLDPROC = 15 
+  INTEGER, PARAMETER :: indf_AERPROC = 16 
 
 END MODULE gckpp_Parameters
 

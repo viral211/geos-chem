@@ -135,6 +135,9 @@ CONTAINS
     USE TOMAS_MOD,            ONLY : H2SO4_RATE
 #endif
 #endif
+    USE HCO_EmisList_Mod,     ONLY : HCO_GetPtr
+    USE HCO_INTERFACE_MOD,    ONLY : HcoState
+    USE HCO_Calc_Mod,         ONLY : HCO_EvalFld
 !
 ! !INPUT PARAMETERS:
 !
@@ -209,6 +212,141 @@ CONTAINS
     REAL(fp)               :: OHreact
     REAL(dp)               :: Vloc(NVAR), Aout(NREACT)
 
+    REAL(f4), POINTER      :: HEM_HO2(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_Br(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_OH(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_NO2(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_BrO(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_ClO(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_JHGHO2(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_JHGNO2(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_JHGOH(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_JHGBRO(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_JHGCLOH(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_JHGBR(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_JHGAQ(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_CLDPROC(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_AERPROC(:,:,:)  => NULL()
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_OH', &
+         HEM_OH,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_OH_trop!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_NO2', &
+         HEM_NO2,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_NO2!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_Br', &
+         HEM_Br,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_NO!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_HO2', &
+         HEM_HO2,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_HO2!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_ClO', &
+         HEM_ClO,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_ClO!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_BrO', &
+         HEM_BrO,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_BrO!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_JHGHO2', &
+         HEM_JHGHO2,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_JHGHO2!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_JHGNO2', &
+         HEM_JHGNO2,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_JHGNO2!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_JHGOH', &
+         HEM_JHGOH,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_JHGOH!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_JHGBRO', &
+         HEM_JHGBRO,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_JHGBRO!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_JHGCLOH', &
+         HEM_JHGCLOH,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_JHGCLOH!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_JHGBR', &
+         HEM_JHGBR,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_JHGBR!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_JHGAQ', &
+         HEM_JHGAQ,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_JHGAQ!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_CLDPROC', &
+         HEM_CLDPROC,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_CLDPROC!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_AERPROC', &
+         HEM_AERPROC,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_AERPROC!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
     !=======================================================================
     ! Do_FlexChem begins here!
     !=======================================================================
@@ -365,10 +503,6 @@ CONTAINS
           State_Chm%Species(:,:,:,N) = 0e+0_fp
        ENDIF
 
-       IF ( TRIM( SpcInfo%Name ) == 'OH' ) THEN
-          State_Chm%Species(:,:,:,N) = 1e+6_fp
-       ENDIF
-
        ! Free pointer
        SpcInfo => NULL()
 
@@ -462,6 +596,91 @@ CONTAINS
        RETURN
     ENDIF
 
+    DO N = 1, State_Chm%nSpecies
+
+       ! Get info about this species from the species database
+       SpcInfo => State_Chm%SpcData(N)%Info
+       !PRINT *, SpcInfo, '----'
+
+       IF ( TRIM( SpcInfo%Name ) == 'OH' ) THEN
+          !PRINT *, "SET OH",N,"   ",NVAR
+          State_Chm%Species(:,:,:,N) = HEM_OH(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'HO2' ) THEN
+          !PRINT *, "SET HO2",N
+          State_Chm%Species(:,:,:,N) = HEM_HO2(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'Br' ) THEN
+          !PRINT *, "SET NO2",N
+          State_Chm%Species(:,:,:,N) = HEM_Br(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'NO2' ) THEN
+          !PRINT *, "SET NO2",N
+          State_Chm%Species(:,:,:,N) = HEM_NO2(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'BrO' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_BrO(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'ClO' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_ClO(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGHO2' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGHO2(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGNO2' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGNO2(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGOH' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGOH(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGBRO' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGBRO(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGCLOH' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGCLOH(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGBR' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGBR(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGAQ' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGAQ(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'CLDPROC' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_CLDPROC(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'AERPROC' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_AERPROC(:,:,:)
+       ENDIF
+
+       ! Free pointer
+       SpcInfo => NULL()
+
+    ENDDO
     !=======================================================================
     ! Call photolysis routine to compute J-Values
     !=======================================================================

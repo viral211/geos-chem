@@ -13,7 +13,7 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 ! 
 ! File                 : gckpp.map
-! Time                 : Sat Jun 13 16:28:15 2020
+! Time                 : Mon Jun 15 15:13:47 2020
 ! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
@@ -32,28 +32,38 @@ REORDER  - ON
 ### Parameters ----------------------------------------
 
 ! NSPEC - Number of chemical species
-  INTEGER, PARAMETER :: NSPEC = 6 
+  INTEGER, PARAMETER :: NSPEC = 34 
 ! NVAR - Number of Variable species
-  INTEGER, PARAMETER :: NVAR = 5 
+  INTEGER, PARAMETER :: NVAR = 18 
 ! NVARACT - Number of Active species
-  INTEGER, PARAMETER :: NVARACT = 2 
+  INTEGER, PARAMETER :: NVARACT = 17 
 ! NFIX - Number of Fixed species
-  INTEGER, PARAMETER :: NFIX = 1 
+  INTEGER, PARAMETER :: NFIX = 16 
 ! NREACT - Number of reactions
-  INTEGER, PARAMETER :: NREACT = 4 
+  INTEGER, PARAMETER :: NREACT = 57 
 ! NVARST - Starting of variables in conc. vect.
   INTEGER, PARAMETER :: NVARST = 1 
 ! NFIXST - Starting of fixed in conc. vect.
-  INTEGER, PARAMETER :: NFIXST = 6 
+  INTEGER, PARAMETER :: NFIXST = 19 
 
 ### Species -------------------------------------------
 
 Variable species
-  1 = Hg0 (r)     3 = HgP (n)     5 = PHg (n)   
-  2 = Hg2 (r)     4 = NO2 (n)   
+  1 = PHg (n)     8 = HGBR (r)   15 = HGCL (r)  
+  2 = HGBRNO2 (r)  9 = HGCLNO2 (r) 16 = HGORG (r) 
+  3 = HGBRHO2 (r) 10 = HGCLHO2 (r) 17 = HgP (r)   
+  4 = HGBRCLO (r) 11 = HGCLCLO (r) 18 = Hg0 (r)   
+  5 = HGBRBRO (r) 12 = HGCLBRO (r)
+  6 = HGBR2 (r)  13 = HGCLBR (r)
+  7 = HGBROH (r) 14 = HGCLOH (r)
 
 Fixed species
-  1 = OH (r)    
+  1 = Br (r)      7 = ClO (r)    13 = JHGBR (r) 
+  2 = Cl (r)      8 = JHGHO2 (r) 14 = JHGAQ (r) 
+  3 = OH (r)      9 = JHGNO2 (r) 15 = CLDPROC (r)
+  4 = NO2 (r)    10 = JHGOH (r)  16 = AERPROC (r)
+  5 = HO2 (r)    11 = JHGBRO (r)
+  6 = BrO (r)    12 = JHGCLOH (r)
 
 ### Subroutines ---------------------------------------
 

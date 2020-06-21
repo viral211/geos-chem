@@ -13,7 +13,7 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 ! 
 ! File                 : gckpp_Rates.f90
-! Time                 : Sat Jun 13 16:28:15 2020
+! Time                 : Mon Jun 15 15:13:47 2020
 ! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
@@ -130,94 +130,6 @@ CONTAINS
 ! Begin INLINED Rate Law Functions
 
 
-  REAL(kind=dp) FUNCTION ARRPLUS( A0,B0,C0,D0,E0 )
-     REAL A0,B0,C0,D0,E0 
-     REAL(kind=dp) K0     
-     K0 = DBLE(A0) * (DBLE(D0)+(TEMP*DBLE(E0)))
-     ARRPLUS =  K0 * EXP(-DBLE(B0)/TEMP) * (TEMP/300.0_dp)**DBLE(C0)
-     IF (ARRPLUS < 0.0) ARRPLUS = 0.0
-  END FUNCTION ARRPLUS        
-
-  REAL(kind=dp) FUNCTION TUN( A0,B0,C0 )
-     REAL A0,B0,C0      
-     TUN =  DBLE(A0) * EXP(DBLE(B0)/TEMP) * EXP(DBLE(C0)/TEMP**3)
-  END FUNCTION TUN        
-
-  REAL(kind=dp) FUNCTION TUNPLUS( A0,B0,C0,D0,E0 )
-     REAL A0,B0,C0,D0,E0
-     REAL(kind=dp) K0
-     K0 = DBLE(A0) * (DBLE(D0)+(TEMP*DBLE(E0)))
-     TUNPLUS = K0 * EXP(DBLE(B0)/TEMP) * EXP(DBLE(C0)/TEMP**3)
-     IF (TUNPLUS < 0.0) TUNPLUS = 0.0
-  END FUNCTION TUNPLUS        
-
-  REAL(kind=dp) FUNCTION ISO1( A0,B0,C0,D0,E0,F0,G0 )
-     REAL A0,B0,C0,D0,E0,F0,G0
-     REAL(kind=dp) K0, K1, K2
-     K0 = DBLE(D0)*EXP(DBLE(E0)/TEMP)*EXP(1.E8/TEMP**3)
-     K1 = DBLE(F0)*EXP(DBLE(G0)/TEMP)
-     K2 = DBLE(C0)*K0/(K0+K1)
-     ISO1 =  DBLE(A0) * EXP(DBLE(B0)/TEMP) * (1.-K2)
-  END FUNCTION ISO1       
-
-  REAL(kind=dp) FUNCTION ISO2( A0,B0,C0,D0,E0,F0,G0 )
-     REAL A0,B0,C0,D0,E0,F0,G0
-     REAL(kind=dp) K0, K1, K2
-     K0 = DBLE(D0)*EXP(DBLE(E0)/TEMP)*EXP(1.E8/TEMP**3)
-     K1 = DBLE(F0)*EXP(DBLE(G0)/TEMP)
-     K2 = DBLE(C0)*K0/(K0+K1)
-     ISO2 =  DBLE(A0) * EXP(DBLE(B0)/TEMP) * K2
-  END FUNCTION ISO2       
-
-  REAL(kind=dp) FUNCTION EPO(A1,E1,M1) 
-     REAL A1, E1, M1
-     REAL(kind=dp) K1      
-     K1 = 1.0_dp/(DBLE(M1) * NUMDEN + 1.0_dp)
-     EPO = DBLE(A1) * EXP(DBLE(E1)/TEMP) *  K1
-  END FUNCTION EPO
-
-  REAL(kind=dp) FUNCTION PAN ( A0,B0,C0,A1,B1,C1,CF )
-     REAL A0,B0,C0,A1,B1,C1,CF
-     REAL(kind=dp) K0, K1, KR, NC, F     
-     K0 = DBLE(A0) * EXP(DBLE(B0)/TEMP) * (TEMP/300.0_dp)**DBLE(C0)
-     K1 = DBLE(A1) * EXP(DBLE(B1)/TEMP) * (TEMP/300.0_dp)**DBLE(C1)
-     K0 = K0*NUMDEN
-     KR = K0/K1
-     NC = 0.75_dp-1.27_dp*(LOG10(DBLE(CF)))
-     F  = 10.0_dp**(LOG10(DBLE(CF))/(1+(LOG10(KR)/NC)**2))
-     PAN = K0*K1*F/(K0+K1)
-  END FUNCTION PAN
-
-  REAL(kind=dp) FUNCTION NIT ( A0,B0,C0,n,X0,Y0)
-     REAL A0,B0,C0,n,X0,Y0
-     REAL(kind=dp) K0, K1, K2, K3, K4     
-     K0 = 2.0E-22_dp * EXP(DBLE(n))
-     K1 = 4.3E-1_dp*(TEMP/298.0_dp)**(-8)
-     K0 = K0*NUMDEN
-     K1 = K0/K1
-     K2 = (K0/(1.0_dp+K1))*   &
-          4.1E-1_dp**(1.0_dp/(1.0_dp+(LOG10(K1))**2))
-     K3 = K2/(K2+DBLE(C0))
-     K4 = DBLE(A0)*(DBLE(X0)-TEMP*DBLE(Y0))
-     NIT = K4 * EXP(DBLE(B0)/TEMP) * K3
-     IF (NIT < 0.0) NIT = 0.0
-  END FUNCTION NIT
-
-  REAL(kind=dp) FUNCTION ALK ( A0,B0,C0,n,X0,Y0)
-     REAL A0,B0,C0,n,X0,Y0
-     REAL(kind=dp) K0, K1, K2, K3, K4  
-     K0 = 2.0E-22_dp * EXP(DBLE(n))
-     K1 = 4.3E-1_dp*(TEMP/298.0_dp)**(-8)
-     K0 = K0*NUMDEN
-     K1 = K0/K1
-     K2 = (K0/(1.0_dp+K1))*   &
-          4.1E-1_dp**(1.0_dp/(1.0_dp+(LOG10(K1))**2))
-     K3 = DBLE(C0)/(K2+DBLE(C0))
-     K4 = DBLE(A0)*(DBLE(X0)-TEMP*DBLE(Y0))
-     ALK = K4 * EXP(DBLE(B0)/TEMP) * K3
-     IF (ALK < 0.0) ALK = 0.0
-  END FUNCTION ALK
-   
   REAL(kind=dp) FUNCTION OH_O1D (J, H2O, TEMP, NUMDEN)
   REAL*8 J, H2O, TEMP, NUMDEN
   REAL*8 K1, K2, K3
@@ -244,15 +156,20 @@ CONTAINS
       GCARR =  DBLE(A0) * EXP(DBLE(C0)/TEMP) * (300._dp/TEMP)**DBLE(B0)
   END FUNCTION GCARR    
 
-  REAL(kind=dp) FUNCTION GC_HO2HO2( A0,B0,C0,A1,B1,C1 )
+  REAL(kind=dp) FUNCTION GCDIB( A0,C0 )
+      REAL A0,C0
+      GCDIB = DBLE(A0) * NUMDEN * EXP(DBLE(C0)/TEMP)
+  END FUNCTION GCDIB
+
+  REAL(kind=dp) FUNCTION GC_HO2NO3( A0,B0,C0,A1,B1,C1 )
       REAL A0,B0,C0,A1,B1,C1
       REAL(kind=dp) :: R0,R1
       R0 =  DBLE(A0) * EXP(DBLE(C0)/TEMP) * (300._dp/TEMP)**DBLE(B0)
       R1 =  DBLE(A1) * EXP(DBLE(C1)/TEMP) * (300._dp/TEMP)**DBLE(B1)
 
-      GC_HO2HO2 = (R0+R1*NUMDEN)*(1.D0+1.4E-21_dp*H2O* &
+      GC_HO2NO3 = (R0+R1*NUMDEN)*(1.D0+1.4E-21_dp*H2O* &
                    EXP(2200.E+0_dp/TEMP))
-  END FUNCTION GC_HO2HO2
+  END FUNCTION GC_HO2NO3    
   
   REAL(kind=dp) FUNCTION GC_TBRANCH( A0,B0,C0,A1,B1,C1 )
 ! Temperature Dependent Branching Ratio
@@ -397,24 +314,15 @@ CONTAINS
     
     R0 =  DBLE(A0) * EXP(DBLE(C0)/TEMP) * (300._dp/TEMP)**DBLE(B0)
     R1 =  DBLE(A1) * EXP(DBLE(C1)/TEMP) * (300._dp/TEMP)**DBLE(B1)
-
-    ! Special treatment for methyl nitrate based on observations
-    ! as Carter and Atkinson formulation does not apply to C1.
-    ! Value based on upper limit of Flocke et al. 1998 as applied
-    ! in Fisher et al. 2018
-    IF ( A1 == 1.0 ) THEN
-       FYRNO3 = DBLE(3.0e-4)
-    ELSE
     
-       ! Initialize static variables
-       XXYN   = ALPHA*EXP(BETA*R1)*NUMDEN*((300./TEMP)**XM0)
-       YYYN   = Y300*((300./TEMP)**XMINF)
-       AAA    = LOG10(XXYN/YYYN)
-       ZZYN   = 1./(1.+ AAA*AAA )
-       RARB   = (XXYN/(1.+ (XXYN/YYYN)))*(XF**ZZYN)
-       FYRNO3 = RARB/(1. + RARB)
-    ENDIF
-
+    ! Initialize static variables
+    
+    XXYN   = ALPHA*EXP(BETA*R1)*NUMDEN*((300./TEMP)**XM0)
+    YYYN   = Y300*((300./TEMP)**XMINF)
+    AAA    = LOG10(XXYN/YYYN)
+    ZZYN   = 1./(1.+ AAA*AAA )
+    RARB   = (XXYN/(1.+ (XXYN/YYYN)))*(XF**ZZYN)
+    FYRNO3 = RARB/(1. + RARB)
     IF (trim(B) .eq. 'A') THEN
        GC_RO2NO     = R0 * FYRNO3
     ELSEIF (trim(B) .eq. 'B') THEN
@@ -503,7 +411,7 @@ CONTAINS
        
 
   END FUNCTION GCJPLPR
-
+ 
   REAL(kind=dp) FUNCTION GCIUPAC3(ko_300,n,ki_300,m,Fc) 
 ! Function calcualtes the rate constant of 3 body reaction using IUPAC 
 ! methology
@@ -580,10 +488,63 @@ SUBROUTINE Update_RCONST ( )
 
 ! End INLINED RCONST
 
-  RCONST(1) = (GCARR(1.0E-1,0.0E+00,0.0E+00))
-  RCONST(2) = (GCARR(1.0E-1,0.0E+00,0.0E+00))
-  RCONST(3) = (GCARR(3.00E-13,0.0E+00,-1500.0))
-  RCONST(4) = (GCARR(3.00E-1,0.0E+00,-1500.0))
+  RCONST(1) = (GCJPLPR(1.46E-32,1.86E+00,0.0,1.46e-11,1.86,0.0,0.6,0.0,0.0))
+  RCONST(2) = (GCJPLPR(1.6E-9,1.86E+00,-7801.0,1.6E12,1.86,-7801.0,0.6,0.0,0.0))
+  RCONST(3) = (GCARR(3.9E-11,0.0,0.0))
+  RCONST(4) = (GCJPLPR(7.1E-29,4.5E+00,0.0,1.2e-10,1.90,0.0,0.6,0.0,0.0))
+  RCONST(5) = (GCJPLPR(2.3E-29,4.4E+00,0.0,6.9e-11,2.40,0.0,0.6,0.0,0.0))
+  RCONST(6) = (GCJPLPR(2.3E-29,4.4E+00,0.0,6.9e-11,2.40,0.0,0.6,0.0,0.0))
+  RCONST(7) = (GCJPLPR(2.3E-29,4.4E+00,0.0,6.9e-11,2.40,0.0,0.6,0.0,0.0))
+  RCONST(8) = (GCARR(3.0E-11,0.0,0.0))
+  RCONST(9) = (GCJPLPR(2.3E-29,4.4E+00,0.0,6.9e-11,2.40,0.0,0.6,0.0,0.0))
+  RCONST(10) = (GCARR(1.0,0.0,0.0))
+  RCONST(11) = (GCARR(1.0,0.0,0.0))
+  RCONST(12) = (GCARR(1.0,0.0,0.0))
+  RCONST(13) = (GCARR(1.0,0.0,0.0))
+  RCONST(14) = (GCARR(1.0,0.0,0.0))
+  RCONST(15) = (GCARR(1.0,0.0,0.0))
+  RCONST(16) = (GCARR(1.0,0.0,0.0))
+  RCONST(17) = (GCJPLPR(2.2E-32,0.00E+00,0.0,1.0e-11,1.86,0.0,0.6,0.0,0.0))
+  RCONST(18) = (GCARR(1.2E-11,0.0,-5942.0))
+  RCONST(19) = (GCJPLPR(1.33E-30,0.0E+00,1185.0,1.0e-10,0.00,0.0,0.6,0.0,0.0))
+  RCONST(20) = (GCJPLPR(4.25E-31,0.0E+00,1185.0,7.5e-11,0.00,0.0,0.6,0.0,0.0))
+  RCONST(21) = (GCJPLPR(4.25E-31,0.0E+00,1185.0,7.5e-11,0.00,0.0,0.6,0.0,0.0))
+  RCONST(22) = (GCJPLPR(4.25E-31,0.0E+00,1185.0,7.5e-11,0.00,0.0,0.6,0.0,0.0))
+  RCONST(23) = (GCARR(3.0E-11,0.0,0.0))
+  RCONST(24) = (GCJPLPR(4.25E-31,0.0E+00,1185.0,7.5e-11,0.00,0.0,0.6,0.0,0.0))
+  RCONST(25) = (GCARR(1.0,0.0,0.0))
+  RCONST(26) = (GCARR(1.0,0.0,0.0))
+  RCONST(27) = (GCARR(1.0,0.0,0.0))
+  RCONST(28) = (GCARR(1.0,0.0,0.0))
+  RCONST(29) = (GCARR(1.0,0.0,0.0))
+  RCONST(30) = (GCARR(1.0,0.0,0.0))
+  RCONST(31) = (GCARR(1.0,0.0,0.0))
+  RCONST(32) = (GCARR(1.0,0.0,0.0))
+  RCONST(33) = (GCARR(1.0,0.0,0.0))
+  RCONST(34) = (GCARR(1.0,0.0,0.0))
+  RCONST(35) = (GCARR(1.0,0.0,0.0))
+  RCONST(36) = (GCARR(1.0,0.0,0.0))
+  RCONST(37) = (GCARR(1.0,0.0,0.0))
+  RCONST(38) = (GCARR(1.0,0.0,0.0))
+  RCONST(39) = (GCARR(1.0,0.0,0.0))
+  RCONST(40) = (GCARR(1.0,0.0,0.0))
+  RCONST(41) = (GCARR(1.0,0.0,0.0))
+  RCONST(42) = (GCARR(1.0,0.0,0.0))
+  RCONST(43) = (GCARR(1.0,0.0,0.0))
+  RCONST(44) = (GCARR(1.0,0.0,0.0))
+  RCONST(45) = (GCARR(1.0,0.0,0.0))
+  RCONST(46) = (GCARR(1.0,0.0,0.0))
+  RCONST(47) = (GCARR(1.0,0.0,0.0))
+  RCONST(48) = (GCARR(1.0,0.0,0.0))
+  RCONST(49) = (GCARR(1.0,0.0,0.0))
+  RCONST(50) = (GCARR(1.0,0.0,0.0))
+  RCONST(51) = (GCARR(1.0,0.0,0.0))
+  RCONST(52) = (GCARR(1.0,0.0,0.0))
+  RCONST(53) = (GCARR(1.0,0.0,0.0))
+  RCONST(54) = (GCARR(1.0,0.0,0.0))
+  RCONST(55) = (GCARR(1.0,0.0,0.0))
+  RCONST(56) = (GCARR(1.0,0.0,0.0))
+  RCONST(57) = (GCARR(1.0,0.0,0.0))
       
 END SUBROUTINE Update_RCONST
 

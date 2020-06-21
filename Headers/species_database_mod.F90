@@ -4543,7 +4543,11 @@ CONTAINS
                 'HG2_EEU', 'HG2_MDE', 'HG2_SOV', 'HG2_SAS', 'HG2_EAS',      &
                 'HG2_SEA', 'HG2_JPN', 'HG2_OCE', 'HG2_SO',  'HG2_BB',       &
                 'HG2_GEO', 'HG2_ATL', 'HG2_NAT', 'HG2_SAT', 'HG2_NPA',      &
-                'HG2_ARC', 'HG2_ANT', 'HG2_OCN', 'HG2_STR'   )
+                'HG2_ARC', 'HG2_ANT', 'HG2_OCN', 'HG2_STR',                 &
+                'HGBRNO2', 'HGBRHO2', 'HGBRRO2', 'HGBRBRO', 'HGBRCLO',      &
+                'HGBROH', 'HGBR2', 'HGORG', 'HGSTRAT',                      &
+                'HGCLNO2', 'HGCLHO2', 'HGCLRO2', 'HGCLBRO', 'HGCLCLO',      &
+                'HGCLBR', 'HGCLOH', 'HGCL2' )                                
 
              ! Standardize tagged Hg0 species names
              SELECT CASE( TRIM( Name ) )
@@ -4605,6 +4609,8 @@ CONTAINS
                    FullName = 'Divalent mercury from Indo-Pacific Subsurface Water'
                 CASE( 'HG2_STR' )
                    FullName = 'Divalent mercury from Stratosphere'
+                CASE DEFAULT
+                   FullName = 'Divalent mercury'
              END SELECT
 
              FullName      = FullName

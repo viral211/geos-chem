@@ -182,6 +182,7 @@ MODULE State_Chm_Mod
      ! For the tagged Hg simulation
      !----------------------------------------------------------------------
      INTEGER                    :: N_HG_CATS            ! # of Hg categories
+     INTEGER                    :: N_HG2_CATS            ! # of Hg categories
      INTEGER,           POINTER :: Hg0_Id_List(:      ) ! Hg0 cat <-> tracer #
      INTEGER,           POINTER :: Hg2_Id_List(:      ) ! Hg2 cat <-> tracer #
      INTEGER,           POINTER :: HgP_Id_List(:      ) ! HgP cat <-> tracer #
@@ -429,6 +430,7 @@ CONTAINS
     N_Hg2_CATS                  =  0
     N_HgP_CATS                  =  0
     State_Chm%N_Hg_CATS         =  0
+    State_Chm%N_Hg2_CATS        =  0
     State_Chm%Hg_Cat_Name       => NULL()
     State_Chm%Hg0_Id_List       => NULL()
     State_Chm%Hg2_Id_List       => NULL()
@@ -1568,10 +1570,13 @@ CONTAINS
        ! returned from the species database.  If not, there's an error.
        IF ( N_Hg0_CATS == N_Hg2_CATS .and. N_Hg0_CATS == N_HgP_CATS ) THEN
           State_Chm%N_Hg_CATS = N_Hg0_CATS
+          State_Chm%N_Hg2_CATS = N_Hg2_CATS
        ELSE
-          ErrMsg = 'Inconsistent number of Hg categories!'
-          CALL GC_Error( ErrMsg, RC, ThisLoc )
-          RETURN
+          State_Chm%N_Hg_CATS = 1
+          State_Chm%N_Hg2_CATS = N_Hg2_CATS
+          !   ErrMsg = 'Inconsistent number of Hg categories!'
+       !   CALL GC_Error( ErrMsg, RC, ThisLoc )
+       !   RETURN
        ENDIF
 
        ! Index array: Hg0 species # <--> Hg0 category #
@@ -1580,7 +1585,7 @@ CONTAINS
        State_Chm%Hg0_Id_List = 0
 
        ! Index array: Hg2 species # <--> Hg0 category #
-       ALLOCATE( State_Chm%Hg2_Id_List( State_Chm%N_Hg_CATS ), STAT=RC )
+       ALLOCATE( State_Chm%Hg2_Id_List( State_Chm%N_Hg2_CATS ), STAT=RC )
        IF ( RC /= GC_SUCCESS ) RETURN
        State_Chm%Hg2_Id_List = 0
 

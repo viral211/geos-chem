@@ -449,7 +449,7 @@ CONTAINS
     LOGICAL            :: LGTMM
     LOGICAL            :: LNLPBL
     LOGICAL            :: prtDebug
-    INTEGER            :: NA, nAdvect
+    INTEGER            :: NA, nAdvect, C, CN
     INTEGER            :: I, J, L, K, N, NN, MONTH, NSTEPS, Hg_Cat
     REAL(fp)           :: K_DRYD0, K_DRYD2G, K_DRYD2P, K_SALT
     REAL(fp)           :: C_OH, C_O3, C_BR, C_BRO, C_HOCL
@@ -566,123 +566,129 @@ CONTAINS
        FIRST = .FALSE.
     ENDIF
 
+    State_Chm%Species(:,:,:,id_Hg2) = 0.0
+    DO CN = 2, State_Chm%N_Hg2_CATS
+       N = State_Chm%Hg2_Id_List(CN)
+       State_Chm%Species(:,:,:,id_Hg2) = State_Chm%Species(:,:,:,N) &
+            + State_Chm%Species(:,:,:,id_Hg2)
+    ENDDO
     !=================================================================
     ! Read monthly mean Br, OH, O3, and J_NO2 fields
     !=================================================================
-    IF ( ITS_A_NEW_MONTH() ) THEN
+    ! IF ( ITS_A_NEW_MONTH() ) THEN
 
-       ! Get the current month
-       MONTH = GET_MONTH()
+    !    ! Get the current month
+    !    MONTH = GET_MONTH()
 
-       ! Get a pointer to the monthly mean fields from HEMCO
-       CALL HCO_GetPtr( HcoState, 'GLOBAL_OH_trop', OH_trop, RC )
-       IF ( RC /= GC_SUCCESS ) THEN
-          ErrMsg = 'Cannot get pointer to GLOBAL_OH_trop!'
-          CALL GC_Error( ErrMsg, RC, ThisLoc )
-          RETURN
-       ENDIF
+    !    ! Get a pointer to the monthly mean fields from HEMCO
+    !    CALL HCO_GetPtr( HcoState, 'GLOBAL_OH', OH_trop, RC )
+    !    IF ( RC /= GC_SUCCESS ) THEN
+    !       ErrMsg = 'Cannot get pointer to GLOBAL_OH_trop!'
+    !       CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !       RETURN
+    !    ENDIF
 
-       CALL HCO_GetPtr( HcoState, 'GLOBAL_OH_strat', OH_strat, RC )
-       IF ( RC /= GC_SUCCESS ) THEN
-          ErrMsg = 'Cannot get pointer to GLOBAL_OH_strat!'
-          CALL GC_Error( ErrMsg, RC, ThisLoc )
-          RETURN
-       ENDIF
+    !    CALL HCO_GetPtr( HcoState, 'GLOBAL_OH_strat', OH_strat, RC )
+    !    IF ( RC /= GC_SUCCESS ) THEN
+    !       ErrMsg = 'Cannot get pointer to GLOBAL_OH_strat!'
+    !       CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !       RETURN
+    !    ENDIF
 
-       CALL HCO_GetPtr( HcoState, 'GLOBAL_O3', O3, RC )
-       IF ( RC /= GC_SUCCESS ) THEN
-          ErrMsg = 'Cannot get pointer to GLOBAL_O3!'
-          CALL GC_Error( ErrMsg, RC, ThisLoc )
-          RETURN
-       ENDIF
+    !    CALL HCO_GetPtr( HcoState, 'GLOBAL_O3', O3, RC )
+    !    IF ( RC /= GC_SUCCESS ) THEN
+    !       ErrMsg = 'Cannot get pointer to GLOBAL_O3!'
+    !       CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !       RETURN
+    !    ENDIF
 
-       ! Br and BrO not directly from HEMCO
-       CALL GET_GLOBAL_BR( Input_Opt, State_Grid, State_Met, MONTH, RC )
-       IF ( RC /= GC_SUCCESS ) THEN
-          ErrMsg = 'Cannot get pointer to GLOBAL_BR!'
-          CALL GC_Error( ErrMsg, RC, ThisLoc )
-          RETURN
-       ENDIF
+    !    ! Br and BrO not directly from HEMCO
+    !    CALL GET_GLOBAL_BR( Input_Opt, State_Grid, State_Met, MONTH, RC )
+    !    IF ( RC /= GC_SUCCESS ) THEN
+    !       ErrMsg = 'Cannot get pointer to GLOBAL_BR!'
+    !       CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !       RETURN
+    !    ENDIF
 
-       IF ( prtDebug ) CALL DEBUG_MSG( '### CHEMMERC: a GET_GLOBAL_BR' )
+    !    IF ( prtDebug ) CALL DEBUG_MSG( '### CHEMMERC: a GET_GLOBAL_BR' )
 
-       !-------------------------------------------------------------
-       ! Some oxidants only required by certain mechanisms:
-       !-------------------------------------------------------------
-       IF ( LHALOGENCHEM ) THEN
-          CALL HCO_GetPtr( HcoState,'GLOBAL_NO2', HEM_NO2, RC )
-          IF ( RC /= GC_SUCCESS ) THEN
-             ErrMsg = 'Cannot get pointer to GLOBAL_NO2!'
-             CALL GC_Error( ErrMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
+    !    !-------------------------------------------------------------
+    !    ! Some oxidants only required by certain mechanisms:
+    !    !-------------------------------------------------------------
+    !    IF ( LHALOGENCHEM ) THEN
+    !       CALL HCO_GetPtr( HcoState,'GLOBAL_NO2', HEM_NO2, RC )
+    !       IF ( RC /= GC_SUCCESS ) THEN
+    !          ErrMsg = 'Cannot get pointer to GLOBAL_NO2!'
+    !          CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !          RETURN
+    !       ENDIF
 
-          CALL HCO_GetPtr( HcoState,'GLOBAL_NO', HEM_NO, RC )
-          IF ( RC /= GC_SUCCESS ) THEN
-             ErrMsg = 'Cannot get pointer to GLOBAL_NO!'
-             CALL GC_Error( ErrMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
+    !       CALL HCO_GetPtr( HcoState,'GLOBAL_NO', HEM_NO, RC )
+    !       IF ( RC /= GC_SUCCESS ) THEN
+    !          ErrMsg = 'Cannot get pointer to GLOBAL_NO!'
+    !          CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !          RETURN
+    !       ENDIF
 
-          CALL HCO_GetPtr( HcoState,'GLOBAL_HO2_trop', HEM_HO2_trop, RC )
-          IF ( RC /= GC_SUCCESS ) THEN
-             ErrMsg = 'Cannot get pointer to GLOBAL_HO2_trop!'
-             CALL GC_Error( ErrMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
+    !       CALL HCO_GetPtr( HcoState,'GLOBAL_HO2', HEM_HO2_trop, RC )
+    !       IF ( RC /= GC_SUCCESS ) THEN
+    !          ErrMsg = 'Cannot get pointer to GLOBAL_HO2_trop!'
+    !          CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !          RETURN
+    !       ENDIF
 
-          CALL HCO_GetPtr( HcoState,'GLOBAL_HO2_strat', HEM_HO2_strat, RC )
-          IF ( RC /= GC_SUCCESS ) THEN
-             ErrMsg = 'Cannot get pointer to GLOBAL_HO2_strat!'
-             CALL GC_Error( ErrMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
+    !       CALL HCO_GetPtr( HcoState,'GLOBAL_HO2_strat', HEM_HO2_strat, RC )
+    !       IF ( RC /= GC_SUCCESS ) THEN
+    !          ErrMsg = 'Cannot get pointer to GLOBAL_HO2_strat!'
+    !          CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !          RETURN
+    !       ENDIF
 
-          CALL HCO_GetPtr( HcoState,'GLOBAL_ClO', HEM_CLO, RC )
-          IF ( RC /= GC_SUCCESS ) THEN
-             ErrMsg = 'Cannot get pointer to GLOBAL_ClO!'
-             CALL GC_Error( ErrMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
+    !       CALL HCO_GetPtr( HcoState,'GLOBAL_ClO', HEM_CLO, RC )
+    !       IF ( RC /= GC_SUCCESS ) THEN
+    !          ErrMsg = 'Cannot get pointer to GLOBAL_ClO!'
+    !          CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !          RETURN
+    !       ENDIF
 
-          CALL HCO_GetPtr( HcoState,'GLOBAL_Cl', HEM_CL, RC )
-          IF ( RC /= GC_SUCCESS ) THEN
-             ErrMsg = 'Cannot get pointer to GLOBAL_NO2!'
-             CALL GC_Error( ErrMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
-       ENDIF
-       !-------------------------------------------------------------
+    !       CALL HCO_GetPtr( HcoState,'GLOBAL_Cl', HEM_CL, RC )
+    !       IF ( RC /= GC_SUCCESS ) THEN
+    !          ErrMsg = 'Cannot get pointer to GLOBAL_NO2!'
+    !          CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !          RETURN
+    !       ENDIF
+    !    ENDIF
+    !    !-------------------------------------------------------------
 
-       IF ( LHGAQCHEM ) THEN
-          CALL HCO_GetPtr( HcoState,'GLOBAL_HOCl', HEM_HOCL, RC )
-          IF ( RC /= GC_SUCCESS ) THEN
-             ErrMsg = 'Cannot get pointer to GLOBAL_HOCl!'
-             CALL GC_Error( ErrMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
-       ENDIF
+    !    IF ( LHGAQCHEM ) THEN
+    !       CALL HCO_GetPtr( HcoState,'GLOBAL_HOCl', HEM_HOCL, RC )
+    !       IF ( RC /= GC_SUCCESS ) THEN
+    !          ErrMsg = 'Cannot get pointer to GLOBAL_HOCl!'
+    !          CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !          RETURN
+    !       ENDIF
+    !    ENDIF
 
-       !-------------------------------------------------------------
+    !    !-------------------------------------------------------------
 
-       IF ( LRED_JNO2 ) THEN
-          CALL HCO_GetPtr( HcoState, 'JNO2', JNO2,  RC )
-          IF ( RC /= GC_SUCCESS ) THEN
-             ErrMsg = 'Cannot get pointer to JNO2!'
-             CALL GC_Error( ErrMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
+    !    IF ( LRED_JNO2 ) THEN
+    !       CALL HCO_GetPtr( HcoState, 'JNO2', JNO2,  RC )
+    !       IF ( RC /= GC_SUCCESS ) THEN
+    !          ErrMsg = 'Cannot get pointer to JNO2!'
+    !          CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !          RETURN
+    !       ENDIF
 
-          CALL HCO_GetPtr( HcoState,'GLOBAL_OA', HEM_OA, RC )
-          IF ( RC /= GC_SUCCESS ) THEN
-             ErrMsg = 'Cannot get pointer to GLOBAL_OA!'
-             CALL GC_Error( ErrMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
-       ENDIF
+    !       CALL HCO_GetPtr( HcoState,'GLOBAL_OA', HEM_OA, RC )
+    !       IF ( RC /= GC_SUCCESS ) THEN
+    !          ErrMsg = 'Cannot get pointer to GLOBAL_OA!'
+    !          CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !          RETURN
+    !       ENDIF
+    !    ENDIF
 
-       !-------------------------------------------------------------
-    ENDIF
+    !    !-------------------------------------------------------------
+    ! ENDIF
 
     !=================================================================
     ! Perform chemistry on Hg species
@@ -691,9 +697,9 @@ CONTAINS
     ! Chemistry timestep [s]
     DTCHEM = GET_TS_CHEM()
 
-    ! Compute diurnal scaling for OH
-    CALL OHNO3TIME( State_Grid )
-    IF ( prtDebug ) CALL DEBUG_MSG( 'CHEMMERCURY: a OHNO3TIME' )
+    ! ! Compute diurnal scaling for OH
+    ! CALL OHNO3TIME( State_Grid )
+    ! IF ( prtDebug ) CALL DEBUG_MSG( 'CHEMMERCURY: a OHNO3TIME' )
 
     ! Calculate the rate of sea salt aerosol uptake of Hg2
     IF ( LDYNSEASALT .AND. ITS_TIME_FOR_A3() ) THEN
@@ -701,8 +707,8 @@ CONTAINS
        IF ( prtDebug ) CALL DEBUG_MSG( 'CHEMMERCURY: a SEASALT_LOSSRATE' )
     ENDIF
 
-    ! Partition Hg(II) between gas and aerosol
-    CALL PARTITIONHG2( Input_Opt, State_Chm, State_Grid, RC )
+    ! ! Partition Hg(II) between gas and aerosol
+    ! CALL PARTITIONHG2( Input_Opt, State_Chm, State_Grid, RC )
 
     IF ( prtDebug ) CALL DEBUG_MSG( 'CHEMMERCURY: before do loop' )
 
@@ -819,115 +825,116 @@ CONTAINS
        !-------------------------------------------------
 
        ! Concentrations of oxidants, molec/cm3
-       C_O3        = GET_O3( I, J, L,        State_Met             )
-       C_OH        = GET_OH( I, J, L,        State_Met             )
-       C_BR        = GET_BR( I, J, L, C_BRO, State_Diag, State_Grid, State_Met )
+       ! C_O3        = GET_O3( I, J, L,        State_Met             )
+       ! C_OH        = GET_OH( I, J, L,        State_Met             )
+       ! C_BR        = GET_BR( I, J, L, C_BRO, State_Diag, State_Grid, State_Met )
 
-       IF ( LHALOGENCHEM ) THEN
-          C_NO2       = GET_NO2(  I, J, L, State_Grid, State_Met, &
-                                  HEM_NO(I,J,L), HEM_NO2(I,J,L), C_O3 )
-          C_HO2       = GET_HO2(  I, J, L, State_Met )
-          C_CLO       = GET_CLO(  I, J, L, State_Grid, State_Met )
-          C_CL        = GET_CL(   I, J, L, State_Grid, State_Met )
-       ENDIF
+       ! IF ( LHALOGENCHEM ) THEN
+       !    C_NO2       = GET_NO2(  I, J, L, State_Grid, State_Met, &
+       !                            HEM_NO(I,J,L), HEM_NO2(I,J,L), C_O3 )
+       !    C_HO2       = GET_HO2(  I, J, L, State_Met )
+       !    C_CLO       = GET_CLO(  I, J, L, State_Grid, State_Met )
+       !    C_CL        = GET_CL(   I, J, L, State_Grid, State_Met )
+       ! ENDIF
 
-       IF ( LHGAQCHEM ) THEN
-          C_HOCL      = GET_HOCl( I, J, L, State_Grid, State_Met )
-       ENDIF
+       ! IF ( LHGAQCHEM ) THEN
+       !    C_HOCL      = GET_HOCl( I, J, L, State_Grid, State_Met )
+       ! ENDIF
 
-       IF ( LRED_JNO2 ) THEN
-          C_OA        = HEM_OA(   I, J, L )
-          TPL = State_Met%TropLev(I, J)
-          IF ( L >= TPL ) THEN
-             C_OA = 0.0e0_fp
-          ENDIF
-       ENDIF
+       ! IF ( LRED_JNO2 ) THEN
+       !    C_OA        = HEM_OA(   I, J, L )
+       !    TPL = State_Met%TropLev(I, J)
+       !    IF ( L >= TPL ) THEN
+       !       C_OA = 0.0e0_fp
+       !    ENDIF
+       ! ENDIF
 
-       ! Oxidation rate by O3 and OH, 1/s
-       IF (LOHO3CHEM) THEN
-          K_O3 = K_HG_O3 * C_O3
-          K_OH = K_HG_OH * C_OH
-       ELSE
-          K_O3 = 0e+0_fp
-          K_OH = 0e+0_fp
-       ENDIF
+       ! ! Oxidation rate by O3 and OH, 1/s
+       ! IF (LOHO3CHEM) THEN
+       !    K_O3 = K_HG_O3 * C_O3
+       !    K_OH = K_HG_OH * C_OH
+       ! ELSE
+       !    K_O3 = 0e+0_fp
+       !    K_OH = 0e+0_fp
+       ! ENDIF
 
-       ! Oxidation rate by Br, 1/s (accounts for HgBr intermediate)
-       IF (LBRCHEM) THEN
-          K_BR = GET_HGBR_RATE( I, J, L, C_BR, State_Met, C_OH, METHOD )
-       ELSE
-          K_BR = 0e+0_fp
-       ENDIF
+       ! ! Oxidation rate by Br, 1/s (accounts for HgBr intermediate)
+       ! IF (LBRCHEM) THEN
+       !    K_BR = GET_HGBR_RATE( I, J, L, C_BR, State_Met, C_OH, METHOD )
+       ! ELSE
+       !    K_BR = 0e+0_fp
+       ! ENDIF
 
-       ! Oxidation rate by BrO
-       IF (LBROCHEM) THEN
-          K_BRO = K_HG_BRO * C_BRO
-       ELSE
-          K_BRO = 0e+0_fp
-       ENDIF
+       ! ! Oxidation rate by BrO
+       ! IF (LBROCHEM) THEN
+       !    K_BRO = K_HG_BRO * C_BRO
+       ! ELSE
+       !    K_BRO = 0e+0_fp
+       ! ENDIF
 
-       ! Oxidation rate by Cl-initiated oxidation
-       IF (LHALOGENCHEM) THEN
-          K_CLY = GET_HGCL_RATE( I, J, L, C_CL,  C_OH,  C_HO2, &
-                                 C_NO2,   C_CLO, C_BRO, C_BR,  State_Met )
-          K_R1CL = K_CLY(2)
-          K_R2CL = K_CLY(3)
-          K_CL = K_CLY(1)
-       ELSE
-          K_CL = 0d0
-          K_R1CL=0d0
-          K_R2CL=0d0
-       ENDIF
+       ! ! Oxidation rate by Cl-initiated oxidation
+       ! IF (LHALOGENCHEM) THEN
+       !    K_CLY = GET_HGCL_RATE( I, J, L, C_CL,  C_OH,  C_HO2, &
+       !                           C_NO2,   C_CLO, C_BRO, C_BR,  State_Met )
+       !    K_R1CL = K_CLY(2)
+       !    K_R2CL = K_CLY(3)
+       !    K_CL = K_CLY(1)
+       ! ELSE
+       !    K_CL = 0d0
+       !    K_R1CL=0d0
+       !    K_R2CL=0d0
+       ! ENDIF
 
-       ! Heterogeneous oxidation by OH, O3, and HOCL
-       IF (LHGAQCHEM) THEN
-          K_AQ_OX = GET_HGAQ_RATE( I, J, L, C_BR, C_OH, C_O3, C_HOCL, &
-                                   State_Met )
-          K_HOCL  = K_AQ_OX(1)
-          K_OH_AQ = K_AQ_OX(2)
-          K_O3_AQ = K_AQ_OX(3)
-       ELSE
-          K_AQ_OX = 0e0_fp
-          K_HOCL  = 0e0_fp
-          K_OH_AQ = 0e0_fp
-          K_O3_AQ = 0e0_fp
-       ENDIF
+       ! ! Heterogeneous oxidation by OH, O3, and HOCL
+       ! IF (LHGAQCHEM) THEN
+       !    K_AQ_OX = GET_HGAQ_RATE( I, J, L, C_BR, C_OH, C_O3, C_HOCL, &
+       !                             State_Met )
+       !    K_HOCL  = K_AQ_OX(1)
+       !    K_OH_AQ = K_AQ_OX(2)
+       !    K_O3_AQ = K_AQ_OX(3)
+       ! ELSE
+       !    K_AQ_OX = 0e0_fp
+       !    K_HOCL  = 0e0_fp
+       !    K_OH_AQ = 0e0_fp
+       !    K_O3_AQ = 0e0_fp
+       ! ENDIF
 
-       ! Oxidation through Hg0 + Br -> HgBr, HgBr + Y -> Hg2
-       IF (LHALOGENCHEM) THEN
-          K_BRY = GET_HGBRY_RATE( I, J, L, C_BR,  C_OH,  C_NO2, &
-                                  C_HO2,   C_CLO, C_BRO, C_CL,  State_Met )
-          K_BR2    = K_BRY(1)
-          K_BROH   = K_BRY(2)
-          K_BRHO2  = K_BRY(3)
-          K_BRNO2  = K_BRY(4)
-          K_BRCLO  = K_BRY(5)
-          K_BRBRO  = K_BRY(6)
-          K_BRCL   = K_BRY(7)
-          ! The following rates for diagnostic purposes:
-          K_R1     = K_BRY(8)
-          K_R2     = K_BRY(9)
-          K_R2A    = K_BRY(10)
-          K_R3ANO2 = K_BRY(11)
-       ELSE
-          K_BR2    = 0e+0_fp
-          K_BROH   = 0e+0_fp
-          K_BRHO2  = 0e+0_fp
-          K_BRNO2  = 0e+0_fp
-          K_BRCLO  = 0e+0_fp
-          K_BRBRO  = 0e+0_fp
-          K_BRCL   = 0e+0_fp
-          K_R1     = 0e+0_fp
-          K_R2     = 0e+0_fp
-          K_R2A    = 0e+0_fp
-          K_R3ANO2 = 0e+0_fp
-       ENDIF
+       ! ! Oxidation through Hg0 + Br -> HgBr, HgBr + Y -> Hg2
+       ! IF (LHALOGENCHEM) THEN
+       !    K_BRY = GET_HGBRY_RATE( I, J, L, C_BR,  C_OH,  C_NO2, &
+       !                            C_HO2,   C_CLO, C_BRO, C_CL,  State_Met )
+       !    K_BR2    = K_BRY(1)
+       !    K_BROH   = K_BRY(2)
+       !    K_BRHO2  = K_BRY(3)
+       !    K_BRNO2  = K_BRY(4)
+       !    K_BRCLO  = K_BRY(5)
+       !    K_BRBRO  = K_BRY(6)
+       !    K_BRCL   = K_BRY(7)
+       !    ! The following rates for diagnostic purposes:
+       !    K_R1     = K_BRY(8)
+       !    K_R2     = K_BRY(9)
+       !    K_R2A    = K_BRY(10)
+       !    K_R3ANO2 = K_BRY(11)
+       ! ELSE
+       !    K_BR2    = 0e+0_fp
+       !    K_BROH   = 0e+0_fp
+       !    K_BRHO2  = 0e+0_fp
+       !    K_BRNO2  = 0e+0_fp
+       !    K_BRCLO  = 0e+0_fp
+       !    K_BRBRO  = 0e+0_fp
+       !    K_BRCL   = 0e+0_fp
+       !    K_R1     = 0e+0_fp
+       !    K_R2     = 0e+0_fp
+       !    K_R2A    = 0e+0_fp
+       !    K_R3ANO2 = 0e+0_fp
+       ! ENDIF
 
        ! Total oxidation rate, 1/s
-       K_OX = K_O3    + K_OH    + K_BR    + K_BRO   + K_BR2  + &
-              K_BRHO2 + K_BRNO2 + K_BRCLO + K_BRCL  + K_HOCL + &
-              K_OH_AQ + K_O3_AQ + K_CL    + K_BRBRO + K_BROH
+       ! K_OX = K_O3    + K_OH    + K_BR    + K_BRO   + K_BR2  + &
+       !        K_BRHO2 + K_BRNO2 + K_BRCLO + K_BRCL  + K_HOCL + &
+       !        K_OH_AQ + K_O3_AQ + K_CL    + K_BRBRO + K_BROH
 
+       K_OX = 0.0
        !---------------------------------------------
        ! Reduction rates (requires liquid water content)
        !---------------------------------------------
@@ -980,29 +987,31 @@ CONTAINS
        ENDIF
 
        ! Define K for the reduction reaction.
-       IF (LRED_JNO2) THEN
-          ! Reduction happens to aqueous fraction of Hg2
-          K_RED = K_RED_JNO2 * Faq &
-                  * GET_JNO2( I, J, L, State_Grid, State_Met ) &
-                  * C_OA
+       ! IF (LRED_JNO2) THEN
+       !    ! Reduction happens to aqueous fraction of Hg2
+       !    K_RED = K_RED_JNO2 * Faq &
+       !            * GET_JNO2( I, J, L, State_Grid, State_Met ) &
+       !            * C_OA
 
-          IF (RH3 > 35.0e0_fp) THEN
-             ! Reduction of HgP (35% RH is for presence of water)
-             K_RED2P = K_RED_JNO2 &
-                       * GET_JNO2( I, J, L, State_Grid, State_Met ) &
-                       * C_OA
-          ELSE
-             K_RED2P = 0e0_fp
-          ENDIF
+       !    IF (RH3 > 35.0e0_fp) THEN
+       !       ! Reduction of HgP (35% RH is for presence of water)
+       !       K_RED2P = K_RED_JNO2 &
+       !                 * GET_JNO2( I, J, L, State_Grid, State_Met ) &
+       !                 * C_OA
+       !    ELSE
+       !       K_RED2P = 0e0_fp
+       !    ENDIF
 
-       ELSE
-          ! Include the fraction of
-          ! Hg(II) in air within the Kreduction &
-          ! scale to OH concentration [/s]
-          K_RED =   K_RED_OH * Faq * C_OH
-          K_RED2P = K_RED
-       ENDIF
+       ! ELSE
+       !    ! Include the fraction of
+       !    ! Hg(II) in air within the Kreduction &
+       !    ! scale to OH concentration [/s]
+       !    K_RED =   K_RED_OH * Faq * C_OH
+       !    K_RED2P = K_RED
+       ! ENDIF
 
+       K_RED = 0.0
+       K_RED2P = 0.0
        !---------------------------------------------
        ! Round off small chemical rates
        !---------------------------------------------
@@ -1124,9 +1133,9 @@ CONTAINS
           !--------------------------------------------------
 
           ! Archive Concentrations, kg/box
-          Spc(I,J,L,Hg0_Id_List(N)) = Xnew(1)
-          Spc(I,J,L,Hg2_Id_List(N)) = Xnew(2)
-          Spc(I,J,L,HgP_Id_List(N)) = Xnew(3)
+          !Spc(I,J,L,Hg0_Id_List(N)) = Xnew(1)
+          !Spc(I,J,L,Hg2_Id_List(N)) = Xnew(2)
+          !Spc(I,J,L,HgP_Id_List(N)) = Xnew(3)
 
           ! Accumulated fluxes, kg/box/timestep [timestep=DTCHEM]
           DEP_HG0  = Xnew(4)
@@ -1459,7 +1468,7 @@ CONTAINS
     !$OMP END PARALLEL DO
 
     ! Partition Hg(II) between gas and aerosol
-    CALL PARTITIONHG2( Input_Opt, State_Chm, State_Grid, RC )
+    !CALL PARTITIONHG2( Input_Opt, State_Chm, State_Grid, RC )
 
     ! Free pointer memory
     Spc     => NULL()
@@ -4133,15 +4142,15 @@ CONTAINS
        ! ---------------------------------------------
 
        ! Anthropogenic emissions
-       DgnName = 'HG2_ANTHRO'
-       CALL GetHcoDiagn( DgnName, .TRUE., RC, Ptr2D=Ptr2D )
-       IF ( RC /= HCO_SUCCESS ) THEN
-          ErrMsg = 'Could not get HEMCO field ' // TRIM( DgnName )
-          CALL GC_Error( ErrMsg, RC, ThisLoc )
-          RETURN
-       ENDIF
-       EHg2_an =  Ptr2D(:,:) * HcoState%Grid%AREA_M2%Val(:,:)
-       Ptr2D   => NULL()
+       ! DgnName = 'HG2_ANTHRO'
+       ! CALL GetHcoDiagn( DgnName, .TRUE., RC, Ptr2D=Ptr2D )
+       ! IF ( RC /= HCO_SUCCESS ) THEN
+       !    ErrMsg = 'Could not get HEMCO field ' // TRIM( DgnName )
+       !    CALL GC_Error( ErrMsg, RC, ThisLoc )
+       !    RETURN
+       ! ENDIF
+       ! EHg2_an =  Ptr2D(:,:) * HcoState%Grid%AREA_M2%Val(:,:)
+       ! Ptr2D   => NULL()
 
     ENDIF
 
