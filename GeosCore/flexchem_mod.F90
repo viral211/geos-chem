@@ -706,12 +706,10 @@ CONTAINS
        SpcInfo => State_Chm%SpcData(N)%Info
        !PRINT *, SpcInfo, '----'
        IF ( TRIM( SpcInfo%Name ) == 'CLDPROC' ) THEN
-          PRINT *, "CP",N
           State_Chm%Species(:,:,:,N) = HEM_CLDPROC(:,:,:)
        ENDIF
 
        IF ( TRIM( SpcInfo%Name ) == 'AERPROC' ) THEN
-          PRINT *, "AP",N
           State_Chm%Species(:,:,:,N) = HEM_AERPROC(:,:,:)
        ENDIF
 
@@ -760,8 +758,6 @@ CONTAINS
        ENDIF
 
        IF ( TRIM( SpcInfo%Name ) == 'JHGOH' ) THEN
-          PRINT *, "JOH",N
-          PRINT *, SUM(HEM_JHGOH(:,:,1))/46/72
           State_Chm%Species(:,:,:,N) = HEM_JHGOH(:,:,:)*DIURNF
        ENDIF
 
@@ -776,13 +772,10 @@ CONTAINS
        ENDIF
 
        IF ( TRIM( SpcInfo%Name ) == 'JHGBR' ) THEN
-          PRINT *, "J1",N
           State_Chm%Species(:,:,:,N) = HEM_JHGBR(:,:,:)*DIURNF
        ENDIF
 
        IF ( TRIM( SpcInfo%Name ) == 'JHGAQ' ) THEN
-          PRINT *, "JAq",N
-          PRINT *, SUM(HEM_JHGAQ(:,:,1))/46/72
           State_Chm%Species(:,:,:,N) = HEM_JHGAQ(:,:,:)*DIURNF
        ENDIF
 
