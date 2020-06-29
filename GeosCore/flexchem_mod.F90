@@ -1974,9 +1974,8 @@ CONTAINS
     ! Test for sunlight...
     IF ( State_Met%SUNCOS(I,J) > 0e+0_fp .and.  TCOSZ(I,J) > 0e+0_fp ) THEN
 
-       ! Impose a diurnal variation on OH during the day
-       ! OH from HEMCO is in kg/m3
-       SCALEF = ( State_Met%SUNCOS(I,J)  / TCOSZ(I,J) )
+       SCALEF = ( State_Met%SUNCOS(I,J)  / TCOSZ(I,J) )* &
+                          ( 86400e0_fp            / GET_TS_CHEM() )
 
        ! Make sure OH is not negative
        SCALEF = MAX( SCALEF, 0e+0_fp )
