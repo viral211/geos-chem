@@ -736,8 +736,8 @@ CONTAINS
              MW_g          = 12.01_fp
              EmMW_g        = 12.0_fp
              Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
+             Is_Drydep     = F
+             Is_Wetdep     = F
              Is_HygroGrowth= T
              Density       = 1800.0_fp
              DD_DvzAerSnow = 0.03_fp
@@ -3067,8 +3067,8 @@ CONTAINS
              MW_g          = 12.01_fp
              EmMW_g        = 12.0_fp
              Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
+             Is_Drydep     = F
+             Is_Wetdep     = F
              Is_HygroGrowth= T
              Density       = 1300.0_fp
              DD_DvzAerSnow = 0.03_fp
@@ -3223,8 +3223,8 @@ CONTAINS
              EmMW_g        = 12.0_fp
              MolecRatio    = 1.0_fp
              Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
+             Is_Drydep     = F
+             Is_Wetdep     = F
              Is_HygroGrowth= T
              Density       = 1300.0_fp
              DD_DvzAerSnow = 0.03_fp
@@ -3551,8 +3551,8 @@ CONTAINS
              Formula       = ''
              MW_g          = 31.4_fp
              Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
+             Is_Drydep     = F
+             Is_Wetdep     = F
              Is_HygroGrowth= T
              Density       = 2200.0_fp
              Radius        = Radius
@@ -3589,8 +3589,8 @@ CONTAINS
              Formula       = ''
              MW_g          = 31.4_fp
              Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
+             Is_Drydep     = F
+             Is_Wetdep     = F
              Is_HygroGrowth= T
              Density       = 2200.0_fp
              Radius        = Radius
@@ -3659,8 +3659,8 @@ CONTAINS
              Formula       = 'SO4'
              MW_g          = 96.0_fp
              Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
+             Is_Drydep     = F
+             Is_Wetdep     = F
              Is_Photolysis = T
              Is_HygroGrowth= T
              Density       = 1700.0_fp
@@ -4458,6 +4458,16 @@ CONTAINS
           !==================================================================
           ! Species for the Hg specialty simulation
           !==================================================================
+          CASE( 'JHGHO2', 'JHGNO2', 'JHGOH', 'JHGBRO', 'JHGCLOH', 'JHGBR', &
+                'JHGOH1', 'JHGAQ', 'CLDPROC', 'AERPROC', 'STRTPROC'  )
+
+             
+             FullName      = 'First order rate'
+             Formula       = 'HgR'
+             MW_g          = 201.0_fp
+             Is_Gas        = T
+             Is_Drydep     = F
+             Is_Wetdep     = F
 
           CASE( 'HG0',     'HG0_CAN', 'HG0_USA', 'HG0_CAM', 'HG0_SAM',      &
                 'HG0_WAF', 'HG0_EAF', 'HG0_SAF', 'HG0_NAF', 'HG0_EUR',      &

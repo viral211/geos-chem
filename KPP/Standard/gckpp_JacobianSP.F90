@@ -13,7 +13,7 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 ! 
 ! File                 : gckpp_JacobianSP.f90
-! Time                 : Mon Jun 22 14:20:07 2020
+! Time                 : Sun Jun 28 17:51:27 2020
 ! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
@@ -34,7 +34,7 @@ MODULE gckpp_JacobianSP
   INTEGER, PARAMETER, DIMENSION(92) :: LU_IROW = (/ &
        1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, & ! index 1 - 12
        1,  1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6, & ! index 13 - 24
-       7,  7,  7,  7,  8,  8,  8,  8,  8,  8,  9,  9, & ! index 25 - 36
+       7,  7,  8,  8,  8,  8,  8,  8,  8,  8,  9,  9, & ! index 25 - 36
       10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, & ! index 37 - 48
       15, 15, 15, 15, 15, 15, 16, 16, 16, 16, 16, 16, & ! index 49 - 60
       16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 17, 17, & ! index 61 - 72
@@ -44,7 +44,7 @@ MODULE gckpp_JacobianSP
   INTEGER, PARAMETER, DIMENSION(92) :: LU_ICOL = (/ &
        1,  2,  3,  4,  5,  6,  7,  9, 10, 11, 12, 13, & ! index 1 - 12
       14, 16,  2,  8,  3,  8,  4,  8,  5,  8,  6,  8, & ! index 13 - 24
-       2,  3,  7,  8,  4,  5,  6,  7,  8, 18,  9, 15, & ! index 25 - 36
+       7,  8,  2,  3,  4,  5,  6,  7,  8, 18,  9, 15, & ! index 25 - 36
       10, 15, 11, 15, 12, 15, 13, 15, 14, 15,  9, 10, & ! index 37 - 48
       11, 12, 13, 14, 15, 18,  2,  3,  4,  5,  6,  7, & ! index 49 - 60
        8,  9, 10, 11, 12, 13, 14, 15, 16, 18,  2,  3, & ! index 61 - 72
@@ -52,11 +52,11 @@ MODULE gckpp_JacobianSP
       16, 17, 18,  8, 15, 16, 17, 18 /)
 
   INTEGER, PARAMETER, DIMENSION(19) :: LU_CROW = (/ &
-       1, 15, 17, 19, 21, 23, 25, 29, 35, 37, 39, 41, & ! index 1 - 12
+       1, 15, 17, 19, 21, 23, 25, 27, 35, 37, 39, 41, & ! index 1 - 12
       43, 45, 47, 55, 71, 88, 93 /)
 
   INTEGER, PARAMETER, DIMENSION(19) :: LU_DIAG = (/ &
-       1, 15, 17, 19, 21, 23, 27, 33, 35, 37, 39, 41, & ! index 1 - 12
+       1, 15, 17, 19, 21, 23, 25, 33, 35, 37, 39, 41, & ! index 1 - 12
       43, 45, 53, 69, 86, 92, 93 /)
 
 

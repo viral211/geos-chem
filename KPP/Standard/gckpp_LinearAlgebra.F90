@@ -13,7 +13,7 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 ! 
 ! File                 : gckpp_LinearAlgebra.f90
-! Time                 : Mon Jun 22 14:20:07 2020
+! Time                 : Sun Jun 28 17:51:27 2020
 ! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
@@ -646,8 +646,7 @@ SUBROUTINE KppSolve ( JVS, X )
 ! X - Vector for variables
   REAL(kind=dp) :: X(NVAR)
 
-  X(7) = X(7)-JVS(25)*X(2)-JVS(26)*X(3)
-  X(8) = X(8)-JVS(29)*X(4)-JVS(30)*X(5)-JVS(31)*X(6)-JVS(32)*X(7)
+  X(8) = X(8)-JVS(27)*X(2)-JVS(28)*X(3)-JVS(29)*X(4)-JVS(30)*X(5)-JVS(31)*X(6)-JVS(32)*X(7)
   X(15) = X(15)-JVS(47)*X(9)-JVS(48)*X(10)-JVS(49)*X(11)-JVS(50)*X(12)-JVS(51)*X(13)-JVS(52)*X(14)
   X(16) = X(16)-JVS(55)*X(2)-JVS(56)*X(3)-JVS(57)*X(4)-JVS(58)*X(5)-JVS(59)*X(6)-JVS(60)*X(7)-JVS(61)*X(8)-JVS(62)*X(9)&
             &-JVS(63)*X(10)-JVS(64)*X(11)-JVS(65)*X(12)-JVS(66)*X(13)-JVS(67)*X(14)-JVS(68)*X(15)
@@ -665,7 +664,7 @@ SUBROUTINE KppSolve ( JVS, X )
   X(10) = (X(10)-JVS(38)*X(15))/(JVS(37))
   X(9) = (X(9)-JVS(36)*X(15))/(JVS(35))
   X(8) = (X(8)-JVS(34)*X(18))/(JVS(33))
-  X(7) = (X(7)-JVS(28)*X(8))/(JVS(27))
+  X(7) = (X(7)-JVS(26)*X(8))/(JVS(25))
   X(6) = (X(6)-JVS(24)*X(8))/(JVS(23))
   X(5) = (X(5)-JVS(22)*X(8))/(JVS(21))
   X(4) = (X(4)-JVS(20)*X(8))/(JVS(19))
@@ -705,8 +704,8 @@ SUBROUTINE KppSolveTR ( JVS, X, XX )
   XX(4) = (X(4)-JVS(4)*XX(1))/(JVS(19))
   XX(5) = (X(5)-JVS(5)*XX(1))/(JVS(21))
   XX(6) = (X(6)-JVS(6)*XX(1))/(JVS(23))
-  XX(7) = (X(7)-JVS(7)*XX(1))/(JVS(27))
-  XX(8) = (X(8)-JVS(16)*XX(2)-JVS(18)*XX(3)-JVS(20)*XX(4)-JVS(22)*XX(5)-JVS(24)*XX(6)-JVS(28)*XX(7))/(JVS(33))
+  XX(7) = (X(7)-JVS(7)*XX(1))/(JVS(25))
+  XX(8) = (X(8)-JVS(16)*XX(2)-JVS(18)*XX(3)-JVS(20)*XX(4)-JVS(22)*XX(5)-JVS(24)*XX(6)-JVS(26)*XX(7))/(JVS(33))
   XX(9) = (X(9)-JVS(8)*XX(1))/(JVS(35))
   XX(10) = (X(10)-JVS(9)*XX(1))/(JVS(37))
   XX(11) = (X(11)-JVS(10)*XX(1))/(JVS(39))
@@ -732,8 +731,8 @@ SUBROUTINE KppSolveTR ( JVS, X, XX )
   XX(6) = XX(6)-JVS(31)*XX(8)-JVS(59)*XX(16)-JVS(75)*XX(17)
   XX(5) = XX(5)-JVS(30)*XX(8)-JVS(58)*XX(16)-JVS(74)*XX(17)
   XX(4) = XX(4)-JVS(29)*XX(8)-JVS(57)*XX(16)-JVS(73)*XX(17)
-  XX(3) = XX(3)-JVS(26)*XX(7)-JVS(56)*XX(16)-JVS(72)*XX(17)
-  XX(2) = XX(2)-JVS(25)*XX(7)-JVS(55)*XX(16)-JVS(71)*XX(17)
+  XX(3) = XX(3)-JVS(28)*XX(8)-JVS(56)*XX(16)-JVS(72)*XX(17)
+  XX(2) = XX(2)-JVS(27)*XX(8)-JVS(55)*XX(16)-JVS(71)*XX(17)
   XX(1) = XX(1)
       
 END SUBROUTINE KppSolveTR

@@ -13,7 +13,7 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 ! 
 ! File                 : gckpp_Parameters.f90
-! Time                 : Mon Jun 22 14:20:07 2020
+! Time                 : Sun Jun 28 17:51:27 2020
 ! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
@@ -30,7 +30,7 @@ MODULE gckpp_Parameters
 
 
 ! NSPEC - Number of chemical species
-  INTEGER, PARAMETER :: NSPEC = 34 
+  INTEGER, PARAMETER :: NSPEC = 35 
 ! NVAR - Number of Variable species
   INTEGER, PARAMETER :: NVAR = 18 
 ! NFLUX - Number of Reaction Flux species
@@ -40,9 +40,9 @@ MODULE gckpp_Parameters
 ! NVARACT - Number of Active species
   INTEGER, PARAMETER :: NVARACT = 17 
 ! NFIX - Number of Fixed species
-  INTEGER, PARAMETER :: NFIX = 16 
+  INTEGER, PARAMETER :: NFIX = 17 
 ! NREACT - Number of reactions
-  INTEGER, PARAMETER :: NREACT = 57 
+  INTEGER, PARAMETER :: NREACT = 64 
 ! NVARST - Starting of variables in conc. vect.
   INTEGER, PARAMETER :: NVARST = 1 
 ! NFIXST - Starting of fixed in conc. vect.
@@ -92,15 +92,16 @@ MODULE gckpp_Parameters
   INTEGER, PARAMETER :: ind_HO2 = 23 
   INTEGER, PARAMETER :: ind_BrO = 24 
   INTEGER, PARAMETER :: ind_ClO = 25 
-  INTEGER, PARAMETER :: ind_JHGHO2 = 26 
-  INTEGER, PARAMETER :: ind_JHGNO2 = 27 
-  INTEGER, PARAMETER :: ind_JHGOH = 28 
-  INTEGER, PARAMETER :: ind_JHGBRO = 29 
-  INTEGER, PARAMETER :: ind_JHGCLOH = 30 
-  INTEGER, PARAMETER :: ind_JHGBR = 31 
-  INTEGER, PARAMETER :: ind_JHGAQ = 32 
-  INTEGER, PARAMETER :: ind_CLDPROC = 33 
-  INTEGER, PARAMETER :: ind_AERPROC = 34 
+  INTEGER, PARAMETER :: ind_JHGCLOH = 26 
+  INTEGER, PARAMETER :: ind_JHGBR = 27 
+  INTEGER, PARAMETER :: ind_JHGAQ = 28 
+  INTEGER, PARAMETER :: ind_O3 = 29 
+  INTEGER, PARAMETER :: ind_SO4 = 30 
+  INTEGER, PARAMETER :: ind_BCPI = 31 
+  INTEGER, PARAMETER :: ind_POA1 = 32 
+  INTEGER, PARAMETER :: ind_OCPI = 33 
+  INTEGER, PARAMETER :: ind_SALA = 34 
+  INTEGER, PARAMETER :: ind_SALC = 35 
 
 ! Index declaration for fixed species in FIX
 !    FIX(indf_spc) = C(ind_spc) = C(NVAR+indf_spc)
@@ -112,15 +113,16 @@ MODULE gckpp_Parameters
   INTEGER, PARAMETER :: indf_HO2 = 5 
   INTEGER, PARAMETER :: indf_BrO = 6 
   INTEGER, PARAMETER :: indf_ClO = 7 
-  INTEGER, PARAMETER :: indf_JHGHO2 = 8 
-  INTEGER, PARAMETER :: indf_JHGNO2 = 9 
-  INTEGER, PARAMETER :: indf_JHGOH = 10 
-  INTEGER, PARAMETER :: indf_JHGBRO = 11 
-  INTEGER, PARAMETER :: indf_JHGCLOH = 12 
-  INTEGER, PARAMETER :: indf_JHGBR = 13 
-  INTEGER, PARAMETER :: indf_JHGAQ = 14 
-  INTEGER, PARAMETER :: indf_CLDPROC = 15 
-  INTEGER, PARAMETER :: indf_AERPROC = 16 
+  INTEGER, PARAMETER :: indf_JHGCLOH = 8 
+  INTEGER, PARAMETER :: indf_JHGBR = 9 
+  INTEGER, PARAMETER :: indf_JHGAQ = 10 
+  INTEGER, PARAMETER :: indf_O3 = 11 
+  INTEGER, PARAMETER :: indf_SO4 = 12 
+  INTEGER, PARAMETER :: indf_BCPI = 13 
+  INTEGER, PARAMETER :: indf_POA1 = 14 
+  INTEGER, PARAMETER :: indf_OCPI = 15 
+  INTEGER, PARAMETER :: indf_SALA = 16 
+  INTEGER, PARAMETER :: indf_SALC = 17 
 
 END MODULE gckpp_Parameters
 

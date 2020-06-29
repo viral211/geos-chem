@@ -72,6 +72,7 @@ MODULE FlexChem_Mod
   REAL(f4), ALLOCATABLE :: JvCountMon(:,:,:  )
   REAL(f4), ALLOCATABLE :: JvSumDay  (:,:,:,:)
   REAL(f4), ALLOCATABLE :: JvSumMon  (:,:,:,:)
+  REAL(fp), ALLOCATABLE :: TCOSZ(:,:)     ! Sum of solar zenith angle
 
 CONTAINS
 !EOC
@@ -93,6 +94,7 @@ CONTAINS
 !
 ! !USES:
 !
+    USE MERCURY_MOD,          ONLY : OHNO3TIME
     USE AEROSOL_MOD,          ONLY : SOILDUST, AEROSOL_CONC, RDAER
     USE CMN_FJX_MOD
     USE DIAG_OH_MOD,          ONLY : DO_DIAG_OH
@@ -211,6 +213,8 @@ CONTAINS
     ! OH reactivity and KPP reaction rate diagnostics
     REAL(fp)               :: OHreact
     REAL(dp)               :: Vloc(NVAR), Aout(NREACT)
+    REAL(fp)               :: DIURNF(State_Grid%NX,State_Grid%NY, &
+                                          State_Grid%NZ)
 
     REAL(f4), POINTER      :: HEM_HO2(:,:,:)  => NULL()
     REAL(f4), POINTER      :: HEM_Br(:,:,:)  => NULL()
@@ -227,6 +231,13 @@ CONTAINS
     REAL(f4), POINTER      :: HEM_JHGAQ(:,:,:)  => NULL()
     REAL(f4), POINTER      :: HEM_CLDPROC(:,:,:)  => NULL()
     REAL(f4), POINTER      :: HEM_AERPROC(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_O3(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_SO4(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_BCPI(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_POA1(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_OCPI(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_SALA(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_SALC(:,:,:)  => NULL()
 
     CALL HCO_GetPtr( HcoState, 'GLOBAL_OH', &
          HEM_OH,   RC                             )
@@ -347,6 +358,65 @@ CONTAINS
        CALL GC_Error( ErrMsg, RC, ThisLoc )
        RETURN
     ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'GLOBAL_O3', &
+         HEM_O3,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to GLOBAL_O3!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'AERO_SO4', &
+         HEM_SO4,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to AERO_SO4!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'AERO_BCPI', &
+         HEM_BCPI,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to AERO_BCPI!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'AERO_OCPO', &
+         HEM_POA1,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to AERO_OCPO!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'AERO_OCPI', &
+         HEM_OCPI,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to AERO_OCPI!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'AERO_SALA', &
+         HEM_SALA,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to AERO_SALA!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'AERO_SALC', &
+         HEM_SALC,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to AERO_SALC!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL OHNO3TIME( State_Grid )
+
     !=======================================================================
     ! Do_FlexChem begins here!
     !=======================================================================
@@ -503,6 +573,33 @@ CONTAINS
           State_Chm%Species(:,:,:,N) = 0e+0_fp
        ENDIF
 
+
+       IF ( TRIM( SpcInfo%Name ) == 'SO4' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_SO4(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'BCPI' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_BCPI(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'POA1' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_POA1(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'OCPI' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_OCPI(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'SALA' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_SALA(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'SALC' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_SALC(:,:,:)
+       ENDIF
+
+
+
        ! Free pointer
        SpcInfo => NULL()
 
@@ -517,21 +614,21 @@ CONTAINS
     ENDIF
 
     ! Call RDAER to compute AOD for FAST-JX (skim, 02/03/11)
-    ! WAVELENGTH = 0
-    ! CALL RDAER( Input_Opt, State_Chm, State_Diag, State_Grid, State_Met, RC,  &
-    !             MONTH,     YEAR,       WAVELENGTH )
+    WAVELENGTH = 0
+    CALL RDAER( Input_Opt, State_Chm, State_Diag, State_Grid, State_Met, RC,  &
+                MONTH,     YEAR,       WAVELENGTH )
 
-    ! ! Trap potential errors
-    ! IF ( RC /= GC_SUCCESS ) THEN
-    !    ErrMsg = 'Error encountered in "RDAER"!'
-    !    CALL GC_Error( ErrMsg, RC, ThisLoc )
-    !    RETURN
-    ! ENDIF
+    ! Trap potential errors
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Error encountered in "RDAER"!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
 
-    ! !### Debug
-    ! IF ( prtDebug ) THEN
-    !    CALL DEBUG_MSG( '### Do_FlexChem: after RDAER' )
-    ! ENDIF
+    !### Debug
+    IF ( prtDebug ) THEN
+       CALL DEBUG_MSG( '### Do_FlexChem: after RDAER' )
+    ENDIF
 
     !=======================================================================
     ! If LDUST is turned on, then we have online dust aerosol in
@@ -596,114 +693,125 @@ CONTAINS
        RETURN
     ENDIF
 
-    DO N = 1, State_Chm%nSpecies
+    DO I = 1, State_Grid%NX
+       DO J = 1, State_Grid%NY
+          DO L = 1, State_Grid%NZ
+             DIURNF(I,J,L) = GET_DIURNAL(I,J,L, State_Met)
+          ENDDO
+       ENDDO
+    ENDDO
 
+    DO N = 1, State_Chm%nSpecies
        ! Get info about this species from the species database
        SpcInfo => State_Chm%SpcData(N)%Info
        !PRINT *, SpcInfo, '----'
-
-       IF ( TRIM( SpcInfo%Name ) == 'OH' ) THEN
-          !PRINT *, "SET OH",N,"   ",NVAR
-          State_Chm%Species(:,:,:,N) = HEM_OH(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'HO2' ) THEN
-          !PRINT *, "SET HO2",N
-          State_Chm%Species(:,:,:,N) = HEM_HO2(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'Br' ) THEN
-          !PRINT *, "SET NO2",N
-          State_Chm%Species(:,:,:,N) = HEM_Br(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'NO2' ) THEN
-          !PRINT *, "SET NO2",N
-          State_Chm%Species(:,:,:,N) = HEM_NO2(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'BrO' ) THEN
-          !PRINT *, "SET RO2",N
-          State_Chm%Species(:,:,:,N) = HEM_BrO(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'ClO' ) THEN
-          !PRINT *, "SET RO2",N
-          State_Chm%Species(:,:,:,N) = HEM_ClO(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'JHGHO2' ) THEN
-          !PRINT *, "SET RO2",N
-          State_Chm%Species(:,:,:,N) = HEM_JHGHO2(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'JHGNO2' ) THEN
-          !PRINT *, "SET RO2",N
-          State_Chm%Species(:,:,:,N) = HEM_JHGNO2(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'JHGOH' ) THEN
-          !PRINT *, "SET RO2",N
-          State_Chm%Species(:,:,:,N) = HEM_JHGOH(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'JHGBRO' ) THEN
-          !PRINT *, "SET RO2",N
-          State_Chm%Species(:,:,:,N) = HEM_JHGBRO(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'JHGCLOH' ) THEN
-          !PRINT *, "SET RO2",N
-          State_Chm%Species(:,:,:,N) = HEM_JHGCLOH(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'JHGBR' ) THEN
-          !PRINT *, "SET RO2",N
-          State_Chm%Species(:,:,:,N) = HEM_JHGBR(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'JHGAQ' ) THEN
-          !PRINT *, "SET RO2",N
-          State_Chm%Species(:,:,:,N) = HEM_JHGAQ(:,:,:)
-       ENDIF
-
        IF ( TRIM( SpcInfo%Name ) == 'CLDPROC' ) THEN
-          !PRINT *, "SET RO2",N
+          PRINT *, "CP",N
           State_Chm%Species(:,:,:,N) = HEM_CLDPROC(:,:,:)
        ENDIF
 
        IF ( TRIM( SpcInfo%Name ) == 'AERPROC' ) THEN
-          !PRINT *, "SET RO2",N
+          PRINT *, "AP",N
           State_Chm%Species(:,:,:,N) = HEM_AERPROC(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'O3' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_O3(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'OH' ) THEN
+          !PRINT *, "SET OH",N,"   ",NVAR
+          State_Chm%Species(:,:,:,N) = HEM_OH(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'HO2' ) THEN
+          !PRINT *, "SET HO2",N
+          State_Chm%Species(:,:,:,N) = HEM_HO2(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'Br' ) THEN
+          !PRINT *, "SET NO2",N
+          State_Chm%Species(:,:,:,N) = HEM_Br(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'NO2' ) THEN
+          !PRINT *, "SET NO2",N
+          State_Chm%Species(:,:,:,N) = HEM_NO2(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'BrO' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_BrO(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'ClO' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_ClO(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGHO2' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGHO2(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGNO2' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGNO2(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGOH' ) THEN
+          PRINT *, "JOH",N
+          PRINT *, SUM(HEM_JHGOH(:,:,1))/46/72
+          State_Chm%Species(:,:,:,N) = HEM_JHGOH(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGBRO' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGBRO(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGCLOH' ) THEN
+          !PRINT *, "SET RO2",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGCLOH(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGBR' ) THEN
+          PRINT *, "J1",N
+          State_Chm%Species(:,:,:,N) = HEM_JHGBR(:,:,:)*DIURNF
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'JHGAQ' ) THEN
+          PRINT *, "JAq",N
+          PRINT *, SUM(HEM_JHGAQ(:,:,1))/46/72
+          State_Chm%Species(:,:,:,N) = HEM_JHGAQ(:,:,:)*DIURNF
        ENDIF
 
        ! Free pointer
        SpcInfo => NULL()
-
     ENDDO
     !=======================================================================
     ! Call photolysis routine to compute J-Values
     !=======================================================================
-    ! IF ( Input_Opt%useTimers ) THEN
-    !    CALL Timer_End  ( "=> Gas-phase chem",     RC )
-    !    CALL Timer_Start( "=> FAST-JX photolysis", RC )
-    ! ENDIF
+    IF ( Input_Opt%useTimers ) THEN
+       CALL Timer_End  ( "=> Gas-phase chem",     RC )
+       CALL Timer_Start( "=> FAST-JX photolysis", RC )
+    ENDIF
 
-    ! Do Photolysis
-    ! CALL FAST_JX( WAVELENGTH, Input_Opt,  State_Chm, &
-    !               State_Diag, State_Grid, State_Met, RC )
+    !Do Photolysis
+    CALL FAST_JX( WAVELENGTH, Input_Opt,  State_Chm, &
+                  State_Diag, State_Grid, State_Met, RC )
 
-    ! ! Trap potential errors
-    ! IF ( RC /= GC_SUCCESS ) THEN
-    !    ErrMsg = 'Error encountered in "FAST_JX"!'
-    !    CALL GC_Error( ErrMsg, RC, ThisLoc )
-    !    RETURN
-    ! ENDIF
+    ! Trap potential errors
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Error encountered in "FAST_JX"!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
 
-    ! IF ( Input_Opt%useTimers ) THEN
-    !    CALL Timer_End  ( "=> FAST-JX photolysis", RC )
-    !    CALL Timer_Start( "=> Gas-phase chem",     RC )
-    ! ENDIF
+    IF ( Input_Opt%useTimers ) THEN
+       CALL Timer_End  ( "=> FAST-JX photolysis", RC )
+       CALL Timer_Start( "=> Gas-phase chem",     RC )
+    ENDIF
 
     !### Debug
     IF ( prtDebug ) THEN
@@ -998,9 +1106,9 @@ CONTAINS
        !====================================================================
        ! Get rates for heterogeneous chemistry
        !====================================================================
-        !IF ( DO_HETCHEM ) THEN
-        !   CALL SET_HET( I, J, L, Input_Opt, State_Chm, State_Met )
-        !ENDIF
+        IF ( DO_HETCHEM ) THEN
+           CALL SET_HET( I, J, L, Input_Opt, State_Chm, State_Met )
+        ENDIF
 
        !====================================================================
        ! Initialize species concentrations
@@ -1806,6 +1914,49 @@ CONTAINS
 
   END SUBROUTINE Diag_OH_HO2_O1D_O3P
 !EOC
+  FUNCTION GET_DIURNAL( I, J, L, State_Met ) RESULT( SCALEF )
+!
+! !USES:
+!
+    USE State_Met_Mod,      ONLY : MetState
+    USE TIME_MOD,           ONLY : GET_TS_CHEM
+!
+! !INPUT PARAMETERS:
+!
+    INTEGER,        INTENT(IN)  :: I              ! Longitude index
+    INTEGER,        INTENT(IN)  :: J              ! Latitude index
+    INTEGER,        INTENT(IN)  :: L              ! Level index
+    TYPE(MetState), INTENT(IN)  :: State_Met      ! Meteorology State object
+!
+! !RETURN VALUE:
+!
+    REAL(fp)                    :: SCALEF   ! Scale mean to inst.
+!
+! !REVISION HISTORY:
+!  25 Jun 2020 - C. Thackray
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+
+    ! Test for sunlight...
+    IF ( State_Met%SUNCOS(I,J) > 0e+0_fp .and.  TCOSZ(I,J) > 0e+0_fp ) THEN
+
+       ! Impose a diurnal variation on OH during the day
+       ! OH from HEMCO is in kg/m3
+       SCALEF = ( State_Met%SUNCOS(I,J)  / TCOSZ(I,J) )
+
+       ! Make sure OH is not negative
+       SCALEF = MAX( SCALEF, 0e+0_fp )
+
+    ELSE
+
+       ! At night, OH goes to zero
+       SCALEF = 0e+0_fp
+
+    ENDIF
+
+  END FUNCTION GET_DIURNAL
+!EOC
 !------------------------------------------------------------------------------
 !                  GEOS-Chem Global Chemical Transport Model                  !
 !------------------------------------------------------------------------------
@@ -2098,6 +2249,14 @@ CONTAINS
     ENDIF
     ENDIF
 
+!    ALLOCATE( TCOSZ( State_Grid%NX, State_Grid%NY ), STAT=RC )
+    ALLOCATE( TCOSZ( 72, 46 ), STAT=RC )
+    CALL GC_CheckVar( 'mercury_mod.F90:TCOSZ', 0, RC )
+    IF ( RC /= GC_SUCCESS ) RETURN
+    TCOSZ = 0e+0_fp
+
+
+
   END SUBROUTINE Init_FlexChem
 !EOC
 !------------------------------------------------------------------------------
@@ -2165,6 +2324,9 @@ CONTAINS
        CALL GC_CheckVar( 'flexchem_mod.F90:JvCountMon', 2, RC )
        IF ( RC /= GC_SUCCESS ) RETURN
     ENDIF
+
+    IF ( ALLOCATED( TCOSZ    ) ) DEALLOCATE( TCOSZ    )
+
 
   END SUBROUTINE Cleanup_FlexChem
 !EOC

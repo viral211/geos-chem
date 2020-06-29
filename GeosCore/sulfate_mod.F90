@@ -7238,12 +7238,12 @@ CONTAINS
     !=================================================================
     ! Error check
     !=================================================================
-    IF ( ( .not. Input_Opt%ITS_A_FULLCHEM_SIM )   .and. &
-         ( .not. Input_Opt%ITS_AN_AEROSOL_SIM ) ) THEN
-       ErrMsg = 'Invalid simulation for sulfate_mod!'
-       CALL GC_Error( ErrMsg, RC, ThisLoc )
-       RETURN
-    ENDIF
+    ! IF ( ( .not. Input_Opt%ITS_A_FULLCHEM_SIM )   .and. &
+    !      ( .not. Input_Opt%ITS_AN_AEROSOL_SIM ) ) THEN
+    !    ErrMsg = 'Invalid simulation for sulfate_mod!'
+    !    CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !    RETURN
+    ! ENDIF
 
     !=================================================================
     ! Allocate arrays

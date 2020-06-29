@@ -74,12 +74,25 @@ JHGAQ      = IGNORE; {For organic Hg(II)}
 CLDPROC    = IGNORE; {Cloud processing}
 AERPROC    = IGNORE; {Aerosol processing}
 STRTPROC   = IGNORE; {Strat. aerosol processing}
-
+O3         = IGNORE;
+SO4        = IGNORE;
+BCPI       = IGNORE;
+POA1       = IGNORE;
+OCPI       = IGNORE;
+SALA       = IGNORE;
+SALC       = IGNORE;
 
 #EQUATIONS
 //
 // Gas-phase reactions
 //
+Hg0     + O3     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
+Hg0     + SO4     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
+Hg0     + BCPI     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
+Hg0     + POA1     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
+Hg0     + OCPI     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
+Hg0     + SALA     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
+Hg0     + SALC     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
 {OXIDATION BY BR}
 Hg0     + Br     = HGBR :       GCJPLPR(1.46E-32, 1.86E+00, 0.0, 1.46e-11,1.86,0.0,0.6,0.0,0.0);
 HGBR             = Hg0 :        GCJPLPR(1.6E-9, 1.86E+00, -7801.0, 1.6E12,1.86,-7801.0,0.6,0.0,0.0);
@@ -92,13 +105,15 @@ HGBR    + BrO    = HGBRBRO :    GCJPLPR(2.3E-29, 4.4E+00, 0.0, 6.9e-11,2.40,0.0,
 HGBR    + Br     = HGBR2 :      GCARR(3.0E-11,0.0,0.0);
 HGBR    + OH     = HGBROH :     GCJPLPR(2.3E-29, 4.4E+00, 0.0, 6.9e-11,2.40,0.0,0.6,0.0,0.0); 
 HGBR    + JHGBR  = Hg0 :        GCARR(1.0,0.0,0.0);
-HGBRNO2 + JHGNO2 = HGBROH :     GCARR(1.0,0.0,0.0);
+{HGBRNO2 + JHGNO2 = HGBROH :     GCARR(1.0,0.0,0.0);
 HGBRHO2 + JHGHO2 = HGBROH :     GCARR(1.0,0.0,0.0);
+}
 {HGBRRO2 + JHGHO2 = HGBROH :     GCARR(1.0,0.0,0.0);}
-HGBROH  + JHGOH  = HGBR :       GCARR(1.0,0.0,0.0);
+{HGBROH  + JHGOH  = HGBR :       GCARR(1.0,0.0,0.0);
 HGBR2   + JHGOH  = HGBR :       GCARR(1.0,0.0,0.0);
 HGBRBRO + JHGBRO  = HGBR :      GCARR(1.0,0.0,0.0);
 HGBRCLO + JHGBRO  = HGBR :      GCARR(1.0,0.0,0.0);
+}
 {OXIDATION BY OH}
 {Hg0     + OH     = HGOH :       GCDIB(3.34E-33, 43.0);} {Rate k includes [M]} 
 {HGOH    + O2     = Hg0 :        GCARR(1.22E-9, -5720.0);} 
@@ -135,9 +150,12 @@ HGCLNO2 + JHGCLOH = HGCL:       GCARR(1.0,0.0,0.0);
 HGCLBRO + JHGCLOH = HGCL :      GCARR(1.0,0.0,0.0);
 HGCLCLO + JHGCLOH = HGCL :      GCARR(1.0,0.0,0.0);
 HGCLBR  + JHGCLOH = HGCL :      GCARR(1.0,0.0,0.0);
+HGORG   + JHGAQ   = Hg0 :       GCARR(1.0,0.0,0.0);
+HgP     + JHGAQ   = Hg0 :       GCARR(1.0,0.0,0.0);
 {CLOUD PROCESSING}
-HGBRHO2 + CLDPROC = HGORG :     GCARR(1.0,0.0,0.0);
 {HGBRRO2 + CLDPROC = HGORG :     GCARR(1.0,0.0,0.0);}
+{
+HGBRHO2 + CLDPROC = HGORG :     GCARR(1.0,0.0,0.0);
 HGBRNO2 + CLDPROC = HGORG :     GCARR(1.0,0.0,0.0);
 HGBRBRO + CLDPROC = HGORG :     GCARR(1.0,0.0,0.0);
 HGBRCLO + CLDPROC = HGORG :     GCARR(1.0,0.0,0.0);
@@ -149,23 +167,24 @@ HGCLBRO + CLDPROC = HGORG :     GCARR(1.0,0.0,0.0);
 HGCLCLO + CLDPROC = HGORG :     GCARR(1.0,0.0,0.0);
 HGCLOH  + CLDPROC = HGORG :     GCARR(1.0,0.0,0.0);
 HGCLBR  + CLDPROC = HGORG :     GCARR(1.0,0.0,0.0);
-HGORG   + JHGAQ   = Hg0 :       GCARR(1.0,0.0,0.0);
+}
 {PARTICLE PROCESSING}
-HGBRHO2 + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-{HGBRRO2 + AERPROC = HGP :       GCARR(1.0,0.0,0.0);}
-HGBRNO2 + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGBRBRO + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGBRCLO + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGBROH  + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGBR2   + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGORG   + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGCLHO2 + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGCLNO2 + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGCLBRO + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGCLCLO + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGCLOH  + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGCLBR  + AERPROC = HGP :       GCARR(1.0,0.0,0.0);
-HGP     + JHGAQ   = Hg0 :       GCARR(1.0,0.0,0.0);
+{HGBRRO2 + AERPROC = HgP :       GCARR(1.0,0.0,0.0);}
+{
+HGBRHO2 + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGBRNO2 + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGBRBRO + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGBRCLO + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGBROH  + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGBR2   + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGORG   + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGCLHO2 + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGCLNO2 + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGCLBRO + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGCLCLO + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGCLOH  + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+HGCLBR  + AERPROC = HgP :       GCARR(1.0,0.0,0.0);
+}
 {STRAT}
 {
 HGBRHO2 + STRTPROC = HGSTRAT :  GCARR(1.0,0.0,0.0);
@@ -186,8 +205,40 @@ HGCLBR  + STRTPROC = HGSTRAT :  GCARR(1.0,0.0,0.0);
 //
 // Heterogeneous reactions
 //
-
+{HGBRRO2 = HgP :       HET(ind_HGBRNO2,2);}
+HGBRHO2  = HgP :       HET(ind_HGBRNO2,2);
+HGBRNO2  = HgP :       HET(ind_HGBRNO2,2);
+HGBRBRO  = HgP :       HET(ind_HGBRNO2,2);
+HGBRCLO  = HgP :       HET(ind_HGBRNO2,2);
+HGBROH   = HgP :       HET(ind_HGBRNO2,2);
+HGBR2    = HgP :       HET(ind_HGBRNO2,2);
+HGORG    = HgP :       HET(ind_HGBRNO2,2);
+HGCLHO2  = HgP :       HET(ind_HGBRNO2,2);
+HGCLNO2  = HgP :       HET(ind_HGBRNO2,2);
+HGCLBRO  = HgP :       HET(ind_HGBRNO2,2);
+HGCLCLO  = HgP :       HET(ind_HGBRNO2,2);
+HGCLOH   = HgP :       HET(ind_HGBRNO2,2);
+HGCLBR   = HgP :       HET(ind_HGBRNO2,2);
+{HGBRRO2  = HGORG :     HET(ind_HGBRNO2,1);}
+HGBRHO2  = HGORG :     HET(ind_HGBRNO2,1);
+HGBRNO2  = HGORG :     HET(ind_HGBRNO2,1);
+HGBRBRO  = HGORG :     HET(ind_HGBRNO2,1);
+HGBRCLO  = HGORG :     HET(ind_HGBRNO2,1);
+HGBROH   = HGORG :     HET(ind_HGBRNO2,1);
+HGBR2    = HGORG :     HET(ind_HGBRNO2,1);
+HGCLHO2  = HGORG :     HET(ind_HGBRNO2,1);
+HGCLNO2  = HGORG :     HET(ind_HGBRNO2,1);
+HGCLBRO  = HGORG :     HET(ind_HGBRNO2,1);
+HGCLCLO  = HGORG :     HET(ind_HGBRNO2,1);
+HGCLOH   = HGORG :     HET(ind_HGBRNO2,1);
+HGCLBR   = HGORG :     HET(ind_HGBRNO2,1);
 //
 // Photolysis reactions
 //
+HGBRHO2 + hv = HGBR :                          PHOTOL(11); 
+HGBRNO2 + hv = HGBR :                          PHOTOL(11); 
+HGBROH + hv = HGBR :                          PHOTOL(11); 
+HGBRCLO + hv = HGBR :                          PHOTOL(11); 
+HGBRBRO + hv = HGBR :                          PHOTOL(11); 
+HGBR2 + hv = HGBR :                          PHOTOL(11); 
 

@@ -590,7 +590,8 @@ CONTAINS
     !-----------------------------------------------------------------
     ! Initialize "carbon_mod.F90"
     !-----------------------------------------------------------------
-    IF ( Input_Opt%LCARB ) THEN
+    IF ( Input_Opt%LCARB  .or. &
+         Input_Opt%ITS_A_MERCURY_SIM ) THEN
        CALL Init_Carbon( Input_Opt, State_Chm, State_Diag, State_Grid, RC )
        IF ( RC /= GC_SUCCESS ) THEN
           ErrMsg = 'Error encountered in ""!'
@@ -602,7 +603,8 @@ CONTAINS
     !-----------------------------------------------------------------
     ! Initialize "dust_mod.F90"
     !-----------------------------------------------------------------
-    IF ( Input_Opt%LDUST ) then
+    IF ( Input_Opt%LDUST   .or. &
+         Input_Opt%ITS_A_MERCURY_SIM ) then
        CALL Init_Dust( Input_Opt, State_Chm, State_Diag, State_Grid, RC )
        IF ( RC /= GC_SUCCESS ) THEN
           ErrMsg = 'Error encountered in "Init_Dust"!'
@@ -614,7 +616,8 @@ CONTAINS
     !-----------------------------------------------------------------
     ! Initialize "seasalt_mod.F90"
     !-----------------------------------------------------------------
-    IF ( Input_Opt%LSSALT ) THEN
+    IF ( Input_Opt%LSSALT   .or. &
+         Input_Opt%ITS_A_MERCURY_SIM ) THEN
        CALL Init_Seasalt( Input_Opt, State_Chm, State_Diag, State_Grid, RC )
        IF ( RC /= GC_SUCCESS ) THEN
           ErrMsg = 'Error encountered in "Init_Seasalt"!'
@@ -626,7 +629,8 @@ CONTAINS
     !-----------------------------------------------------------------
     ! Initialize "sulfate_mod.F90"
     !-----------------------------------------------------------------
-    IF ( Input_Opt%LSULF ) THEN
+    IF ( Input_Opt%LSULF   .or. &
+         Input_Opt%ITS_A_MERCURY_SIM ) THEN
        CALL Init_Sulfate( Input_Opt, State_Chm, State_Diag, State_Grid, RC )
        IF ( RC /= GC_SUCCESS ) THEN
           ErrMsg = 'Error encountered in "Init_Sulfate"!'
@@ -639,7 +643,8 @@ CONTAINS
     ! Initialize "aerosol_mod.F90"
     !-----------------------------------------------------------------
     IF ( Input_Opt%LSULF .or. Input_Opt%LCARB    .or. &
-         Input_Opt%LDUST .or. Input_Opt%LSSALT ) THEN
+         Input_Opt%LDUST .or. Input_Opt%LSSALT   .or. &
+         Input_Opt%ITS_A_MERCURY_SIM ) THEN
        CALL Init_Aerosol( Input_Opt, State_Chm, State_Diag, State_Grid, RC )
        IF ( RC /= GC_SUCCESS ) THEN
           ErrMsg = 'Error encountered in "Init_Aerosol"!'

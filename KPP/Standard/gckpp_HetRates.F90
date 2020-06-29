@@ -21,7 +21,7 @@ MODULE GCKPP_HETRATES
   USE ERROR_MOD,          ONLY : IS_SAFE_DIV, SAFE_DIV
   USE gckpp_Precision
   USE gckpp_Parameters
-  !USE gckpp_Global,       ONLY : HET
+  USE gckpp_Global,       ONLY : HET
   USE State_Chm_Mod,      ONLY : ChmState
   USE State_Chm_Mod,      ONLY : Ind_
   USE State_Met_Mod,      ONLY : MetState
@@ -145,7 +145,6 @@ MODULE GCKPP_HETRATES
   ! Arrays
   REAL(fp) :: XAREA(25), XRADI(25), XVOL(25), XH2O(25)
   REAL(fp) :: KHETI_SLA(11)
-  REAL(fp) :: HET
 
 !$OMP THREADPRIVATE( NAEROTYPE,        NATSURFACE, PSCBOX,   STRATBOX )
 !$OMP THREADPRIVATE( TEMPK,        RELHUM,     SPC_NIT,  SPC_SO4  )
@@ -720,8 +719,15 @@ MODULE GCKPP_HETRATES
 
       ! Zero the HET array
        HET = 0.0_dp
-
-      ! ! Calculate genuine first-order uptake reactions first
+       !HET(ind_HGBRNO2, 1) = 1e-6
+       !HET(ind_HGBRNO2, 2) = 1e-5
+       HET(ind_HGBRNO2, 1) = CloudHet( 'HG2', CldFr, Aliq, &
+            Aice, rLiq, rIce, TempK, XDenA )
+       HET(ind_HGBRNO2, 2) = HetHGAER( 0.327e+0_fp, 1.0E-1_fp )
+        !PRINT *, HET(ind_HGBRNO2, 1)
+        !PRINT *, HET(ind_HGBRNO2, 2)
+        !PRINT *, '-'
+       ! ! Calculate genuine first-order uptake reactions first
       ! HET(ind_HO2,    1) = HetHO2(        MW_HO2,    2E-1_fp)
       ! HET(ind_NO2,    1) = HetNO2(        MW_NO2,    1E-4_fp)
       ! HET(ind_NO3,    1) = HetNO3(        MW_NO3,    1E-1_fp)
@@ -1089,6 +1095,12 @@ MODULE GCKPP_HETRATES
          gammaIce = 0.025e+0_fp
          molmass  = mHO2
 
+      case ('HG2')
+
+         gammaLiq = 0.1e+0_fp
+         gammaIce = 0.000e+0_fp
+         molmass  = 0.327e+0_fp !HgBrNO2
+
       case ('NO2')
 
          gammaLiq = 1e-8_fp
@@ -1223,6 +1235,80 @@ MODULE GCKPP_HETRATES
       kHet = kI / ( 1e0_fp + safe_div( 1e0_fp, xx, 1e30_fp ) )
 
     end function CloudHet
+!EOC
+!------------------------------------------------------------------------------
+!                  GEOS-Chem Global Chemical Transport Model                  !
+!------------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: HetHGAER
+!
+! !DESCRIPTION: Set the heterogenous chemistry rate for NO3.
+!\\
+!\\
+! !INTERFACE:
+!
+    FUNCTION HETHGAER( A, B ) RESULT( HET_HG )
+!
+! !INPUT PARAMETERS:
+!
+      ! Rate coefficients
+      REAL(fp), INTENT(IN) :: A, B
+!
+! !RETURN VALUE:
+!
+      REAL(fp)             :: HET_HG
+!
+! !REMARKS:
+!
+! !REVISION HISTORY:
+!  29 Mar 2016 - R. Yantosca  - Added ProTeX header
+!  01 Apr 2016 - R. Yantosca  - Define N, XSTKCF, ADJUSTEDRATE locally
+!  01 Apr 2016 - R. Yantosca  - Replace KII_KI with DO_EDUCT local variable
+!  23 Aug 2018 - C. D. Holmes - Updated Gamma values
+!  06 Nov 2019 - R. Yantosca  - Force flexible precision with _fp
+!EOP
+!------------------------------------------------------------------------------
+!BOC
+!
+! !LOCAL VARIABLES:
+!
+      LOGICAL  :: DO_EDUCT
+      INTEGER  :: N
+      REAL(fp) :: XSTKCF, ADJUSTEDRATE
+
+      ! Initialize
+      HET_HG      = 0.0_fp
+      ADJUSTEDRATE = 0.0_fp
+      XSTKCF       = 0.0_fp
+
+      ! Don't do PSC rate adjustment
+      DO_EDUCT     = .FALSE.
+
+      ! Loop over aerosol types
+      DO N = 1, NAEROTYPE
+
+         XSTKCF = B
+
+         IF  ( ( N .eq. 9 ) .or. ( N .eq. 10 ) .or. &
+              (N .ge. 13) ) THEN
+            ! Calculate for stratospheric liquid aerosol
+            ! Note that XSTKCF is actually a premultiplying
+            ! factor in this case, including c-bar
+            ADJUSTEDRATE = 0.0
+         ELSE
+            ! Reaction rate for surface of aerosol
+            ADJUSTEDRATE=ARSL1K(XAREA(N),XRADI(N),XDENA,XSTKCF,XTEMP, &
+                  (A**0.5_FP))
+            !PRINT *, N, ADJUSTEDRATE
+         ENDIF
+
+         ! Add to overall reaction rate
+         HET_HG = HET_HG + ADJUSTEDRATE
+
+      ENDDO
+
+    END FUNCTION HETHGAER
 !EOC
 !------------------------------------------------------------------------------
 !                  GEOS-Chem Global Chemical Transport Model                  !

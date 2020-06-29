@@ -6013,11 +6013,11 @@ CONTAINS
        ENDIF
     ENDIF
 
-    IF ( Input_Opt%LSVPOA .and. ( .NOT. Input_Opt%LSOA ) ) THEN
-       MSG = 'Semivolatile POA requires COMPLEX SOA (LSOA=T)'
-       CALL GC_Error( Msg, RC, Location )
-       RETURN
-    ENDIF
+    ! IF ( Input_Opt%LSVPOA .and. ( .NOT. Input_Opt%LSOA ) ) THEN
+    !    MSG = 'Semivolatile POA requires COMPLEX SOA (LSOA=T)'
+    !    CALL GC_Error( Msg, RC, Location )
+    !    RETURN
+    ! ENDIF
 
     ! SOAupdate: Error check (hotp 8/24/09)
     ! OCPI and OCPO are the non-volatile POA species
@@ -6032,12 +6032,12 @@ CONTAINS
           CALL GC_Error( Msg, RC, Location )
           RETURN
        ENDIF
-       IF ( ( .NOT. Input_Opt%LSOA   ) .or. &
-            ( .NOT. Input_Opt%LSVPOA ) ) THEN
-          MSG = 'Semivolatile POA requires LSOA=T and LSVPOA=T'
-          CALL GC_Error( Msg, RC, Location )
-          RETURN
-       ENDIF
+       ! IF ( ( .NOT. Input_Opt%LSOA   ) .or. &
+       !      ( .NOT. Input_Opt%LSVPOA ) ) THEN
+       !    MSG = 'Semivolatile POA requires LSOA=T and LSVPOA=T'
+       !    CALL GC_Error( Msg, RC, Location )
+       !    RETURN
+       ! ENDIF
     ENDIF
 
     ! SOAupdate

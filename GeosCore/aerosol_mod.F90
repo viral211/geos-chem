@@ -1193,7 +1193,7 @@ CONTAINS
           ! Get the species database index from the species database
           ! mapping array for hygroscopic growth species
           N  = State_Chm%Map_HygGrth(I)
-
+          PRINT *, N
           ! Point to the Species Database entry for species N
           SpcInfo => State_Chm%SpcData(N)%Info
 
