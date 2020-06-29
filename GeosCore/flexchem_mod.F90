@@ -238,6 +238,9 @@ CONTAINS
     REAL(f4), POINTER      :: HEM_OCPI(:,:,:)  => NULL()
     REAL(f4), POINTER      :: HEM_SALA(:,:,:)  => NULL()
     REAL(f4), POINTER      :: HEM_SALC(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_NIT(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_NH4(:,:,:)  => NULL()
+    REAL(f4), POINTER      :: HEM_DST1(:,:,:)  => NULL()
 
     CALL HCO_GetPtr( HcoState, 'GLOBAL_OH', &
          HEM_OH,   RC                             )
@@ -415,6 +418,30 @@ CONTAINS
        RETURN
     ENDIF
 
+    CALL HCO_GetPtr( HcoState, 'AERO_NH4', &
+         HEM_NH4,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to AERO_NH4!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'AERO_NIT', &
+         HEM_NIT,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to AERO_NIT!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
+    CALL HCO_GetPtr( HcoState, 'AERO_DST1', &
+         HEM_DST1,   RC                             )
+    IF ( RC /= GC_SUCCESS ) THEN
+       ErrMsg = 'Cannot get pointer to AERO_DST1!'
+       CALL GC_Error( ErrMsg, RC, ThisLoc )
+       RETURN
+    ENDIF
+
     CALL OHNO3TIME( State_Grid )
 
     !=======================================================================
@@ -498,11 +525,90 @@ CONTAINS
 #endif
 
     !=======================================================================
+    ! Zero out certain species:
+    !    - isoprene oxidation counter species (dkh, bmy, 6/1/06)
+    !    - isoprene-NO3 oxidation counter species (hotp, 6/1/10)
+    !    - if SOA or SOA_SVPOA, aromatic oxidation counter species
+    !      (dkh, 10/06/06)
+    !    - if SOA_SVPOA, LNRO2H and LNRO2N for NAP (hotp 6/25/09
+    !=======================================================================
+    DO N = 1, State_Chm%nSpecies
+
+       ! Get info about this species from the species database
+       SpcInfo => State_Chm%SpcData(N)%Info
+       !PRINT *, SpcInfo, '----'
+       ! isoprene oxidation counter species
+       IF ( TRIM( SpcInfo%Name ) == 'LISOPOH' .or. &
+            TRIM( SpcInfo%Name ) == 'LISOPNO3' ) THEN
+          State_Chm%Species(:,:,:,N) = 0e+0_fp
+       ENDIF
+
+       ! aromatic oxidation counter species
+       IF ( Input_Opt%LSOA .or. Input_Opt%LSVPOA ) THEN
+          SELECT CASE ( TRIM( SpcInfo%Name ) )
+             CASE ( 'LBRO2H', 'LBRO2N', 'LTRO2H', 'LTRO2N', &
+                    'LXRO2H', 'LXRO2N', 'LNRO2H', 'LNRO2N' )
+                State_Chm%Species(:,:,:,N) = 0e+0_fp
+          END SELECT
+       ENDIF
+
+       ! Temporary fix for CO2
+       ! CO2 is a dead species and needs to be set to zero to
+       ! match the old SMVGEAR code (mps, 6/14/16)
+       IF ( TRIM( SpcInfo%Name ) == 'CO2' ) THEN
+          State_Chm%Species(:,:,:,N) = 0e+0_fp
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'SO4' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_SO4(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'NH4' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_NH4(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'NIT' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_NIT(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'DST1' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_DST1(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'BCPI' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_BCPI(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'POA1' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_POA1(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'OCPI' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_OCPI(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'SALA' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_SALA(:,:,:)
+       ENDIF
+
+       IF ( TRIM( SpcInfo%Name ) == 'SALC' ) THEN
+          State_Chm%Species(:,:,:,N) = HEM_SALC(:,:,:)
+       ENDIF
+
+
+
+       ! Free pointer
+       SpcInfo => NULL()
+
+    ENDDO
+
+    !=======================================================================
     ! Get concentrations of aerosols in [kg/m3]
     ! for FAST-JX and optical depth diagnostics
     !=======================================================================
     IF ( Input_Opt%LSULF .or. Input_Opt%LCARB .or. &
-         Input_Opt%LDUST .or. Input_Opt%LSSALT ) THEN
+         Input_Opt%LDUST .or. Input_Opt%LSSALT .or. &
+         Input_Opt%ITS_A_MERCURY_SIM ) THEN
 
        ! Special handling for UCX
        IF ( Input_Opt%LUCX ) THEN
@@ -538,72 +644,6 @@ CONTAINS
 
     ENDIF
 
-    !=======================================================================
-    ! Zero out certain species:
-    !    - isoprene oxidation counter species (dkh, bmy, 6/1/06)
-    !    - isoprene-NO3 oxidation counter species (hotp, 6/1/10)
-    !    - if SOA or SOA_SVPOA, aromatic oxidation counter species
-    !      (dkh, 10/06/06)
-    !    - if SOA_SVPOA, LNRO2H and LNRO2N for NAP (hotp 6/25/09
-    !=======================================================================
-    DO N = 1, State_Chm%nSpecies
-
-       ! Get info about this species from the species database
-       SpcInfo => State_Chm%SpcData(N)%Info
-       !PRINT *, SpcInfo, '----'
-       ! isoprene oxidation counter species
-       IF ( TRIM( SpcInfo%Name ) == 'LISOPOH' .or. &
-            TRIM( SpcInfo%Name ) == 'LISOPNO3' ) THEN
-          State_Chm%Species(:,:,:,N) = 0e+0_fp
-       ENDIF
-
-       ! aromatic oxidation counter species
-       IF ( Input_Opt%LSOA .or. Input_Opt%LSVPOA ) THEN
-          SELECT CASE ( TRIM( SpcInfo%Name ) )
-             CASE ( 'LBRO2H', 'LBRO2N', 'LTRO2H', 'LTRO2N', &
-                    'LXRO2H', 'LXRO2N', 'LNRO2H', 'LNRO2N' )
-                State_Chm%Species(:,:,:,N) = 0e+0_fp
-          END SELECT
-       ENDIF
-
-       ! Temporary fix for CO2
-       ! CO2 is a dead species and needs to be set to zero to
-       ! match the old SMVGEAR code (mps, 6/14/16)
-       IF ( TRIM( SpcInfo%Name ) == 'CO2' ) THEN
-          State_Chm%Species(:,:,:,N) = 0e+0_fp
-       ENDIF
-
-
-       IF ( TRIM( SpcInfo%Name ) == 'SO4' ) THEN
-          State_Chm%Species(:,:,:,N) = HEM_SO4(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'BCPI' ) THEN
-          State_Chm%Species(:,:,:,N) = HEM_BCPI(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'POA1' ) THEN
-          State_Chm%Species(:,:,:,N) = HEM_POA1(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'OCPI' ) THEN
-          State_Chm%Species(:,:,:,N) = HEM_OCPI(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'SALA' ) THEN
-          State_Chm%Species(:,:,:,N) = HEM_SALA(:,:,:)
-       ENDIF
-
-       IF ( TRIM( SpcInfo%Name ) == 'SALC' ) THEN
-          State_Chm%Species(:,:,:,N) = HEM_SALC(:,:,:)
-       ENDIF
-
-
-
-       ! Free pointer
-       SpcInfo => NULL()
-
-    ENDDO
 
     !=======================================================================
     ! Call RDAER -- computes aerosol optical depths
@@ -639,7 +679,7 @@ CONTAINS
     ! in GEOS-CHEM...so read monthly-mean dust files from disk.
     ! (rjp, tdf, bmy, 4/1/04)
     !=======================================================================
-    IF ( Input_Opt%LDUST ) THEN
+    IF ( Input_Opt%LDUST .or. Input_Opt%ITS_A_MERCURY_SIM ) THEN
        CALL RDUST_ONLINE( Input_Opt, State_Chm,  State_Diag, &
                           State_Grid, State_Met, SOILDUST,   WAVELENGTH, RC )
 

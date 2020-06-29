@@ -13,7 +13,7 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 ! 
 ! File                 : gckpp_Parameters.f90
-! Time                 : Sun Jun 28 17:51:27 2020
+! Time                 : Mon Jun 29 11:32:40 2020
 ! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
@@ -30,7 +30,7 @@ MODULE gckpp_Parameters
 
 
 ! NSPEC - Number of chemical species
-  INTEGER, PARAMETER :: NSPEC = 35 
+  INTEGER, PARAMETER :: NSPEC = 38 
 ! NVAR - Number of Variable species
   INTEGER, PARAMETER :: NVAR = 18 
 ! NFLUX - Number of Reaction Flux species
@@ -40,9 +40,9 @@ MODULE gckpp_Parameters
 ! NVARACT - Number of Active species
   INTEGER, PARAMETER :: NVARACT = 17 
 ! NFIX - Number of Fixed species
-  INTEGER, PARAMETER :: NFIX = 17 
+  INTEGER, PARAMETER :: NFIX = 20 
 ! NREACT - Number of reactions
-  INTEGER, PARAMETER :: NREACT = 64 
+  INTEGER, PARAMETER :: NREACT = 67 
 ! NVARST - Starting of variables in conc. vect.
   INTEGER, PARAMETER :: NVARST = 1 
 ! NFIXST - Starting of fixed in conc. vect.
@@ -102,6 +102,9 @@ MODULE gckpp_Parameters
   INTEGER, PARAMETER :: ind_OCPI = 33 
   INTEGER, PARAMETER :: ind_SALA = 34 
   INTEGER, PARAMETER :: ind_SALC = 35 
+  INTEGER, PARAMETER :: ind_NIT = 36 
+  INTEGER, PARAMETER :: ind_NH4 = 37 
+  INTEGER, PARAMETER :: ind_DST1 = 38 
 
 ! Index declaration for fixed species in FIX
 !    FIX(indf_spc) = C(ind_spc) = C(NVAR+indf_spc)
@@ -123,6 +126,9 @@ MODULE gckpp_Parameters
   INTEGER, PARAMETER :: indf_OCPI = 15 
   INTEGER, PARAMETER :: indf_SALA = 16 
   INTEGER, PARAMETER :: indf_SALC = 17 
+  INTEGER, PARAMETER :: indf_NIT = 18 
+  INTEGER, PARAMETER :: indf_NH4 = 19 
+  INTEGER, PARAMETER :: indf_DST1 = 20 
 
 END MODULE gckpp_Parameters
 

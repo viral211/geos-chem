@@ -1393,14 +1393,14 @@ CONTAINS
        ! NOTE: we need to call this for a dry-run so that we can get
        ! a list of all of the lookup tables etc. that FAST-JX reads
        !--------------------------------------------------------------------
-       ! CALL Init_FJX( Input_Opt, State_Chm, State_Diag, State_Grid, RC )
+       CALL Init_FJX( Input_Opt, State_Chm, State_Diag, State_Grid, RC )
 
-       ! ! Trap potential errors
-       ! IF ( RC /= GC_SUCCESS ) THEN
-       !    ErrMsg = 'Error encountered in "Init_FJX"!'
-       !    CALL GC_Error( ErrMsg, RC, ThisLoc )
-       !    RETURN
-       ! ENDIF
+       ! Trap potential errors
+       IF ( RC /= GC_SUCCESS ) THEN
+          ErrMsg = 'Error encountered in "Init_FJX"!'
+          CALL GC_Error( ErrMsg, RC, ThisLoc )
+          RETURN
+       ENDIF
 
     ENDIF
 

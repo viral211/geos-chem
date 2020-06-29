@@ -81,6 +81,9 @@ POA1       = IGNORE;
 OCPI       = IGNORE;
 SALA       = IGNORE;
 SALC       = IGNORE;
+NIT       = IGNORE;
+NH4       = IGNORE;
+DST1      = IGNORE;
 
 #EQUATIONS
 //
@@ -93,6 +96,9 @@ Hg0     + POA1     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
 Hg0     + OCPI     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
 Hg0     + SALA     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
 Hg0     + SALC     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
+Hg0     + NIT     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
+Hg0     + NH4     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
+Hg0     + DST1     = HGBR :       GCARR(1.0E-32, 0.0, 0.0);
 {OXIDATION BY BR}
 Hg0     + Br     = HGBR :       GCJPLPR(1.46E-32, 1.86E+00, 0.0, 1.46e-11,1.86,0.0,0.6,0.0,0.0);
 HGBR             = Hg0 :        GCJPLPR(1.6E-9, 1.86E+00, -7801.0, 1.6E12,1.86,-7801.0,0.6,0.0,0.0);

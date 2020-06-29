@@ -719,14 +719,14 @@ MODULE GCKPP_HETRATES
 
       ! Zero the HET array
        HET = 0.0_dp
-       !HET(ind_HGBRNO2, 1) = 1e-6
-       !HET(ind_HGBRNO2, 2) = 1e-5
        HET(ind_HGBRNO2, 1) = CloudHet( 'HG2', CldFr, Aliq, &
             Aice, rLiq, rIce, TempK, XDenA )
        HET(ind_HGBRNO2, 2) = HetHGAER( 0.327e+0_fp, 1.0E-1_fp )
-        !PRINT *, HET(ind_HGBRNO2, 1)
-        !PRINT *, HET(ind_HGBRNO2, 2)
-        !PRINT *, '-'
+       IF ((I .eq. 35) .and. (J .eq. 35) .and. (L .eq. 4)) THEN
+          PRINT *, HET(ind_HGBRNO2, 1)
+          PRINT *, HET(ind_HGBRNO2, 2)
+          PRINT *, '-'
+       ENDIF
        ! ! Calculate genuine first-order uptake reactions first
       ! HET(ind_HO2,    1) = HetHO2(        MW_HO2,    2E-1_fp)
       ! HET(ind_NO2,    1) = HetNO2(        MW_NO2,    1E-4_fp)
@@ -1290,8 +1290,8 @@ MODULE GCKPP_HETRATES
 
          XSTKCF = B
 
-         IF  ( ( N .eq. 9 ) .or. ( N .eq. 10 ) .or. &
-              (N .ge. 13) ) THEN
+         !IF  ( ( N .eq. 9 ) .or. ( N .eq. 10 ) .or. &
+         IF (    (N .ge. 13) ) THEN
             ! Calculate for stratospheric liquid aerosol
             ! Note that XSTKCF is actually a premultiplying
             ! factor in this case, including c-bar

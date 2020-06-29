@@ -1245,8 +1245,8 @@ CONTAINS
              Formula       = ''
              MW_g          = 29.0_fp
              Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
+             Is_Drydep     = F
+             Is_Wetdep     = F
              Density       = 2500.0_fp
              Radius        = 7.3e-7_fp
              DD_DustDryDep = T
@@ -2826,8 +2826,8 @@ CONTAINS
              Formula       = 'NH4'
              MW_g          = 18.0_fp
              Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
+             Is_Drydep     = F
+             Is_Wetdep     = F
              DD_DvzAerSnow = 0.03_fp
              DD_DvzMinVal  = DvzMinVal
              DD_F0         = 0.0_fp
@@ -2855,8 +2855,8 @@ CONTAINS
              Formula       = ''
              MW_g          = 62.0_fp
              Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
+             Is_Drydep     = F
+             Is_Wetdep     = F
              Is_Photolysis = T
              DD_DvzAerSnow = 0.03_fp
              DD_DvzMinVal  = DvzMinVal

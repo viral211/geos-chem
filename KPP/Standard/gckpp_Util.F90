@@ -13,7 +13,7 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 !
 ! File                 : gckpp_Util.f90
-! Time                 : Sun Jun 28 17:51:27 2020
+! Time                 : Mon Jun 29 11:32:40 2020
 ! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
@@ -256,7 +256,7 @@ END SUBROUTINE GetMass
 ! Get_OHreactivity - returns the OH reactivity
 ! The OH reactivity is defined as the inverse of its lifetime.
 ! This routine was auto-generated using script OHreact_parser.py.
-! Generated on 2020-06-28
+! Generated on 2020-06-29
 ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SUBROUTINE Get_OHreactivity ( CC, RR, OHreact )
@@ -268,7 +268,7 @@ SUBROUTINE Get_OHreactivity ( CC, RR, OHreact )
 ! OHreact - OH reactivity [s-1]
   REAL(kind=dp) :: OHreact
 
-  OHreact = RR(16)*CC(8) + RR(25)*CC(15)
+  OHreact = RR(19)*CC(8) + RR(28)*CC(15)
 
 END SUBROUTINE Get_OHreactivity
 ! End of Get_OHreactivity subroutine

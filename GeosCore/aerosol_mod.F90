@@ -437,7 +437,7 @@ CONTAINS
        !
        ! Units of SO4_NH4_NIT are [kg/m3].  (rjp, bmy, 3/23/03)
        !==============================================================
-       IF ( LSULF ) THEN
+!       IF ( LSULF ) THEN
 
           IF ( LUCX ) THEN
 
@@ -530,7 +530,7 @@ CONTAINS
 
           ENDIF
 
-       ENDIF
+ !      ENDIF
 
        !==============================================================
        ! C A R B O N  &  2 n d A R Y   O R G A N I C   A E R O S O L S
@@ -538,7 +538,7 @@ CONTAINS
        ! Compute hydrophilic and hydrophobic BC and OC in [kg/m3]
        ! Also add online 2ndary organics if necessary
        !==============================================================
-       IF ( LCARB ) THEN
+       !IF ( LCARB ) THEN
 
           ! Hydrophilic BC [kg/m3]
           BCPI(I,J,L) = Spc(I,J,L,id_BCPI) / AIRVOL(I,J,L)
@@ -548,6 +548,8 @@ CONTAINS
 
           ! Hydrophobic OC [kg/m3]
           ! SOAupdate: Treat either OCPO (x2.1) or POA (x1.4)
+          OCPO(I,J,L) = ( Spc(I,J,L,id_POA1) ) &
+                           * OCFPOA(I,J) / AIRVOL(I,J,L)
           IF ( IS_POA ) THEN
              OCPO(I,J,L) = ( Spc(I,J,L,id_POA1) + Spc(I,J,L,id_POA2) ) &
                            * OCFPOA(I,J) / AIRVOL(I,J,L)
@@ -566,7 +568,7 @@ CONTAINS
           BCPO(I,J,L)    = MAX( BCPO(I,J,L), 1e-35_fp )
           OCPO(I,J,L)    = MAX( OCPO(I,J,L), 1e-35_fp )
 
-       ENDIF ! LCARB
+       !ENDIF ! LCARB
 
        !===========================================================
        ! M I N E R A L   D U S T   A E R O S O L S
@@ -655,7 +657,7 @@ CONTAINS
        !-----------------------------------------------------------
        ! Preserve original code for non-TOMAS simulations
        !-----------------------------------------------------------
-       IF ( LDUST ) THEN
+       !IF ( LDUST ) THEN
 
           ! Lump 1st dust tracer for het chem
           ! Now use dust size distribution scheme to improve PM2.5
@@ -666,11 +668,11 @@ CONTAINS
           SOILDUST(I,J,L,4) = 0.7111e+0_fp * Spc(I,J,L,id_DST1) / AIRVOL(I,J,L)
 
           ! Other hetchem bins
-          SOILDUST(I,J,L,5) = Spc(I,J,L,id_DST2) / AIRVOL(I,J,L)
-          SOILDUST(I,J,L,6) = Spc(I,J,L,id_DST3) / AIRVOL(I,J,L)
-          SOILDUST(I,J,L,7) = Spc(I,J,L,id_DST4) / AIRVOL(I,J,L)
+        !  SOILDUST(I,J,L,5) = Spc(I,J,L,id_DST2) / AIRVOL(I,J,L)
+        !  SOILDUST(I,J,L,6) = Spc(I,J,L,id_DST3) / AIRVOL(I,J,L)
+        !  SOILDUST(I,J,L,7) = Spc(I,J,L,id_DST4) / AIRVOL(I,J,L)
 
-       ENDIF
+       !ENDIF
 
 #endif
 
@@ -679,7 +681,7 @@ CONTAINS
        !
        ! Compute accumulation & coarse mode concentration [kg/m3]
        !===========================================================
-       IF ( LSSALT ) THEN
+!       IF ( LSSALT ) THEN
 
           ! Accumulation mode seasalt aerosol [kg/m3]
           SALA(I,J,L) = Spc(I,J,L,id_SALA) / AIRVOL(I,J,L)
@@ -691,7 +693,7 @@ CONTAINS
           SALA(I,J,L) = MAX( SALA(I,J,L), 1e-35_fp )
           SALC(I,J,L) = MAX( SALC(I,J,L), 1e-35_fp )
 
-       ENDIF
+ !      ENDIF
 
        !===========================================================
        ! S E C O N D A R Y   O R G A N I C   A E R O S O L S
@@ -1193,7 +1195,6 @@ CONTAINS
           ! Get the species database index from the species database
           ! mapping array for hygroscopic growth species
           N  = State_Chm%Map_HygGrth(I)
-          PRINT *, N
           ! Point to the Species Database entry for species N
           SpcInfo => State_Chm%SpcData(N)%Info
 
@@ -1231,7 +1232,7 @@ CONTAINS
     ! concentrations [kg/m3] from disk at the start of each month.
     ! (For fullchem simulations only)
     !=================================================================
-    IF ( LSULF ) THEN
+    !IF ( LSULF ) THEN
 
        !-----------------------------------
        ! Use online aerosol concentrations
@@ -1253,7 +1254,7 @@ CONTAINS
        ENDDO
        !$OMP END PARALLEL DO
 
-    ENDIF
+    !ENDIF
 
     !=================================================================
     ! C A R B O N  &  2 n d A R Y   O R G A N I C   A E R O S O L S
@@ -1269,7 +1270,7 @@ CONTAINS
     ! concentrations [kg/m3] from disk at the start of each month.
     ! (For full chemistry simulations only)
     !=================================================================
-    IF ( LCARB ) THEN
+!    IF ( LCARB ) THEN
 
        !-----------------------------------
        ! Use online aerosol concentrations
@@ -1303,7 +1304,7 @@ CONTAINS
        ENDDO
        !$OMP END PARALLEL DO
 
-    ENDIF
+ !   ENDIF
 
     !=================================================================
     ! S E A S A L T   A E R O S O L S
@@ -1320,7 +1321,7 @@ CONTAINS
     ! rather than carrying them separately.
     ! (For fullchem simulations only)
     !=================================================================
-    IF ( LSSALT ) THEN
+  !  IF ( LSSALT ) THEN
 
        !-----------------------------------
        ! Use online aerosol concentrations
@@ -1348,7 +1349,7 @@ CONTAINS
        ENDDO
        !$OMP END PARALLEL DO
 
-    ENDIF
+   ! ENDIF
 
     IF ( LUCX ) THEN
        ! For UCX-based mechanisms transfer stratospheric aerosol data
@@ -1371,11 +1372,11 @@ CONTAINS
     ! Representative aerosol densities (kg/m3):
     MSDENS(1) = State_Chm%SpcData(id_SO4)%Info%Density
     MSDENS(2) = State_Chm%SpcData(id_BCPI)%Info%Density
-    IF ( IS_POA ) THEN
-       MSDENS(3) = State_Chm%SpcData(id_POA1)%Info%Density
-    ELSE IF ( IS_OCPI ) THEN
-       MSDENS(3) = State_Chm%SpcData(id_OCPI)%Info%Density
-    ENDIF
+    !IF ( IS_POA ) THEN
+    MSDENS(3) = State_Chm%SpcData(id_POA1)%Info%Density
+    !ELSE IF ( IS_OCPI ) THEN
+     !  MSDENS(3) = State_Chm%SpcData(id_OCPI)%Info%Density
+    !ENDIF
     MSDENS(4) = State_Chm%SpcData(id_SALA)%Info%Density
     MSDENS(5) = State_Chm%SpcData(id_SALC)%Info%Density
 
@@ -1808,7 +1809,10 @@ CONTAINS
                 ! to list them following the dust surface areas
                 TAREA(I,J,L,N+NDUST)   = 3.D0 * WAERSL(I,J,L,N) * SCALEVOL / &
                                          ( ERADIUS(I,J,L,N+NDUST) * MSDENS(N) )
-
+                ! if ((i .eq. 35) .and. (j .eq. 35) .and. (l .eq. 5)) THEN
+                !    print *, WAERSL(I,J,L,N) , SCALEVOL , &
+                !                           ERADIUS(I,J,L,N+NDUST) , MSDENS(N)
+                ! ENDIF
                 WTAREA(I,J,L,N+NDUST)   = TAREA(I,J,L,N+NDUST)
                 WERADIUS(I,J,L,N+NDUST) = ERADIUS(I,J,L,N+NDUST)
 
