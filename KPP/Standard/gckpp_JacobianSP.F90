@@ -13,8 +13,8 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 ! 
 ! File                 : gckpp_JacobianSP.f90
-! Time                 : Mon Jun 29 11:32:40 2020
-! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
+! Time                 : Sat Jul 25 22:40:36 2020
+! Working directory    : /net/seasasfs02/srv/export/seasasfs02/share_root/vshah/Hg/GC_Hg/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
 ! 
@@ -31,33 +31,31 @@ MODULE gckpp_JacobianSP
 ! Sparse Jacobian Data
 
 
-  INTEGER, PARAMETER, DIMENSION(92) :: LU_IROW = (/ &
+  INTEGER, PARAMETER, DIMENSION(77) :: LU_IROW = (/ &
        1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, & ! index 1 - 12
-       1,  1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6, & ! index 13 - 24
-       7,  7,  8,  8,  8,  8,  8,  8,  8,  8,  9,  9, & ! index 25 - 36
-      10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, & ! index 37 - 48
-      15, 15, 15, 15, 15, 15, 16, 16, 16, 16, 16, 16, & ! index 49 - 60
-      16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 17, 17, & ! index 61 - 72
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, & ! index 73 - 84
-      17, 17, 17, 18, 18, 18, 18, 18 /)
+       1,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, & ! index 13 - 24
+       2,  2,  3,  3,  4,  4,  5,  5,  6,  6,  7,  7, & ! index 25 - 36
+       8,  8,  9,  9, 10, 10, 11, 11, 12, 12, 13, 13, & ! index 37 - 48
+      13, 13, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, & ! index 49 - 60
+      16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 18, & ! index 61 - 72
+      18, 18, 19, 19, 19 /)
 
-  INTEGER, PARAMETER, DIMENSION(92) :: LU_ICOL = (/ &
-       1,  2,  3,  4,  5,  6,  7,  9, 10, 11, 12, 13, & ! index 1 - 12
-      14, 16,  2,  8,  3,  8,  4,  8,  5,  8,  6,  8, & ! index 13 - 24
-       7,  8,  2,  3,  4,  5,  6,  7,  8, 18,  9, 15, & ! index 25 - 36
-      10, 15, 11, 15, 12, 15, 13, 15, 14, 15,  9, 10, & ! index 37 - 48
-      11, 12, 13, 14, 15, 18,  2,  3,  4,  5,  6,  7, & ! index 49 - 60
-       8,  9, 10, 11, 12, 13, 14, 15, 16, 18,  2,  3, & ! index 61 - 72
-       4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, & ! index 73 - 84
-      16, 17, 18,  8, 15, 16, 17, 18 /)
+  INTEGER, PARAMETER, DIMENSION(77) :: LU_ICOL = (/ &
+       1,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 14, & ! index 1 - 12
+      19,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, & ! index 13 - 24
+      14, 19,  3, 15,  4, 15,  5, 15,  6, 15,  7, 15, & ! index 25 - 36
+       8, 18,  9, 18, 10, 18, 11, 18, 12, 18,  3,  4, & ! index 37 - 48
+      13, 15, 13, 14, 15,  5,  6,  7, 13, 14, 15, 16, & ! index 49 - 60
+      15, 16, 18,  8,  9, 17, 18, 10, 11, 12, 16, 17, & ! index 61 - 72
+      18, 19, 17, 18, 19 /)
 
-  INTEGER, PARAMETER, DIMENSION(19) :: LU_CROW = (/ &
-       1, 15, 17, 19, 21, 23, 25, 27, 35, 37, 39, 41, & ! index 1 - 12
-      43, 45, 47, 55, 71, 88, 93 /)
+  INTEGER, PARAMETER, DIMENSION(20) :: LU_CROW = (/ &
+       1, 14, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, & ! index 1 - 12
+      47, 51, 54, 61, 64, 68, 75, 78 /)
 
-  INTEGER, PARAMETER, DIMENSION(19) :: LU_DIAG = (/ &
-       1, 15, 17, 19, 21, 23, 25, 33, 35, 37, 39, 41, & ! index 1 - 12
-      43, 45, 53, 69, 86, 92, 93 /)
+  INTEGER, PARAMETER, DIMENSION(20) :: LU_DIAG = (/ &
+       1, 14, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, & ! index 1 - 12
+      49, 52, 59, 62, 66, 73, 77, 78 /)
 
 
 END MODULE gckpp_JacobianSP

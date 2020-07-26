@@ -13,8 +13,8 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 !
 ! File                 : gckpp_Util.f90
-! Time                 : Mon Jun 29 11:32:40 2020
-! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
+! Time                 : Sat Jul 25 22:40:36 2020
+! Working directory    : /net/seasasfs02/srv/export/seasasfs02/share_root/vshah/Hg/GC_Hg/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
 !
@@ -165,22 +165,24 @@ SUBROUTINE Shuffle_user2kpp ( V_USER, V )
 ! V - Concentrations of variable species (local)
   REAL(kind=dp) :: V(NVAR)
 
-  V(18) = V_USER(1)
-  V(8) = V_USER(2)
-  V(2) = V_USER(3)
-  V(3) = V_USER(4)
-  V(4) = V_USER(5)
-  V(5) = V_USER(6)
-  V(6) = V_USER(7)
-  V(7) = V_USER(8)
-  V(9) = V_USER(9)
-  V(10) = V_USER(10)
-  V(11) = V_USER(12)
-  V(12) = V_USER(13)
-  V(13) = V_USER(14)
-  V(14) = V_USER(15)
-  V(15) = V_USER(16)
-  V(16) = V_USER(18)
+  V(16) = V_USER(1)
+  V(15) = V_USER(2)
+  V(3) = V_USER(3)
+  V(4) = V_USER(4)
+  V(5) = V_USER(5)
+  V(6) = V_USER(6)
+  V(7) = V_USER(7)
+  V(14) = V_USER(8)
+  V(13) = V_USER(9)
+  V(8) = V_USER(10)
+  V(9) = V_USER(11)
+  V(10) = V_USER(12)
+  V(11) = V_USER(13)
+  V(12) = V_USER(14)
+  V(19) = V_USER(15)
+  V(18) = V_USER(16)
+  V(17) = V_USER(17)
+  V(1) = V_USER(19)
 
 END SUBROUTINE Shuffle_user2kpp
 
@@ -204,22 +206,24 @@ SUBROUTINE Shuffle_kpp2user ( V, V_USER )
 ! V_USER - Concentration of variable species in USER's order
   REAL(kind=dp) :: V_USER(NVAR)
 
-  V_USER(1) = V(18)
-  V_USER(2) = V(8)
-  V_USER(3) = V(2)
-  V_USER(4) = V(3)
-  V_USER(5) = V(4)
-  V_USER(6) = V(5)
-  V_USER(7) = V(6)
-  V_USER(8) = V(7)
-  V_USER(9) = V(9)
-  V_USER(10) = V(10)
-  V_USER(12) = V(11)
-  V_USER(13) = V(12)
-  V_USER(14) = V(13)
-  V_USER(15) = V(14)
-  V_USER(16) = V(15)
-  V_USER(18) = V(16)
+  V_USER(1) = V(16)
+  V_USER(2) = V(15)
+  V_USER(3) = V(3)
+  V_USER(4) = V(4)
+  V_USER(5) = V(5)
+  V_USER(6) = V(6)
+  V_USER(7) = V(7)
+  V_USER(8) = V(14)
+  V_USER(9) = V(13)
+  V_USER(10) = V(8)
+  V_USER(11) = V(9)
+  V_USER(12) = V(10)
+  V_USER(13) = V(11)
+  V_USER(14) = V(12)
+  V_USER(15) = V(19)
+  V_USER(16) = V(18)
+  V_USER(17) = V(17)
+  V_USER(19) = V(1)
 
 END SUBROUTINE Shuffle_kpp2user
 
@@ -256,7 +260,7 @@ END SUBROUTINE GetMass
 ! Get_OHreactivity - returns the OH reactivity
 ! The OH reactivity is defined as the inverse of its lifetime.
 ! This routine was auto-generated using script OHreact_parser.py.
-! Generated on 2020-06-29
+! Generated on 2020-07-25
 ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SUBROUTINE Get_OHreactivity ( CC, RR, OHreact )
@@ -268,7 +272,7 @@ SUBROUTINE Get_OHreactivity ( CC, RR, OHreact )
 ! OHreact - OH reactivity [s-1]
   REAL(kind=dp) :: OHreact
 
-  OHreact = RR(19)*CC(8) + RR(28)*CC(15)
+  OHreact = RR(8)*CC(15) + RR(20)*CC(18)
 
 END SUBROUTINE Get_OHreactivity
 ! End of Get_OHreactivity subroutine

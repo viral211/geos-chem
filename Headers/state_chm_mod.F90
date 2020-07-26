@@ -1572,11 +1572,9 @@ CONTAINS
           State_Chm%N_Hg_CATS = N_Hg0_CATS
           State_Chm%N_Hg2_CATS = N_Hg2_CATS
        ELSE
-          State_Chm%N_Hg_CATS = 1
-          State_Chm%N_Hg2_CATS = N_Hg2_CATS
-          !   ErrMsg = 'Inconsistent number of Hg categories!'
-       !   CALL GC_Error( ErrMsg, RC, ThisLoc )
-       !   RETURN
+          ErrMsg = 'Inconsistent number of Hg categories!'
+          CALL GC_Error( ErrMsg, RC, ThisLoc )
+          RETURN
        ENDIF
 
        ! Index array: Hg0 species # <--> Hg0 category #

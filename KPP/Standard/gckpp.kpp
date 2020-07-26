@@ -7,8 +7,6 @@
 
 #INCLUDE Hg.eqn
 
-#FAMILIES
-PHg : HgP ;
 
 #INLINE F90_RATES
   REAL(kind=dp) FUNCTION OH_O1D (J, H2O, TEMP, NUMDEN)

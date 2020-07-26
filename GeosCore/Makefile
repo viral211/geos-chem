@@ -481,13 +481,13 @@ emissions_mod.o             : emissions_mod.F90                              \
 exchange_mod.o              : exchange_mod.F90
 
 fast_jx_mod.o               : fast_jx_mod.F90                                \
-                              toms_mod.o
+                              toms_mod.o              mercury_mod.o
 
 flexchem_mod.o              : flexchem_mod.F90                               \
                               aerosol_mod.o           diag_mod.o             \
                               diag_oh_mod.o           dust_mod.o             \
                               fast_jx_mod.o           strat_chem_mod.o       \
-                              tomas_mod.o             mercury_mod.o
+                              tomas_mod.o
 
 flexgrid_read_mod.o         : flexgrid_read_mod.F90                          \
                               diag_mod.o              get_met_mod.o
@@ -511,7 +511,7 @@ gc_environment_mod.o        : gc_environment_mod.F90                         \
                               ocean_mercury_mod.o     pops_mod.o             \
                               seasalt_mod.o           sulfate_mod.o          \
                               tagged_co_mod.o         tagged_o3_mod.o        \
-                              toms_mod.o                                     \
+                              toms_mod.o              diag53_mod.o           \
                               vdiff_pre_mod.o
 
 get_met_mod.o               : get_met_mod.F90                                \

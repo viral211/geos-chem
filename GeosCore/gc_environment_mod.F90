@@ -265,7 +265,6 @@ CONTAINS
                           State_Grid = State_Grid,  &  ! Grid State
                           RC         = RC          )   ! Success or failure
 
-    PRINT *, State_Chm%Map_KppSpc, 'AO'
     ! Trap potential errors
     IF ( RC /= GC_SUCCESS ) THEN
        ErrMsg = 'Error encountered within call to "Init_State_Chm"!'

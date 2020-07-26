@@ -1170,6 +1170,10 @@ CONTAINS
        !-------------------------
        WRITE( 6, 130 ) 'Is it a photol. spc? ',          ThisSpc%Is_Photolysis
 
+       IF ( ThisSpc%Is_Photolysis ) THEN
+          WRITE( 6, 100 ) ' -> Photolysis index  ',      ThisSpc%PhotolID
+       ENDIF
+
        !------------------------------
        ! Print hygroscopic growth info
        !------------------------------

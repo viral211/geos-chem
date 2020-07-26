@@ -1462,7 +1462,7 @@ CONTAINS
     ELSE IF ( Input_Opt%ITS_A_MERCURY_SIM ) THEN
 
        ! Need Hg0, Hg2, HgP for tagged Mercury
-       Input_Opt%LSPLIT = ( Input_Opt%N_ADVECT > 3 )
+       Input_Opt%LSPLIT = ( Input_Opt%N_ADVECT >  30 )
 
     ELSE
 

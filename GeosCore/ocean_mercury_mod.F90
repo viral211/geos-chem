@@ -47,6 +47,7 @@ MODULE OCEAN_MERCURY_MOD
   PUBLIC :: LNEI2005
   PUBLIC :: LInPlume
   PUBLIC :: LOCEANCOEF
+  PUBLIC :: LNEW_MECH
 !
 ! !REMARKS:
 !  References:
@@ -185,6 +186,7 @@ MODULE OCEAN_MERCURY_MOD
   LOGICAL   :: LnoUSAemis
   LOGICAL   :: LNEI2005, LInPlume
   LOGICAL   :: LOCEANCOEF
+  LOGICAL   :: LNEW_MECH
   REAL(fpp) :: STRAT_BR_FACTOR
 
   ! CDH Set this TRUE to use corrected area-flux relationship
@@ -840,7 +842,7 @@ CONTAINS
 !  stock of organic carbon (OC_tot) with 10 (exp Bundy 2004)
 !  1.1 is to include abiotic particles
 !
-!  OC_tot is the standing stock of organic carbon (mgC/m²)
+!  OC_tot is the standing stock of organic carbon (mgC/mï¿½)
 !
 !    OC_tot = C_tot * 80
 !
@@ -870,7 +872,7 @@ CONTAINS
 !
 !    Kw = 0.25 * u^2 / SQRT ( Sc / ScCO2 )  (Nightingale et al. 2000)
 !
-!  u^2 is the square of the wind speed (10m above ground) (m²/s²)
+!  u^2 is the square of the wind speed (10m above ground) (mï¿½/sï¿½)
 !
 !  Sc is the Schmidt # for Hg [unitless]
 !     (ref: Poissant et al 2000; Wilke and Chang 1995)

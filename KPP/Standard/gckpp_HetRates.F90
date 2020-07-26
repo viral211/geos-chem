@@ -35,6 +35,7 @@ MODULE GCKPP_HETRATES
 ! !PUBLIC MEMBER FUNCTIONS:
 !
   PUBLIC  :: SET_HET
+  PUBLIC  :: ARSL1K
 !
 ! !PRIVATE MEMBER FUNCTIONS:
 !
@@ -108,7 +109,6 @@ MODULE GCKPP_HETRATES
   PRIVATE :: FCRO2HO2
   PRIVATE :: FYHORO
   PRIVATE :: FYRNO3
-  PRIVATE :: ARSL1K
   PRIVATE :: kIIR1Ltd
   PRIVATE :: kIIR1R2L
 !
@@ -427,7 +427,7 @@ MODULE GCKPP_HETRATES
 
          ! IND = Ind_( 'PYAC' )
          ! IF ( IND > 0 ) MW_PYAC   = State_Chm%SpcData(IND)%Info%MW_g
-	 
+
          ! IND = Ind_( 'LVOC' )
          ! IF ( IND > 0 ) MW_LVOC   = State_Chm%SpcData(IND)%Info%MW_g
 
@@ -3985,7 +3985,7 @@ MODULE GCKPP_HETRATES
          ! Assume zero
          XStkCf = 0.0e+0_fp
 
-	 ! restore stratosphere only limitation - TMS 17/04/10
+     ! restore stratosphere only limitation - TMS 17/04/10
          IF ( STRATBOX ) THEN
             IF (N.eq.8) THEN
                ! Fixed gamma?
@@ -3993,8 +3993,8 @@ MODULE GCKPP_HETRATES
                ! RH dependence
                ! Note gamma calculation on sulfate in troposphere uses
                ! the McDuffie parameterization (func: HetN2O5())
-      	       XSTKCF = N2O5( N, TEMPK, RELHUM )
-	    ENDIF
+               XSTKCF = N2O5( N, TEMPK, RELHUM )
+        ENDIF
          ENDIF
 
          ! For UCX-based mechanisms only consider PSC reactions in strat
@@ -5827,7 +5827,7 @@ MODULE GCKPP_HETRATES
 !            XSTKCF = 0.1e-4_fp ! Sulfate
 !         ELSEIF ( STRATBOX ) THEN
 !            IF (N.eq.13) THEN
-	 ! restore limitation to stratosphere - TMS 17/04/10
+     ! restore limitation to stratosphere - TMS 17/04/10
          IF  ( STRATBOX ) THEN
             IF (N.eq.8) THEN
                XSTKCF = 0.1e-4_fp ! Sulfate
@@ -5915,9 +5915,9 @@ MODULE GCKPP_HETRATES
          ! Default to zero
          XSTKCF = 0.0e+0_fp
 
-	 ! restore limitation to stratosphere - TMS 17/04/10
-	 IF ( STRATBOX ) THEN
-	    IF (N.eq.8) THEN
+     ! restore limitation to stratosphere - TMS 17/04/10
+     IF ( STRATBOX ) THEN
+        IF (N.eq.8) THEN
                XSTKCF = 0.9e+0_fp ! Sulfate
             ELSEIF (N.eq.13) THEN
                XSTKCF = KHETI_SLA(7)
@@ -6007,8 +6007,8 @@ MODULE GCKPP_HETRATES
          ! For UCX-based mechanisms only consider PSC reactions in strat
          ! restore limitation to stratosphere - TMS 17/04/10
          IF ( Input_Opt%LUCX .and. STRATBOX) THEN
-	    IF (N.eq.8) THEN
-	       XSTKCF = 0.8e+0_fp ! Sulfate
+        IF (N.eq.8) THEN
+           XSTKCF = 0.8e+0_fp ! Sulfate
             ELSEIF (N.eq.13) THEN
                XSTKCF = KHETI_SLA(8)
             ELSEIF (N.eq.14) THEN
@@ -6098,8 +6098,8 @@ MODULE GCKPP_HETRATES
          ! For UCX-based mechanisms only consider PSC reactions in strat
          ! restore limitation to stratosphere - TMS 17/04/10
          IF ( Input_Opt%LUCX .and. STRATBOX ) THEN
-	    IF (N.eq.8) THEN
- 	       XSTKCF = 0.8e+0_fp ! Sulfate
+        IF (N.eq.8) THEN
+           XSTKCF = 0.8e+0_fp ! Sulfate
             ELSEIF (N.eq.13) THEN
                XSTKCF = KHETI_SLA(9)
             ELSEIF (N.eq.14) THEN

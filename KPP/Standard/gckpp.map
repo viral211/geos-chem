@@ -13,8 +13,8 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 ! 
 ! File                 : gckpp.map
-! Time                 : Mon Jun 29 11:32:40 2020
-! Working directory    : /n/home02/thackray/GC_working/KPP/Standard
+! Time                 : Sat Jul 25 22:40:36 2020
+! Working directory    : /net/seasasfs02/srv/export/seasasfs02/share_root/vshah/Hg/GC_Hg/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
 ! 
@@ -32,39 +32,36 @@ REORDER  - ON
 ### Parameters ----------------------------------------
 
 ! NSPEC - Number of chemical species
-  INTEGER, PARAMETER :: NSPEC = 38 
+  INTEGER, PARAMETER :: NSPEC = 30 
 ! NVAR - Number of Variable species
-  INTEGER, PARAMETER :: NVAR = 18 
+  INTEGER, PARAMETER :: NVAR = 19 
 ! NVARACT - Number of Active species
   INTEGER, PARAMETER :: NVARACT = 17 
 ! NFIX - Number of Fixed species
-  INTEGER, PARAMETER :: NFIX = 20 
+  INTEGER, PARAMETER :: NFIX = 11 
 ! NREACT - Number of reactions
-  INTEGER, PARAMETER :: NREACT = 67 
+  INTEGER, PARAMETER :: NREACT = 64 
 ! NVARST - Starting of variables in conc. vect.
   INTEGER, PARAMETER :: NVARST = 1 
 ! NFIXST - Starting of fixed in conc. vect.
-  INTEGER, PARAMETER :: NFIXST = 19 
+  INTEGER, PARAMETER :: NFIXST = 20 
 
 ### Species -------------------------------------------
 
 Variable species
-  1 = PHg (n)     8 = HGBR (r)   15 = HGCL (r)  
-  2 = HGBRNO2 (r)  9 = HGCLNO2 (r) 16 = HGORG (r) 
-  3 = HGBRHO2 (r) 10 = HGCLHO2 (r) 17 = HgP (r)   
-  4 = HGBRCLO (r) 11 = HGCLCLO (r) 18 = Hg0 (r)   
-  5 = HGBRBRO (r) 12 = HGCLBRO (r)
-  6 = HGBR2 (r)  13 = HGCLBR (r)
-  7 = HGBROH (r) 14 = HGCLOH (r)
+  1 = HGIICLp (n)  8 = HGCLNO2 (r) 15 = HGBR (r)  
+  2 = HGIIORGp (n)  9 = HGCLHO2 (r) 16 = Hg0 (r)   
+  3 = HGBRNO2 (r) 10 = HGCLCLO (r) 17 = HGCLO (r) 
+  4 = HGBRHO2 (r) 11 = HGCLBRO (r) 18 = HGCL (r)  
+  5 = HGBRCLO (r) 12 = HGCLBR (r) 19 = HGCLOH (r)
+  6 = HGBRBRO (r) 13 = HGBRO (r) 
+  7 = HGBR2 (r)  14 = HGBROH (r)
 
 Fixed species
-  1 = Br (r)      8 = JHGCLOH (r) 15 = OCPI (r)  
-  2 = Cl (r)      9 = JHGBR (r)  16 = SALA (r)  
-  3 = OH (r)     10 = JHGAQ (r)  17 = SALC (r)  
-  4 = NO2 (r)    11 = O3 (r)     18 = NIT (r)   
-  5 = HO2 (r)    12 = SO4 (r)    19 = NH4 (r)   
-  6 = BrO (r)    13 = BCPI (r)   20 = DST1 (r)  
-  7 = ClO (r)    14 = POA1 (r)  
+  1 = Br (r)      5 = NO (n)      9 = ClO (r)   
+  2 = Cl (r)      6 = O3 (r)     10 = CO (r)    
+  3 = OH (r)      7 = HO2 (r)    11 = CH4 (r)   
+  4 = NO2 (r)     8 = BrO (r)   
 
 ### Subroutines ---------------------------------------
 
