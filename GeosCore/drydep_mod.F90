@@ -78,7 +78,7 @@ MODULE DRYDEP_MOD
 !  (14) Wesely, M. L., Parameterization of surface resistance to gaseous dry
 !        deposition in regional-scale numerical models.  Atmos. Environ., 23
 !        1293-1304, 1989.
-!  (15) Price, H., L. Jaeglé, A. Rice, P. Quay, P.C. Novelli, R. Gammon,
+!  (15) Price, H., L. Jaeglï¿½, A. Rice, P. Quay, P.C. Novelli, R. Gammon,
 !        Global Budget of Molecular Hydrogen and its Deuterium Content:
 !        Constraints from Ground Station, Cruise, and Aircraft Observations,
 !        submitted to J. Geophys. Res., 2007.
@@ -147,7 +147,6 @@ MODULE DRYDEP_MOD
 
   ! Scalars
   INTEGER                        :: NUMDEP,   NWATER
-  INTEGER                        :: DRYHg0,   DRYHg2,   DryHgP
   INTEGER                        :: id_ACET,  id_ALD2,  id_O3
   INTEGER                        :: id_MENO3, id_ETNO3
   INTEGER                        :: id_NK1

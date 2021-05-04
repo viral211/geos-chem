@@ -72,7 +72,6 @@ MODULE FlexChem_Mod
   REAL(f4), ALLOCATABLE :: JvCountMon(:,:,:  )
   REAL(f4), ALLOCATABLE :: JvSumDay  (:,:,:,:)
   REAL(f4), ALLOCATABLE :: JvSumMon  (:,:,:,:)
-  REAL(fp), ALLOCATABLE :: TCOSZ(:,:)     ! Sum of solar zenith angle
 
 CONTAINS
 !EOC
@@ -338,8 +337,7 @@ CONTAINS
     ! for FAST-JX and optical depth diagnostics
     !=======================================================================
     IF ( Input_Opt%LSULF .or. Input_Opt%LCARB .or. &
-         Input_Opt%LDUST .or. Input_Opt%LSSALT .or. &
-         Input_Opt%ITS_A_MERCURY_SIM ) THEN
+         Input_Opt%LDUST .or. Input_Opt%LSSALT ) THEN
 
        ! Special handling for UCX
        IF ( Input_Opt%LUCX ) THEN
@@ -410,7 +408,7 @@ CONTAINS
     ! in GEOS-CHEM...so read monthly-mean dust files from disk.
     ! (rjp, tdf, bmy, 4/1/04)
     !=======================================================================
-    IF ( Input_Opt%LDUST .or. Input_Opt%ITS_A_MERCURY_SIM ) THEN
+    IF ( Input_Opt%LDUST ) THEN
        CALL RDUST_ONLINE( Input_Opt, State_Chm,  State_Diag, &
                           State_Grid, State_Met, SOILDUST,   WAVELENGTH, RC )
 
@@ -1828,14 +1826,6 @@ CONTAINS
     ENDIF
     ENDIF
 
-!    ALLOCATE( TCOSZ( State_Grid%NX, State_Grid%NY ), STAT=RC )
-    ALLOCATE( TCOSZ( 72, 46 ), STAT=RC )
-    CALL GC_CheckVar( 'mercury_mod.F90:TCOSZ', 0, RC )
-    IF ( RC /= GC_SUCCESS ) RETURN
-    TCOSZ = 0e+0_fp
-
-
-
   END SUBROUTINE Init_FlexChem
 !EOC
 !------------------------------------------------------------------------------
@@ -1903,8 +1893,6 @@ CONTAINS
        CALL GC_CheckVar( 'flexchem_mod.F90:JvCountMon', 2, RC )
        IF ( RC /= GC_SUCCESS ) RETURN
     ENDIF
-
-    IF ( ALLOCATED( TCOSZ    ) ) DEALLOCATE( TCOSZ    )
 
 
   END SUBROUTINE Cleanup_FlexChem

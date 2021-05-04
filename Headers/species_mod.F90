@@ -45,9 +45,6 @@ MODULE Species_Mod
   INTEGER, PRIVATE :: KppSpcCount  = 0  ! Counter of species in KPP matrix
   INTEGER, PRIVATE :: PhotolCount  = 0  ! Counter of photolysis species
   INTEGER, PRIVATE :: WetDepCount  = 0  ! Counter of wet-deposited species
-  INTEGER, PRIVATE :: Hg0Count     = 0  ! Number  of Hg0 tracers
-  INTEGER, PRIVATE :: Hg2Count     = 0  ! Number  of Hg2 tracers
-  INTEGER, PRIVATE :: HgPCount     = 0  ! Number  of HgP tracers
 
   !=========================================================================
   ! Type for the Species Database object (vector of type Species)
@@ -153,7 +150,7 @@ MODULE Species_Mod
      LOGICAL            :: MP_SizeResAer    ! T=size-resolved aerosol (TOMAS)
      LOGICAL            :: MP_SizeResNum    ! T=size-resolved aerosol number
 
-     ! Tagged mercury parameters
+     ! Mercury parameters
      LOGICAL            :: Is_Hg0           ! T=total or tagged Hg0 species
      LOGICAL            :: Is_Hg2           ! T=total or tagged Hg2 species
      LOGICAL            :: Is_HgP           ! T=total or tagged HgP species
@@ -723,10 +720,10 @@ CONTAINS
     !---------------------------------------------------------------------
     ! Is it dry-deposited?  If TRUE, then update drydep species index.
     !---------------------------------------------------------------------
-    IF ( PRESENT( Is_Drydep ) ) THEN
+    IF ( PRESENT( Is_Drydep ) .AND. PRESENT( Is_Advected ) ) THEN
        ThisSpc%Is_Drydep       = Is_Drydep
 
-       IF ( Is_Drydep ) THEN
+       IF ( Is_Drydep .AND. Is_Advected ) THEN
 
           ! Increment count of drydep'd species
           DryDepCount          = DryDepCount + 1
@@ -754,11 +751,11 @@ CONTAINS
     ! Is it a drydep species that we want to save at a given altitude
     ! above the surface?
     !---------------------------------------------------------------------
-    IF ( PRESENT( Is_DryAlt ) ) THEN
+    IF ( PRESENT( Is_DryAlt ) .AND. PRESENT( Is_Advected ) ) THEN
        ThisSpc%Is_DryAlt = Is_DryAlt
 
        ! Update count & index
-       IF ( Is_DryAlt ) THEN
+       IF ( Is_DryAlt .AND. Is_Advected ) THEN
           DryAltCount      = DryAltCount + 1
           ThisSpc%DryAltID = DryAltCount
        ELSE
@@ -843,11 +840,11 @@ CONTAINS
     !---------------------------------------------------------------------
     ! Is it wet deposited?  If TRUE, then update wetdep species index.
     !---------------------------------------------------------------------
-    IF ( PRESENT( Is_Wetdep ) ) THEN
+    IF ( PRESENT( Is_Wetdep ) .AND. PRESENT( Is_Advected ) ) THEN
        ThisSpc%Is_Wetdep    = Is_Wetdep
 
        ! Increment count & index of wet deposited species
-       IF ( Is_WetDep ) THEN
+       IF ( Is_WetDep .AND. Is_Advected ) THEN
           WetDepCount       = WetDepCount + 1
           ThisSpc%WetDepID  = WetDepCount
        ELSE
@@ -894,10 +891,12 @@ CONTAINS
     ! Is it a fixed species in the KPP chemical mechanism?
     !---------------------------------------------------------------------
     IF ( PRESENT( KppFixId ) ) THEN
-       KppFixCount      = KppFixCount + 1
-       ThisSpc%KppFixId = KppFixId
-    ELSE
-       ThisSpc%KppFixId = MISSING_INT
+       IF ( KppFixId > 0 ) THEN
+            KppFixCount      = KppFixCount + 1
+            ThisSpc%KppFixId = KppFixId
+       ELSE
+            ThisSpc%KppFixId = MISSING_INT
+       ENDIF
     ENDIF
 
     !---------------------------------------------------------------------
@@ -946,14 +945,14 @@ CONTAINS
     !---------------------------------------------------------------------
     IF ( PRESENT( Is_Hg0 ) ) THEN
        ThisSpc%Is_Hg0 = Is_Hg0
-
-       ! Increment count and index of Hg0 categories
-       IF ( Is_Hg0 ) THEN
-          Hg0Count       = Hg0Count + 1
-          ThisSpc%Hg_Cat = Hg0Count
-       ELSE
-          ThisSpc%Is_Hg0 = .FALSE.
-       ENDIF
+       ThisSpc%Hg_Cat = 1
+!       ! Increment count and index of Hg0 categories
+!       IF ( Is_Hg0 ) THEN
+!          Hg0Count       = Hg0Count + 1
+!          ThisSpc%Hg_Cat = Hg0Count
+!       ELSE
+!          ThisSpc%Is_Hg0 = .FALSE.
+!       ENDIF
 
     ELSE
        ThisSpc%Is_Hg0    = .FALSE.
@@ -964,14 +963,14 @@ CONTAINS
     !---------------------------------------------------------------------
     IF ( PRESENT( Is_Hg2 ) ) THEN
        ThisSpc%Is_Hg2 = Is_Hg2
-
-       ! Increment count of Hg2 species
-       IF ( Is_Hg2 ) THEN
-          Hg2Count       = Hg2Count + 1
-          ThisSpc%Hg_Cat = Hg2Count
-       ELSE
-          ThisSpc%Is_Hg2 = .FALSE.
-       ENDIF
+       ThisSpc%Hg_Cat = 1
+!       ! Increment count of Hg2 species
+!       IF ( Is_Hg2 ) THEN
+!          Hg2Count       = Hg2Count + 1
+!          ThisSpc%Hg_Cat = Hg2Count
+!       ELSE
+!          ThisSpc%Is_Hg2 = .FALSE.
+!       ENDIF
 
     ELSE
        ThisSpc%Is_Hg2    = .FALSE.
@@ -982,14 +981,14 @@ CONTAINS
     !---------------------------------------------------------------------
     IF ( PRESENT( Is_HgP ) ) THEN
        ThisSpc%Is_HgP = Is_HgP
-
-       ! Increment count of HgP species
-       IF ( Is_HgP ) THEN
-          HgPCount       = HgPCount + 1
-          ThisSpc%Hg_Cat = HgPCount
-       ELSE
-          ThisSpc%Is_HgP = .FALSE.
-       ENDIF
+       ThisSpc%Hg_Cat = 1
+!       ! Increment count of HgP species
+!       IF ( Is_HgP ) THEN
+!          HgPCount       = HgPCount + 1
+!          ThisSpc%Hg_Cat = HgPCount
+!       ELSE
+!          ThisSpc%Is_HgP = .FALSE.
+!       ENDIF
 
     ELSE
        ThisSpc%Is_HgP    = .FALSE.
@@ -1264,8 +1263,7 @@ CONTAINS
 !
   SUBROUTINE Spc_GetNumSpecies( nAdvect,  nAeroSpc, nDryAlt, nDryDep,        &
                                 nGasSpc,  nHygGrth, nKppVar, nKppFix,        &
-                                nKppSpc,  nPhotol,  nWetDep, nHg0Cats,       &
-                                nHg2Cats, nHgPCats                          )
+                                nKppSpc,  nPhotol,  nWetDep          )
 !
 ! !OUTPUT PARAMETERS:
 !
@@ -1281,9 +1279,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: nKppSpc     ! # of species in KPP mechanism
     INTEGER, INTENT(OUT) :: nPhotol     ! # of photolysis species
     INTEGER, INTENT(OUT) :: nWetDep     ! # of wet-deposited species
-    INTEGER, INTENT(OUT) :: nHg0Cats    ! # of Hg0 categories
-    INTEGER, INTENT(OUT) :: nHg2Cats    ! # of Hg0 categories
-    INTEGER, INTENT(OUT) :: nHgPCats    ! # of Hg0 categories
+
 !
 ! !REVISION HISTORY:
 !  02 Sep 2015 - R. Yantosca - Initial version
@@ -1304,9 +1300,6 @@ CONTAINS
     nKppSpc  = KppSpcCount
     nPhotol  = PhotolCount
     nWetDep  = WetDepCount
-    nHg0Cats = Hg0Count
-    nHg2Cats = Hg2Count
-    nHgPCats = HgPCount
 
   END SUBROUTINE Spc_GetNumSpecies
 !EOC

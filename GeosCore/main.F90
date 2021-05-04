@@ -1096,35 +1096,35 @@ PROGRAM GEOS_Chem
 
 #ifdef GTMM_Hg
 #ifdef BPCH_DIAG
-       !=============================================================
-       !   ***** W R I T E   G T M M   R E S T A R T   F I L E *****
-       !     ***** MUST be done after call to diag3 ****
-       !
-       ! %%%%% NOTE: THIS MAY BE BROKEN %%%%
-       !=============================================================
-       ! Make land restart file: for GTMM runs only, beginning of each
-       ! month but not start of the run.
-       IF ( LGTMM .AND. ITS_A_NEW_MONTH() .AND. NYMD /= NYMDb ) THEN
-          IF (.NOT.( ITS_TIME_FOR_BPCH( Input_Opt ) )) THEN
-
-             ! Get the species ID (NNN) from the wetdep ID (N)
-             N   = 1
-             NNN = State_Chm%Map_Wetdep(N)
-
-             DO
-                ! Exit once we encounter Hg2
-                If ( State_Chm%SpcData(NNN)%Info%Is_Hg2 ) THEN
-                   EXIT
-                ENDIF
-
-                ! Get the species ID (NNN) from the wetdep ID (N)
-                N   = N + 1
-                NNN = State_Chm%Map_Wetdep(N)
-             ENDDO
-             CALL UPDATE_DEP( N )
-          ENDIF
-          CALL MAKE_GTMM_RESTART( Input_Opt, State_Grid, NYMD, NHMS, TAU, RC )
-       ENDIF
+!       !=============================================================
+!       !   ***** W R I T E   G T M M   R E S T A R T   F I L E *****
+!       !     ***** MUST be done after call to diag3 ****
+!       !
+!       ! %%%%% NOTE: THIS MAY BE BROKEN %%%%
+!       !=============================================================
+!       ! Make land restart file: for GTMM runs only, beginning of each
+!       ! month but not start of the run.
+!       IF ( LGTMM .AND. ITS_A_NEW_MONTH() .AND. NYMD /= NYMDb ) THEN
+!          IF (.NOT.( ITS_TIME_FOR_BPCH( Input_Opt ) )) THEN
+!
+!             ! Get the species ID (NNN) from the wetdep ID (N)
+!             N   = 1
+!             NNN = State_Chm%Map_Wetdep(N)
+!
+!             DO
+!                ! Exit once we encounter Hg2
+!                If ( State_Chm%SpcData(NNN)%Info%Is_Hg2 ) THEN
+!                   EXIT
+!                ENDIF
+!
+!                ! Get the species ID (NNN) from the wetdep ID (N)
+!                N   = N + 1
+!                NNN = State_Chm%Map_Wetdep(N)
+!             ENDDO
+!             CALL UPDATE_DEP( N )
+!          ENDIF
+!          CALL MAKE_GTMM_RESTART( Input_Opt, State_Grid, NYMD, NHMS, TAU, RC )
+!       ENDIF
 #endif
 #endif
 

@@ -1422,8 +1422,8 @@ CONTAINS
     USE ERROR_MOD,          ONLY : GEOS_CHEM_STOP
     USE Input_Opt_Mod,      ONLY : OptInput
     USE Ncdf_Mod,           ONLY : GET_TAU0
-    USE OCEAN_MERCURY_MOD,  ONLY : Fg !eds 10/27/11
-    USE OCEAN_MERCURY_MOD,  ONLY : OMMFp => Fp
+!    USE OCEAN_MERCURY_MOD,  ONLY : Fg !eds 10/27/11
+!    USE OCEAN_MERCURY_MOD,  ONLY : OMMFp => Fp
     USE PhysConstants,      ONLY : CONSVAP, AIRMW
     USE State_Chm_Mod,      ONLY : ChmState
     USE State_Diag_Mod,     ONLY : DgnState
@@ -1985,11 +1985,11 @@ CONTAINS
              !--------------------------
              ! Hg(II) partitioning eds 10/27/11
              !--------------------------
-             CASE ( 4001 )
-                VARI(V) = FG(I,J,LL) !L+1 sample 4/24/12
-
-             CASE ( 4002 )
-                VARI(V) = OMMFP(I,J,LL) !L+1 sample 4/24/12
+!             CASE ( 4001 )
+!                VARI(V) = FG(I,J,LL) !L+1 sample 4/24/12
+!
+!             CASE ( 4002 )
+!                VARI(V) = OMMFP(I,J,LL) !L+1 sample 4/24/12
 
              !--------------------------
              ! ISORROPIA H+ and pH (eam, 06/2015)

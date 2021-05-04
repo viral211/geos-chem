@@ -3589,8 +3589,8 @@ CONTAINS
              Formula       = ''
              MW_g          = 31.4_fp
              Is_Gas        = F
-             Is_Drydep     = F
-             Is_Wetdep     = F
+             Is_Drydep     = T
+             Is_Wetdep     = T
              Is_HygroGrowth= T
              Density       = 2200.0_fp
              Radius        = Radius
@@ -4458,17 +4458,6 @@ CONTAINS
           !==================================================================
           ! Species for the Hg specialty simulation
           !==================================================================
-          CASE( 'JHGHO2', 'JHGNO2', 'JHGOH', 'JHGBRO', 'JHGCLOH', 'JHGBR', &
-                'JHGOH1', 'JHGAQ', 'CLDPROC', 'AERPROC', 'STRTPROC'  )
-
-             
-             FullName      = 'First order rate'
-             Formula       = 'HgR'
-             MW_g          = 201.0_fp
-             Is_Gas        = T
-             Is_Drydep     = F
-             Is_Wetdep     = F
-
           CASE( 'HG0_TOT', 'HG0_CAN', 'HG0_USA', 'HG0_CAM', 'HG0_SAM',      &
                 'HG0_WAF', 'HG0_EAF', 'HG0_SAF', 'HG0_NAF', 'HG0_EUR',      &
                 'HG0_EEU', 'HG0_MDE', 'HG0_SOV', 'HG0_SAS', 'HG0_EAS',      &
@@ -4754,91 +4743,186 @@ CONTAINS
              WD_KcScaleFac = KcScale
              WD_RainoutEff = RainEff
 
-          CASE( 'HGBRNO2', 'HGBRHO2', 'HGBRRO2', 'HGBRBRO', 'HGBRCLO',      &
-                'HGBROH',  'HGBR2',   'HGCLBR',  'HGCLOH',                  &
-                'HGCLNO2', 'HGCLHO2', 'HGCLRO2', 'HGCLBRO', 'HGCLCLO'  )
+          CASE( 'HGBRNO2', 'HGBRHO2', 'HGBRRO2', 'HGBRBRO', 'HGBRCLO',     &
+                'HGBROH',  'HGBR2',   'HGCLBR'  )
 
             SELECT CASE( TRIM( Name ) )
                  CASE( 'HGBRNO2'     )
                     FullName      = 'syn-HgBrONO'
-                    Formula       = 'HgBrONO'
-                 CASE( 'HGCLNO2'     )
-                    FullName      = 'syn-HgClONO'
-                    Formula       = 'HgClONO'
+                    Formula       = 'BrHgONO'
+                    MW_g          = 326.5e+0_fp
                  CASE( 'HGBRHO2'     )
                     FullName      = 'HgBrHO2'
-                    Formula       = 'HgBrOOH'
-                 CASE( 'HGCLHO2'     )
-                    FullName      = 'HgClHO2'
-                    Formula       = 'HgClOOH'
+                    Formula       = 'BrHgOOH'
+                    MW_g          = 313.5e+0_fp
                  CASE( 'HGBRBRO'     )
                     FullName      = 'HgBrBrO'
-                    Formula       = 'HgBrOBr'
-                 CASE( 'HGCLBRO'     )
-                    FullName      = 'HgClBrO'
-                    Formula       = 'HgClOBr'
+                    Formula       = 'BrHgOBr'
+                    MW_g          = 376.4e+0_fp
                  CASE( 'HGBRCLO'     )
                     FullName      = 'HgBrClO'
-                    Formula       = 'HgBrOCl'
-                 CASE( 'HGCLCLO'     )
-                    FullName      = 'HgClClO'
-                    Formula       = 'HgClOCl'
+                    Formula       = 'BrHgOCl'
+                    MW_g          = 332e+0_fp
                  CASE( 'HGBRRO2'     )
                     FullName      = 'HgBrROO'
-                    Formula       = 'HgBrOOCH3'
-                 CASE( 'HGCLRO2'     )
-                    FullName      = 'HgClROO'
-                    Formula       = 'HgClOOCH3'
+                    Formula       = 'BrHgOOCH3'
+                    MW_g          = 328e+0_fp
                  CASE( 'HGBROH'     )
                     FullName      = 'HgBrOH'
-                    Formula       = 'HgBrOH'
-                 CASE( 'HGCLOH'     )
-                    FullName      = 'HgClOH'
-                    Formula       = 'HgClOH'
+                    Formula       = 'BrHgOH'
+                    MW_g          = 297.5e+0_fp
                  CASE( 'HGBR2'     )
                     FullName      = 'HgBr2'
                     Formula       = 'HgBr2'
+                    MW_g          = 360.4e+0_fp
                  CASE( 'HGCLBR'     )
                     FullName      = 'HgClBr'
                     Formula       = 'HgBrCl'
+                    MW_g          = 316e+0_fp
                 END SELECT
 
-             MW_g          = 201.0_fp ! Hg(II) Mol. Wt.
-             BackgroundVV  = 1.0e-14_fp
+             EmMW_g        = 201.0_fp ! Hg(II) Mol. Wt.
+             BackgroundVV  = 1.0e-15_fp
              Is_Gas        = T
              Is_Drydep     = T
              Is_Wetdep     = T
-             Is_Hg2        = F
+             Is_Hg2        = T
              DD_F0         = 0.0_fp
-#ifdef NEW_HENRY_CONSTANTS
-             Henry_K0      = 1.40e+4_f8 * To_M_atm
-             Henry_CR      = 5300.0_f8
-#else
-             DD_Hstar_old  = 1.00e+14_fp
+             DD_Hstar_old  = 1.00e+14_f8
              Henry_K0      = 1.40e+6_f8
              Henry_CR      = 8400.0_f8
-#endif
              WD_RetFactor  = 1.0_fp
              Is_Photolysis = T
+
+          CASE( 'HGCLOH', 'HGCLCLO', 'HGCLNO2', 'HGCLHO2', 'HGCLRO2', 'HGCLBRO' )
+
+            SELECT CASE( TRIM( Name ) )
+                 CASE( 'HGCLNO2'     )
+                    FullName      = 'syn-HgClONO'
+                    Formula       = 'ClHgONO'
+                    MW_g          = 282e+0_fp
+                 CASE( 'HGCLHO2'     )
+                    FullName      = 'HgClHO2'
+                    Formula       = 'ClHgOOH'
+                    MW_g          = 269e+0_fp
+                 CASE( 'HGCLBRO'     )
+                    FullName      = 'HgClBrO'
+                    Formula       = 'ClHgOBr'
+                    MW_g          = 332e+0_fp
+                 CASE( 'HGCLCLO'     )
+                    FullName      = 'HgClClO'
+                    Formula       = 'ClHgOCl'
+                    MW_g          = 287.5e+0_fp
+                 CASE( 'HGCLRO2'     )
+                    FullName      = 'HgClROO'
+                    Formula       = 'ClHgOOCH3'
+                    MW_g          = 283e+0_fp
+                 CASE( 'HGCLOH'     )
+                    FullName      = 'HgClOH'
+                    Formula       = 'ClHgOH'
+                    MW_g          = 253e+0_fp
+                END SELECT
+
+             EmMW_g        = 201.0_fp ! Hg(II) Mol. Wt.
+             BackgroundVV  = 1.0e-15_fp
+             Is_Gas        = T
+             Is_Drydep     = T
+             Is_Wetdep     = T
+             Is_Hg2        = T
+             DD_F0         = 0.0_fp
+             DD_Hstar_old  = 1.00e+14_f8
+             Henry_K0      = 1.40e+6_f8
+             Henry_CR      = 8400.0_f8
+             WD_RetFactor  = 1.0_fp
+             Is_Photolysis = T
+
+          CASE( 'HGOHNO2', 'HGOHHO2', 'HGOHRO2', 'HGOHBRO', 'HGOHCLO'  )
+
+            SELECT CASE( TRIM( Name ) )
+                 CASE( 'HGOHNO2'     )
+                    FullName      = 'syn-HgOHONO'
+                    Formula       = 'HOHgONO'
+                    MW_g          = 263.6e+0_fp
+                 CASE( 'HGOHHO2'     )
+                    FullName      = 'HgOHHO2'
+                    Formula       = 'HOHgOOH'
+                    MW_g          = 250.6e+0_fp
+                 CASE( 'HGOHBRO'     )
+                    FullName      = 'HgOHBrO'
+                    Formula       = 'HOHgOBr'
+                    MW_g          = 313.5e+0_fp
+                 CASE( 'HGOHCLO'     )
+                    FullName      = 'HgBrClO'
+                    Formula       = 'HOHgOCl'
+                    MW_g          = 269e+0_fp
+                 CASE( 'HGOHRO2'     )
+                    FullName      = 'HgOHROO'
+                    Formula       = 'HOHgOOCH3'
+                    MW_g          = 264.6e+0_fp
+
+                END SELECT
+
+             EmMW_g        = 201.0_fp ! Hg(II) Mol. Wt.
+             BackgroundVV  = 1.0e-15_fp
+             Is_Gas        = T
+             Is_Drydep     = T
+             Is_Wetdep     = T
+             Is_Hg2        = T
+             DD_F0         = 0.0_fp
+             DD_Hstar_old  = 1.00e+14_f8
+             Henry_K0      = 1.40e+6_f8
+             Henry_CR      = 8400.0_f8
+             WD_RetFactor  = 1.0_fp
+             Is_Photolysis = T
+
+         CASE( 'HGOHOH'     )
+             FullName      = 'HgOH2'
+             Formula       = 'HOHgOH'
+             MW_g          = 234.6e+0_fp
+             EmMW_g        = 201.0_fp ! Hg(II) Mol. Wt.
+             BackgroundVV  = 1.0e-15_fp
+             Is_Gas        = T
+             Is_Drydep     = T
+             Is_Wetdep     = T
+             Is_Hg2        = T
+             DD_F0         = 0.0_fp
+             DD_Hstar_old  = 1.00e+14_f8
+             Henry_K0      = 1.40e+6_f8
+             Henry_CR      = 8400.0_f8
+             WD_RetFactor  = 1.0_fp
+             Is_Photolysis = F
 
          CASE( 'HGCL2' )
              FullName      = 'HgCl2'
              Formula       = 'HgCl2'
-             MW_g          = 201.0_fp ! Hg(II) Mol. Wt.
-             BackgroundVV  = 1.0e-14_fp
+             EmMW_g        = 201.0_fp ! Hg(II) Mol. Wt.
+             MW_g          = 271.5e+0_fp
+             BackgroundVV  = 1.0e-15_fp
              Is_Gas        = T
              Is_Drydep     = T
              Is_Wetdep     = T
-             Is_Hg2        = F
+             Is_Hg2        = T
              DD_F0         = 0.0_fp
-#ifdef NEW_HENRY_CONSTANTS
-             Henry_K0      = 1.40e+4_f8 * To_M_atm
-             Henry_CR      = 5300.0_f8
-#else
-             DD_Hstar_old  = 1.00e+14_fp
+             DD_Hstar_old  = 1.00e+14_f8
              Henry_K0      = 1.40e+6_f8
              Henry_CR      = 8400.0_f8
-#endif
+             WD_RetFactor  = 1.0_fp
+             Is_Photolysis = F
+
+         CASE( 'HG2X' )
+             FullName      = 'Hg2X'
+             Formula       = 'Hg2'
+             EmMW_g        = 201.0_fp ! Hg(II) Mol. Wt.
+             MW_g          = 271.5e+0_fp ! Modeled as HgCl2
+             BackgroundVV  = 1.0e-15_fp
+             Is_Gas        = T
+             Is_Drydep     = T
+             Is_Wetdep     = T
+             Is_Hg2        = T
+             DD_F0         = 0.0_fp
+             DD_Hstar_old  = 1.00e+14_f8
+             Henry_K0      = 1.40e+6_f8
+             Henry_CR      = 8400.0_f8
              WD_RetFactor  = 1.0_fp
              Is_Photolysis = F
 
@@ -4862,22 +4946,20 @@ CONTAINS
              Is_Drydep     = F
              Is_Wetdep     = F
              Is_Hg2        = F
-             DD_F0         = 0.0_fp
-             DD_Hstar_old  = 1.00e+14_fp
-             Henry_K0      = 1.40e+6_f8
-             Henry_CR      = 8400.0_f8
-             WD_RetFactor  = 1.0_fp
              Is_Photolysis = T
 
-          CASE( 'HGBRO', 'HGCLO' )
+          CASE( 'HGBRO', 'HGCLO', 'HGOHO' )
 
             SELECT CASE( TRIM( Name ) )
                  CASE( 'HGBRO'     )
                     FullName      = 'HgBrO'
-                    Formula       = 'HgBrO'
+                    Formula       = 'BrHgO'
                  CASE( 'HGCLO'     )
                     FullName      = 'HgClO'
-                    Formula       = 'HgClO'
+                    Formula       = 'ClHgO'
+                 CASE( 'HGOHO'     )
+                    FullName      = 'HgClO'
+                    Formula       = 'HOHgO'
                 END SELECT
 
              MW_g          = 201.0_fp ! Hg(I) Mol. Wt.
@@ -4885,58 +4967,40 @@ CONTAINS
              Is_Gas        = T
              Is_Drydep     = F
              Is_Wetdep     = F
-             Is_Hg2        = F
+             Is_Hg2        = T
              Is_Photolysis = F
 
-          CASE( 'HGIIORGP' )
-             FullName      = 'Hg(II) organic complex in atmospheric waters'
+          CASE( 'HG2ORGP' )
+             FullName      = 'Hg(II) organic complex in aerosols'
              Formula       = 'R-Hg'
              MW_g          = 201.0_fp ! Hg(II) Mol. Wt.
              KcScale       = (/ 1.0_fp, 0.5_fp, 1.0_fp /)
-             RainEff       = (/ 1.0_fp, 1.0_fp, 1.0_fp /)
-             BackgroundVV  = 1.0e-14_fp
+             RainEff       = (/ 1.0_fp, 0.0_fp, 1.0_fp /)
+             BackgroundVV  = 1.0e-15_fp
              Is_Gas        = F
              Is_Drydep     = T
              Is_Wetdep     = T
-             Is_HgP        = F
+             Is_HgP        = T
              DD_DvzAerSnow = 0.03_fp
              DD_F0         = 0.0_fp
              DD_Hstar_old  = 0.0_fp
-             WD_AerScavEff = 1.0_fp
+             WD_AerScavEff = 0.8_fp
              WD_KcScaleFac = KcScale
              WD_RainoutEff = RainEff
              Is_Photolysis = T
 
-          CASE( 'HGIIADS' )
-             FullName      = 'Hg(II) adsorbed to particulate matter'
-             Formula       = 'HgP'
-             MW_g          = 201.0_fp ! Hg(II) Mol. Wt.
-             KcScale       = (/ 1.0_fp, 0.5_fp, 1.0_fp /)
-             RainEff       = (/ 1.0_fp, 1.0_fp, 1.0_fp /)
-             BackgroundVV  = 1.0e-14_fp
-             Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
-             Is_HgP        = F
-             DD_DvzAerSnow = 0.03_fp
-             DD_F0         = 0.0_fp
-             DD_Hstar_old  = 0.0_fp
-             WD_AerScavEff = 1.0_fp
-             WD_KcScaleFac = KcScale
-             WD_RainoutEff = RainEff
-             Is_Photolysis = F
 
-          CASE ( 'HGIISTRAT' )
+          CASE ( 'HG2STRP' )
              FullName      = 'Hg(II) in stratospheric aerosols'
              Formula       = 'Hg2+'
              MW_g          = 201.0_fp ! Hg(II) Mol. Wt.
              KcScale       = (/ 1.0_fp, 0.5_fp, 1.0_fp /)
-             RainEff       = (/ 1.0_fp, 1.0_fp, 1.0_fp /)
-             BackgroundVV  = 1.0e-13_fp
+             RainEff       = (/ 1.0_fp, 0.0_fp, 1.0_fp /)
+             BackgroundVV  = 1.0e-20_fp
              Is_Gas        = F
-             Is_Drydep     = T
-             Is_Wetdep     = T
-             Is_HgP        = F
+             Is_Drydep     = F
+             Is_Wetdep     = F
+             Is_HgP        = T
              DD_DvzAerSnow = 0.03_fp
              DD_F0         = 0.0_fp
              DD_Hstar_old  = 0.0_fp
@@ -4945,21 +5009,24 @@ CONTAINS
              WD_RainoutEff = RainEff
              Is_Photolysis = F
 
-          CASE( 'HGIICLP' )
-             FullName      = 'Hg(II) chloride salts in atmospheric waters'
-             Formula       = 'HgClp'
+          CASE( 'HG2CLP' )
+             FullName      = 'Hg(II) chloride salts on sea-salt aerosols'
+             Formula       = 'HgCln'
              MW_g          = 201.0_fp ! Hg(II) Mol. Wt.
+             EmMW_g        = 201.0_fp ! Hg(II) Mol. Wt.
              KcScale       = (/ 1.0_fp, 0.5_fp, 1.0_fp /)
-             RainEff       = (/ 1.0_fp, 1.0_fp, 1.0_fp /)
-             BackgroundVV  = 1.0e-14_fp
+             RainEff       = (/ 1.0_fp, 0.0_fp, 1.0_fp /)
+             BackgroundVV  = 1.0e-15_fp
              Is_Gas        = F
              Is_Drydep     = T
              Is_Wetdep     = T
-             Is_HgP        = F
+             Is_HgP        = T
+             DD_AeroDryDep = T
              DD_DvzAerSnow = 0.03_fp
              DD_F0         = 0.0_fp
              DD_Hstar_old  = 0.0_fp
              WD_AerScavEff = 1.0_fp
+             WD_CoarseAer  = F
              WD_KcScaleFac = KcScale
              WD_RainoutEff = RainEff
              Is_Photolysis = F

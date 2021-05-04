@@ -258,7 +258,7 @@ CONTAINS
     NDIAGSTEP_Hg2 = DBLE ( GET_Hg2_DIAG() )+ TINY( 1e+0_fp ) ! for Fg and Fp
 
     ! NOTE: we now get the # of Hg categories from State_Chm (bmy, 4/25/16)
-    N_Hg_CATS = State_Chm%N_Hg_Cats
+    N_Hg_CATS = 1!State_Chm%N_Hg_Cats
 
     !=================================================================
     ! Different diagnostics for total vs. tagged simulations (eds)

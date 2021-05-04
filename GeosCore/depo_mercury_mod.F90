@@ -29,9 +29,9 @@ MODULE DEPO_MERCURY_MOD
   PUBLIC :: RESET_HG_DEP_ARRAYS
   PUBLIC :: CHECK_DIMENSIONS
 #ifdef BPCH_DIAG
-  PUBLIC :: READ_GTMM_RESTART
-  PUBLIC :: MAKE_GTMM_RESTART
-  PUBLIC :: UPDATE_DEP
+!  PUBLIC :: READ_GTMM_RESTART
+!  PUBLIC :: MAKE_GTMM_RESTART
+!  PUBLIC :: UPDATE_DEP
 #endif
   PUBLIC :: INIT_DEPO_MERCURY
   PUBLIC :: CLEANUP_DEPO_MERCURY
@@ -69,17 +69,17 @@ MODULE DEPO_MERCURY_MOD
 !
   ! Scalars for Hg indexing
   INTEGER          :: N_Hg_CATS
-  INTEGER          :: id_Hg0
-  INTEGER          :: id_Hg2
+!  INTEGER          :: id_Hg0
+!  INTEGER          :: id_Hg2
 
   ! Pointers for Hg Indexing
   ! NOTE: Because these are SAVEd pointers (by virtue of being
   ! module variables) we can set these to NULL here. (bmy, 4/29/16)
-  INTEGER, POINTER :: Hg0_Id_List (:) => NULL()
-  INTEGER, POINTER :: Hg2_Id_List (:) => NULL()
-  INTEGER, POINTER :: HgP_Id_List (:) => NULL()
-  INTEGER, POINTER :: Hg0_CAT(:) => NULL()
-  INTEGER, POINTER :: Hg2_CAT(:) => NULL()
+!  INTEGER, POINTER :: Hg0_Id_List (:) => NULL()
+!  INTEGER, POINTER :: Hg2_Id_List (:) => NULL()
+!  INTEGER, POINTER :: HgP_Id_List (:) => NULL()
+!  INTEGER, POINTER :: Hg0_CAT(:) => NULL()
+!  INTEGER, POINTER :: Hg2_CAT(:) => NULL()
 
 CONTAINS
 !EOC
@@ -404,406 +404,411 @@ CONTAINS
 
   END SUBROUTINE RESET_HG_DEP_ARRAYS
 !EOC
-#ifdef BPCH_DIAG
-!------------------------------------------------------------------------------
-!                  GEOS-Chem Global Chemical Transport Model                  !
-!------------------------------------------------------------------------------
-!BOP
 !
-! !IROUTINE: make_gtmm_restart
+!#ifdef BPCH_DIAG
+!!------------------------------------------------------------------------------
+!!                  GEOS-Chem Global Chemical Transport Model                  !
+!!------------------------------------------------------------------------------
+!!BOP
+!!
+!! !IROUTINE: make_gtmm_restart
+!!
+!! !DESCRIPTION: MAKE\_GTMM\_RESTART writes a GTMM restart file with deposition
+!!  fluxes and store deposition fluxes for continuous runs.
+!!\\
+!!\\
+!! !INTERFACE:
+!!
+!  SUBROUTINE MAKE_GTMM_RESTART( Input_Opt, State_Grid, NYMD, NHMS, TAU, RC )
+!!
+!! !USES:
+!!
+!    USE BPCH2_MOD
+!    USE ErrCode_Mod
+!    USE Input_Opt_Mod,       ONLY : OptInput
+!    USE inquireMod,          ONLY : findFreeLUN
+!    USE TIME_MOD,            ONLY : EXPAND_DATE
+!    USE TIME_MOD,            ONLY : GET_CT_DYN, GET_CT_CHEM
+!    USE State_Grid_Mod,      ONLY : GrdState
+!!
+!! !INPUT PARAMETERS:
+!!
+!    INTEGER,        INTENT(IN)   :: NYMD        ! Year-Month-Date
+!    INTEGER,        INTENT(IN)   :: NHMS        ! and Hour-Min-Sec
+!    REAL(f8),       INTENT(IN)   :: TAU         ! TAU value: hrs since 1/1/85
+!    TYPE(OptInput), INTENT(IN)   :: Input_Opt   ! Input Options object
+!    TYPE(GrdState), INTENT(IN)   :: State_Grid  ! Grid State object
+!!
+!! !OUTPUT PARAMETERS:
+!!
+!    INTEGER,        INTENT(OUT)  :: RC          ! Success or failure?
 !
-! !DESCRIPTION: MAKE\_GTMM\_RESTART writes a GTMM restart file with deposition
-!  fluxes and store deposition fluxes for continuous runs.
-!\\
-!\\
-! !INTERFACE:
+!! !REVISION HISTORY:
+!!  15 Sep 2009 - C. Carouge  - Initial version
+!!  See https://github.com/geoschem/geos-chem for complete history
+!!EOP
+!!------------------------------------------------------------------------------
+!!BOC
+!!
+!! !LOCAL VARIABLES:
+!!
+!    INTEGER               :: HALFPOLAR, CENTER180, IU_FILE
+!    INTEGER               :: IFIRST,    JFIRST,    LFIRST
+!    INTEGER               :: N,         NN
+!    REAL(f8)              :: TS_DYN,    TS_CHEM
+!    REAL(f4)              :: LONRES,    LATRES
+!    REAL(f4)              :: ARRAY(State_Grid%NX,State_Grid%NY,1)
+!    CHARACTER(LEN=20)     :: MODELNAME
+!    CHARACTER(LEN=40)     :: CATEGORY,  UNIT,     RESERVED
+!    CHARACTER(LEN=255)    :: FILENAME
 !
-  SUBROUTINE MAKE_GTMM_RESTART( Input_Opt, State_Grid, NYMD, NHMS, TAU, RC )
+!    !=================================================================
+!    ! MAKE_GTMM_RESTART begins here!
+!    !=================================================================
 !
-! !USES:
+!    ! Assume success
+!    RC = GC_SUCCESS
 !
-    USE BPCH2_MOD
-    USE ErrCode_Mod
-    USE Input_Opt_Mod,       ONLY : OptInput
-    USE inquireMod,          ONLY : findFreeLUN
-    USE TIME_MOD,            ONLY : EXPAND_DATE
-    USE TIME_MOD,            ONLY : GET_CT_DYN, GET_CT_CHEM
-    USE State_Grid_Mod,      ONLY : GrdState
+!    ! Initialize values
+!    IFIRST    = State_Grid%XMinOffset + 1
+!    JFIRST    = State_Grid%YMinOffset + 1
+!    LFIRST    = 1
+!    HALFPOLAR = GET_HALFPOLAR()
+!    CENTER180 = 1
+!    LONRES    = State_Grid%DX
+!    LATRES    = State_Grid%DY
+!    MODELNAME = GET_MODELNAME( Input_Opt, State_Grid )
+!    CATEGORY  = 'DRYD-FLX'
+!    RESERVED  = ''
+!    UNIT      = 'molec/cm2/s'
 !
-! !INPUT PARAMETERS:
+!    ! Find a free file LUN
+!    IU_FILE   = findFreeLUN()
 !
-    INTEGER,        INTENT(IN)   :: NYMD        ! Year-Month-Date
-    INTEGER,        INTENT(IN)   :: NHMS        ! and Hour-Min-Sec
-    REAL(f8),       INTENT(IN)   :: TAU         ! TAU value: hrs since 1/1/85
-    TYPE(OptInput), INTENT(IN)   :: Input_Opt   ! Input Options object
-    TYPE(GrdState), INTENT(IN)   :: State_Grid  ! Grid State object
+!    ! Expand date in filename
+!    FILENAME  = TRIM( Input_Opt%RUN_DIR ) // TRIM( GTMM_RST_FILE )
+!    CALL EXPAND_DATE( FILENAME, NYMD, NHMS )
 !
-! !OUTPUT PARAMETERS:
+!    ! Echo info
+!    WRITE( 6, 100 ) TRIM( FILENAME ), IU_FILE
+!100 FORMAT( '     - MAKE_RESTART_FILE: Writing ', a, ' on unit ', i4 )
 !
-    INTEGER,        INTENT(OUT)  :: RC          ! Success or failure?
-
-! !REVISION HISTORY:
-!  15 Sep 2009 - C. Carouge  - Initial version
-!  See https://github.com/geoschem/geos-chem for complete history
-!EOP
-!------------------------------------------------------------------------------
-!BOC
+!    ! Open BPCH file for output
+!    CALL OPEN_BPCH2_FOR_WRITE( IU_FILE, FILENAME )
 !
-! !LOCAL VARIABLES:
+!    !---------------------------
+!    ! Total Hg(0) dry deposition
+!    !---------------------------
+!    ARRAY(:,:,1) = HG0mth_dd
 !
-    INTEGER               :: HALFPOLAR, CENTER180, IU_FILE
-    INTEGER               :: IFIRST,    JFIRST,    LFIRST
-    INTEGER               :: N,         NN
-    REAL(f8)              :: TS_DYN,    TS_CHEM
-    REAL(f4)              :: LONRES,    LATRES
-    REAL(f4)              :: ARRAY(State_Grid%NX,State_Grid%NY,1)
-    CHARACTER(LEN=20)     :: MODELNAME
-    CHARACTER(LEN=40)     :: CATEGORY,  UNIT,     RESERVED
-    CHARACTER(LEN=255)    :: FILENAME
-
-    !=================================================================
-    ! MAKE_GTMM_RESTART begins here!
-    !=================================================================
-
-    ! Assume success
-    RC = GC_SUCCESS
-
-    ! Initialize values
-    IFIRST    = State_Grid%XMinOffset + 1
-    JFIRST    = State_Grid%YMinOffset + 1
-    LFIRST    = 1
-    HALFPOLAR = GET_HALFPOLAR()
-    CENTER180 = 1
-    LONRES    = State_Grid%DX
-    LATRES    = State_Grid%DY
-    MODELNAME = GET_MODELNAME( Input_Opt, State_Grid )
-    CATEGORY  = 'DRYD-FLX'
-    RESERVED  = ''
-    UNIT      = 'molec/cm2/s'
-
-    ! Find a free file LUN
-    IU_FILE   = findFreeLUN()
-
-    ! Expand date in filename
-    FILENAME  = TRIM( Input_Opt%RUN_DIR ) // TRIM( GTMM_RST_FILE )
-    CALL EXPAND_DATE( FILENAME, NYMD, NHMS )
-    
-    ! Echo info
-    WRITE( 6, 100 ) TRIM( FILENAME ), IU_FILE
-100 FORMAT( '     - MAKE_RESTART_FILE: Writing ', a, ' on unit ', i4 )
-
-    ! Open BPCH file for output
-    CALL OPEN_BPCH2_FOR_WRITE( IU_FILE, FILENAME )
-
-    !---------------------------
-    ! Total Hg(0) dry deposition
-    !---------------------------
-    ARRAY(:,:,1) = HG0mth_dd
-
-    CALL BPCH2( IU_FILE,   MODELNAME, LONRES,   LATRES,   &
-                HALFPOLAR, CENTER180, CATEGORY, N,        &
-                UNIT,      TAU,       TAU,      RESERVED, &
-                State_Grid%NX, State_Grid%NY, 1, IFIRST,  &
-                JFIRST,    LFIRST,    ARRAY(:,:,1) )
-
-    !---------------------------
-    ! Hg(II) dry deposition
-    !---------------------------
-    ARRAY(:,:,1) = HG2mth_dd
-
-    CALL BPCH2( IU_FILE,   MODELNAME, LONRES,   LATRES,   &
-                HALFPOLAR, CENTER180, CATEGORY, N,        &
-                UNIT,      TAU,       TAU,      RESERVED, &
-                State_Grid%NX, State_Grid%NY, 1, IFIRST,  &
-                JFIRST,    LFIRST,    ARRAY(:,:,1) )
-
-    !---------------------------
-    ! Hg(II) wet deposition
-    !---------------------------
-    CATEGORY  = 'WETDLS-$'
-    ARRAY(:,:,1) = HG2mth_wd
-
-    CALL BPCH2( IU_FILE,   MODELNAME, LONRES,   LATRES,   &
-                HALFPOLAR, CENTER180, CATEGORY, N,        &
-                UNIT,      TAU,       TAU,      RESERVED, &
-                State_Grid%NX, State_Grid%NY, 1, IFIRST,  &
-                JFIRST,    LFIRST,    ARRAY(:,:,1) )
-
-    ! Close file
-    CLOSE( IU_FILE )
-
-  END SUBROUTINE MAKE_GTMM_RESTART
-!EOC
-!------------------------------------------------------------------------------
-!                  GEOS-Chem Global Chemical Transport Model                  !
-!------------------------------------------------------------------------------
-!BOP
+!    CALL BPCH2( IU_FILE,   MODELNAME, LONRES,   LATRES,   &
+!                HALFPOLAR, CENTER180, CATEGORY, N,        &
+!                UNIT,      TAU,       TAU,      RESERVED, &
+!                State_Grid%NX, State_Grid%NY, 1, IFIRST,  &
+!                JFIRST,    LFIRST,    ARRAY(:,:,1) )
 !
-! !IROUTINE: read_gtmm_restart
+!    !---------------------------
+!    ! Hg(II) dry deposition
+!    !---------------------------
+!    ARRAY(:,:,1) = HG2mth_dd
 !
-! !DESCRIPTION: Subroutine READ\_GTMM\_RESTART reads dry and wet deposition
-!  for mercury from GTMM restart.
-!\\
-!\\
-! !INTERFACE:
+!    CALL BPCH2( IU_FILE,   MODELNAME, LONRES,   LATRES,   &
+!                HALFPOLAR, CENTER180, CATEGORY, N,        &
+!                UNIT,      TAU,       TAU,      RESERVED, &
+!                State_Grid%NX, State_Grid%NY, 1, IFIRST,  &
+!                JFIRST,    LFIRST,    ARRAY(:,:,1) )
 !
-  SUBROUTINE READ_GTMM_RESTART( Input_Opt, State_Chm, State_Grid, &
-                                YYYYMMDD,    HHMMSS,              &
-                                Hg0dryGEOS,  HgIIdryGEOS,         &
-                                HgIIwetGEOS, RC           )
+!    !---------------------------
+!    ! Hg(II) wet deposition
+!    !---------------------------
+!    CATEGORY  = 'WETDLS-$'
+!    ARRAY(:,:,1) = HG2mth_wd
 !
-! !USES:
+!    CALL BPCH2( IU_FILE,   MODELNAME, LONRES,   LATRES,   &
+!                HALFPOLAR, CENTER180, CATEGORY, N,        &
+!                UNIT,      TAU,       TAU,      RESERVED, &
+!                State_Grid%NX, State_Grid%NY, 1, IFIRST,  &
+!                JFIRST,    LFIRST,    ARRAY(:,:,1) )
 !
-    USE BPCH2_MOD,            ONLY : OPEN_BPCH2_FOR_READ
-    USE ErrCode_Mod
-    USE ERROR_MOD,            ONLY : DEBUG_MSG
-    USE FILE_MOD,             ONLY : IOERROR
-    USE Input_Opt_Mod,        ONLY : OptInput
-    USE inquireMod,           ONLY : findFreeLun
-    USE State_Chm_Mod,        ONLY : ChmState
-    USE State_Grid_Mod,       ONLY : GrdState
-    USE TIME_MOD,             ONLY : EXPAND_DATE
+!    ! Close file
+!    CLOSE( IU_FILE )
 !
-! !INPUT PARAMETERS:
+!  END SUBROUTINE MAKE_GTMM_RESTART
+!!EOC
+!!
+
+!!------------------------------------------------------------------------------
+!!                  GEOS-Chem Global Chemical Transport Model                  !
+!!------------------------------------------------------------------------------
+!!BOP
+!!
+!! !IROUTINE: read_gtmm_restart
+!!
+!! !DESCRIPTION: Subroutine READ\_GTMM\_RESTART reads dry and wet deposition
+!!  for mercury from GTMM restart.
+!!\\
+!!\\
+!! !INTERFACE:
+!!
+!  SUBROUTINE READ_GTMM_RESTART( Input_Opt, State_Chm, State_Grid, &
+!                                YYYYMMDD,    HHMMSS,              &
+!                                Hg0dryGEOS,  HgIIdryGEOS,         &
+!                                HgIIwetGEOS, RC           )
+!!
+!! !USES:
+!!
+!    USE BPCH2_MOD,            ONLY : OPEN_BPCH2_FOR_READ
+!    USE ErrCode_Mod
+!    USE ERROR_MOD,            ONLY : DEBUG_MSG
+!    USE FILE_MOD,             ONLY : IOERROR
+!    USE Input_Opt_Mod,        ONLY : OptInput
+!    USE inquireMod,           ONLY : findFreeLun
+!    USE State_Chm_Mod,        ONLY : ChmState
+!    USE State_Grid_Mod,       ONLY : GrdState
+!    USE TIME_MOD,             ONLY : EXPAND_DATE
+!!
+!! !INPUT PARAMETERS:
+!!
+!    TYPE(OptInput), INTENT(IN)    :: Input_Opt   ! Input Options object
+!    TYPE(GrdState), INTENT(IN)    :: State_Grid  ! Grid State object
+!    INTEGER,        INTENT(IN)    :: YYYYMMDD, HHMMSS
+!!
+!! !INPUT/OUTPUT PARAMETERS:
+!!
+!    TYPE(ChmState), INTENT(INOUT) :: State_Chm   ! Chemistry State object
+!!
+!! !OUTPUT PARAMETERS:
+!!
+!    INTEGER,  INTENT(OUT)   :: RC          ! Success or failure?!
+!    REAL(fp), DIMENSION(State_Grid%NX, State_Grid%NY)   :: Hg0dryGEOS
+!    REAL(fp), DIMENSION(State_Grid%NX, State_Grid%NY)   :: HgIIdryGEOS
+!    REAL(fp), DIMENSION(State_Grid%NX, State_Grid%NY)   :: HgIIwetGEOS
+!!
+!! !REMAKRS:
+!!  NOTE: THIS ROUTINE WILL HAVE TO BE UPDATED TO CONVERT TO NETCDF FORMAT!!!
+!!
+!! !REVISION HISTORY:
+!!  15 Sep 2009 - C. Carouge  - Initial version
+!!  See https://github.com/geoschem/geos-chem for complete history
+!!EOP
+!!------------------------------------------------------------------------------
+!!BOC
+!!
+!! !LOCAL VARIABLES:
+!!
+!    INTEGER               :: IOS, I, IU_FILE, J, L, NN, N_gtmm
+!    INTEGER               :: NCOUNT(State_Chm%nAdvect)
+!    REAL*4                :: FLUX(State_Grid%NX,State_Grid%NY)
+!    CHARACTER(LEN=255)    :: FILENAME
 !
-    TYPE(OptInput), INTENT(IN)    :: Input_Opt   ! Input Options object
-    TYPE(GrdState), INTENT(IN)    :: State_Grid  ! Grid State object
-    INTEGER,        INTENT(IN)    :: YYYYMMDD, HHMMSS
+!    ! For binary punch file, version 2.0
+!    INTEGER               :: NI,        NJ,      NL
+!    INTEGER               :: IFIRST,    JFIRST,  LFIRST
+!    INTEGER               :: NTRACER,   NSKIP
+!    INTEGER               :: HALFPOLAR, CENTER180
+!    REAL*4                :: LONRES,    LATRES
+!    REAL(fp)              :: ZTAU0,     ZTAU1
+!    CHARACTER(LEN=20)     :: MODELNAME
+!    CHARACTER(LEN=40)     :: CATEGORY
+!    CHARACTER(LEN=40)     :: UNIT
+!    CHARACTER(LEN=40)     :: RESERVED
 !
-! !INPUT/OUTPUT PARAMETERS:
+!    !=================================================================
+!    ! READ_GTMM_RESTART begins here!
+!    !=================================================================
 !
-    TYPE(ChmState), INTENT(INOUT) :: State_Chm   ! Chemistry State object
+!    ! Assume success
+!    RC = GC_SUCCESS
 !
-! !OUTPUT PARAMETERS:
+!    ! Find a free file LUN
+!    IU_FILE  = findFreeLUN()
 !
-    INTEGER,  INTENT(OUT)   :: RC          ! Success or failure?!
-    REAL(fp), DIMENSION(State_Grid%NX, State_Grid%NY)   :: Hg0dryGEOS
-    REAL(fp), DIMENSION(State_Grid%NX, State_Grid%NY)   :: HgIIdryGEOS
-    REAL(fp), DIMENSION(State_Grid%NX, State_Grid%NY)   :: HgIIwetGEOS
+!    ! Copy input file name to a local variable
+!    FILENAME = TRIM( Input_Opt%RUN_DIR ) // TRIM( GTMM_RST_FILE )
 !
-! !REMAKRS:
-!  NOTE: THIS ROUTINE WILL HAVE TO BE UPDATED TO CONVERT TO NETCDF FORMAT!!!
+!    ! Replace YYYY, MM, DD, HH tokens in FILENAME w/ actual values
+!    CALL EXPAND_DATE( FILENAME, YYYYMMDD, HHMMSS )
 !
-! !REVISION HISTORY:
-!  15 Sep 2009 - C. Carouge  - Initial version
-!  See https://github.com/geoschem/geos-chem for complete history
-!EOP
-!------------------------------------------------------------------------------
-!BOC
+!    ! Echo some input to the screen
+!    IF ( Input_Opt%amIRoot ) THEN
+!       WRITE( 6, '(a)' ) REPEAT( '=', 79 )
+!       WRITE( 6, 100   )
+!       WRITE( 6, 110   ) TRIM( FILENAME ), IU_FILE
+!100    FORMAT( 'G T M M  H g   R E S T A R T   F I L E   I N P U T' )
+!110    FORMAT( /, 'READ_GTMM_RESTART: Reading ', a, ' on unit ', i6 )
+!    ENDIF
 !
-! !LOCAL VARIABLES:
+!    ! Open the binary punch file for input
+!    CALL OPEN_BPCH2_FOR_READ( IU_FILE, FILENAME )
 !
-    INTEGER               :: IOS, I, IU_FILE, J, L, NN, N_gtmm
-    INTEGER               :: NCOUNT(State_Chm%nAdvect)
-    REAL*4                :: FLUX(State_Grid%NX,State_Grid%NY)
-    CHARACTER(LEN=255)    :: FILENAME
-
-    ! For binary punch file, version 2.0
-    INTEGER               :: NI,        NJ,      NL
-    INTEGER               :: IFIRST,    JFIRST,  LFIRST
-    INTEGER               :: NTRACER,   NSKIP
-    INTEGER               :: HALFPOLAR, CENTER180
-    REAL*4                :: LONRES,    LATRES
-    REAL(fp)              :: ZTAU0,     ZTAU1
-    CHARACTER(LEN=20)     :: MODELNAME
-    CHARACTER(LEN=40)     :: CATEGORY
-    CHARACTER(LEN=40)     :: UNIT
-    CHARACTER(LEN=40)     :: RESERVED
-
-    !=================================================================
-    ! READ_GTMM_RESTART begins here!
-    !=================================================================
-
-    ! Assume success
-    RC = GC_SUCCESS
-
-    ! Find a free file LUN
-    IU_FILE  = findFreeLUN()
-
-    ! Copy input file name to a local variable
-    FILENAME = TRIM( Input_Opt%RUN_DIR ) // TRIM( GTMM_RST_FILE )
-
-    ! Replace YYYY, MM, DD, HH tokens in FILENAME w/ actual values
-    CALL EXPAND_DATE( FILENAME, YYYYMMDD, HHMMSS )
-
-    ! Echo some input to the screen
-    IF ( Input_Opt%amIRoot ) THEN
-       WRITE( 6, '(a)' ) REPEAT( '=', 79 )
-       WRITE( 6, 100   )
-       WRITE( 6, 110   ) TRIM( FILENAME ), IU_FILE
-100    FORMAT( 'G T M M  H g   R E S T A R T   F I L E   I N P U T' )
-110    FORMAT( /, 'READ_GTMM_RESTART: Reading ', a, ' on unit ', i6 )
-    ENDIF
-
-    ! Open the binary punch file for input
-    CALL OPEN_BPCH2_FOR_READ( IU_FILE, FILENAME )
-
-    !=================================================================
-    ! Read concentrations -- store in the TRACER array
-    !=================================================================
-    DO
-       READ( IU_FILE, IOSTAT=IOS ) &
-            MODELNAME, LONRES, LATRES, HALFPOLAR, CENTER180
-
-       ! IOS < 0 is end-of-file, so exit
-       IF ( IOS < 0 ) EXIT
-
-       ! IOS > 0 is a real I/O error -- print error message
-       IF ( IOS > 0 ) CALL IOERROR( IOS, IU_FILE, 'rd_gtmm_rst:1' )
-
-       READ( IU_FILE, IOSTAT=IOS ) &
-            CATEGORY, NTRACER,  UNIT, ZTAU0,  ZTAU1,  RESERVED, &
-            NI,       NJ,       NL,   IFIRST, JFIRST, LFIRST,   &
-            NSKIP
-
-       IF ( IOS /= 0 ) CALL IOERROR( IOS, IU_FILE, 'rd_gtmm_rst:2' )
-
-       READ( IU_FILE, IOSTAT=IOS ) &
-            ( ( FLUX(I,J), I=1,NI ), J=1,NJ )
-
-       IF ( IOS /= 0 ) CALL IOERROR( IOS, IU_FILE, 'rd_gtmm_rst:3' )
-
-       !==============================================================
-       ! Assign data from the TRACER array to the STT array.
-       !==============================================================
-
-       ! Process dry deposition data
-       IF ( CATEGORY(1:8) == 'DRYD-FLX' ) THEN
-
-          ! Make sure array dimensions are of global size
-          ! (NI=State_Grid%NX; NJ=State_Grid%NY, NL=State_Grid%NZ),
-          ! or stop the run
-          CALL CHECK_DIMENSIONS( NI, NJ, NL, State_Grid )
-
-          ! Save into arrays
-          IF ( ANY( Hg0_Id_List == NTRACER ) ) THEN
-
-             !----------
-             ! Hg(0)
-             !----------
-
-             ! Get the Hg category #
-             NN              = Hg0_Cat(NTRACER)
-
-             ! Store ocean Hg(0) in Hg0aq array
-             Hg0dryGEOS(:,:) = FLUX(:,:)
-
-             ! Increment NCOUNT
-             NCOUNT(NTRACER) = NCOUNT(NTRACER) + 1
-
-          ELSE IF ( ANY( Hg2_Id_List == NTRACER ) ) THEN
-
-             !----------
-             ! Hg(II)
-             !----------
-
-             ! Get the Hg category #
-             NN               = Hg2_Cat(NTRACER)
-
-             ! Store ocean Hg(II) in Hg2_aq array
-             HgIIdryGEOS(:,:) = FLUX(:,:)
-
-             ! Increment NCOUNT
-             NCOUNT(NTRACER)  = NCOUNT(NTRACER) + 1
-
-          ENDIF
-       ENDIF
-
-       ! Process wet deposition data
-       IF ( CATEGORY(1:8) == 'WETDLS-$' ) THEN
-
-          ! Make sure array dimensions are of global size
-          ! (NI=State_Grid%NX; NJ=State_Grid%NY, NL=State_Grid%NZ),
-          ! or stop the run
-          ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-          ! %%%% KLUDGE: CHECK_DIMENSIONS only works for NL=1 !!!!
-          ! And we are only interested by the surface flux...
-          NL = 1
-          ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-          CALL CHECK_DIMENSIONS( NI, NJ, NL, State_Grid )
-
-          IF ( ANY( Hg2_Id_List == NTRACER ) ) THEN
-
-             !----------
-             ! Hg(II)
-             !----------
-
-             ! Get the Hg category #
-             NN               = Hg2_Cat(NTRACER)
-
-             ! Store ocean Hg(II) in Hg2_aq array
-             HgIIwetGEOS(:,:) = FLUX(:,:)
-
-             ! Increment NCOUNT
-             NCOUNT(NTRACER)  = NCOUNT(NTRACER) + 1
-
-          ENDIF
-       ENDIF
-    ENDDO
-
-    ! Close file
-    CLOSE( IU_FILE )
-
-  END SUBROUTINE READ_GTMM_RESTART
-!EOC
-!------------------------------------------------------------------------------
-!                  GEOS-Chem Global Chemical Transport Model                  !
-!------------------------------------------------------------------------------
-!BOP
+!    !=================================================================
+!    ! Read concentrations -- store in the TRACER array
+!    !=================================================================
+!    DO
+!       READ( IU_FILE, IOSTAT=IOS ) &
+!            MODELNAME, LONRES, LATRES, HALFPOLAR, CENTER180
 !
-! !IROUTINE: update_dep
+!       ! IOS < 0 is end-of-file, so exit
+!       IF ( IOS < 0 ) EXIT
 !
-! !DESCRIPTION: Subroutine UPDATE\_DEP update the monthly average for wet and
-!  dry deposition of Hg0 and Hg2 for mercury from GTMM restart.
-!\\
-!\\
-! !INTERFACE:
+!       ! IOS > 0 is a real I/O error -- print error message
+!       IF ( IOS > 0 ) CALL IOERROR( IOS, IU_FILE, 'rd_gtmm_rst:1' )
 !
-  SUBROUTINE UPDATE_DEP( NN )
+!       READ( IU_FILE, IOSTAT=IOS ) &
+!            CATEGORY, NTRACER,  UNIT, ZTAU0,  ZTAU1,  RESERVED, &
+!            NI,       NJ,       NL,   IFIRST, JFIRST, LFIRST,   &
+!            NSKIP
 !
-! !USES:
+!       IF ( IOS /= 0 ) CALL IOERROR( IOS, IU_FILE, 'rd_gtmm_rst:2' )
 !
-    USE TIME_MOD,     ONLY : GET_CT_DYN,  GET_CT_CHEM
+!       READ( IU_FILE, IOSTAT=IOS ) &
+!            ( ( FLUX(I,J), I=1,NI ), J=1,NJ )
 !
-! !INPUT PARAMETERS:
+!       IF ( IOS /= 0 ) CALL IOERROR( IOS, IU_FILE, 'rd_gtmm_rst:3' )
 !
-    INTEGER :: NN    ! Hg2 ID for wet deposition
+!       !==============================================================
+!       ! Assign data from the TRACER array to the STT array.
+!       !==============================================================
 !
-! !REVISION HISTORY:
-!  04 June 2010  - C. Carouge  - Initial version
-!  See https://github.com/geoschem/geos-chem for complete history
-!EOP
-!------------------------------------------------------------------------------
-!BOC
+!       ! Process dry deposition data
+!       IF ( CATEGORY(1:8) == 'DRYD-FLX' ) THEN
 !
-! !LOCAL VARIABLES:
+!          ! Make sure array dimensions are of global size
+!          ! (NI=State_Grid%NX; NJ=State_Grid%NY, NL=State_Grid%NZ),
+!          ! or stop the run
+!          CALL CHECK_DIMENSIONS( NI, NJ, NL, State_Grid )
 !
-    INTEGER  :: N
-    REAL(fp) :: SCALEDYN, SCALECHEM
+!          ! Save into arrays
+!          IF ( ANY( Hg0_Id_List == NTRACER ) ) THEN
+!
+!             !----------
+!             ! Hg(0)
+!             !----------
+!
+!             ! Get the Hg category #
+!             NN              = Hg0_Cat(NTRACER)
+!
+!             ! Store ocean Hg(0) in Hg0aq array
+!             Hg0dryGEOS(:,:) = FLUX(:,:)
+!
+!             ! Increment NCOUNT
+!             NCOUNT(NTRACER) = NCOUNT(NTRACER) + 1
+!
+!          ELSE IF ( ANY( Hg2_Id_List == NTRACER ) ) THEN
+!
+!             !----------
+!             ! Hg(II)
+!             !----------
+!
+!             ! Get the Hg category #
+!             NN               = Hg2_Cat(NTRACER)
+!
+!             ! Store ocean Hg(II) in Hg2_aq array
+!             HgIIdryGEOS(:,:) = FLUX(:,:)
+!
+!             ! Increment NCOUNT
+!             NCOUNT(NTRACER)  = NCOUNT(NTRACER) + 1
+!
+!          ENDIF
+!       ENDIF
+!
+!       ! Process wet deposition data
+!       IF ( CATEGORY(1:8) == 'WETDLS-$' ) THEN
+!
+!          ! Make sure array dimensions are of global size
+!          ! (NI=State_Grid%NX; NJ=State_Grid%NY, NL=State_Grid%NZ),
+!          ! or stop the run
+!          ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!          ! %%%% KLUDGE: CHECK_DIMENSIONS only works for NL=1 !!!!
+!          ! And we are only interested by the surface flux...
+!          NL = 1
+!          ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!          CALL CHECK_DIMENSIONS( NI, NJ, NL, State_Grid )
+!
+!          IF ( ANY( Hg2_Id_List == NTRACER ) ) THEN
+!
+!             !----------
+!             ! Hg(II)
+!             !----------
+!
+!             ! Get the Hg category #
+!             NN               = Hg2_Cat(NTRACER)
+!
+!             ! Store ocean Hg(II) in Hg2_aq array
+!             HgIIwetGEOS(:,:) = FLUX(:,:)
+!
+!             ! Increment NCOUNT
+!             NCOUNT(NTRACER)  = NCOUNT(NTRACER) + 1
+!
+!          ENDIF
+!       ENDIF
+!    ENDDO
+!
+!    ! Close file
+!    CLOSE( IU_FILE )
+!
+!  END SUBROUTINE READ_GTMM_RESTART
+!!EOC
+!
+!!------------------------------------------------------------------------------
+!!                  GEOS-Chem Global Chemical Transport Model                  !
+!!------------------------------------------------------------------------------
+!!BOP
+!!
+!! !IROUTINE: update_dep
+!!
+!! !DESCRIPTION: Subroutine UPDATE\_DEP update the monthly average for wet and
+!!  dry deposition of Hg0 and Hg2 for mercury from GTMM restart.
+!!\\
+!!\\
+!! !INTERFACE:
+!!
+!  SUBROUTINE UPDATE_DEP( NN )
+!!
+!! !USES:
+!!
+!    USE TIME_MOD,     ONLY : GET_CT_DYN,  GET_CT_CHEM
+!!
+!! !INPUT PARAMETERS:
+!!
+!    INTEGER :: NN    ! Hg2 ID for wet deposition
+!!
+!! !REVISION HISTORY:
+!!  04 June 2010  - C. Carouge  - Initial version
+!!  See https://github.com/geoschem/geos-chem for complete history
+!!EOP
+!!------------------------------------------------------------------------------
+!!BOC
+!!
+!! !LOCAL VARIABLES:
+!!
+!    INTEGER  :: N
+!    REAL(fp) :: SCALEDYN, SCALECHEM
+!
+!    !=================================================================
+!    ! UPDATE_DEP begins here!
+!    !=================================================================
+!
+!    ! counter variables
+!    SCALEDYN   = DBLE( GET_CT_DYN()  ) + 1e-32_fp
+!    SCALECHEM  = DBLE( GET_CT_CHEM() ) + 1e-32_fp
+!
+!    !! Hg2 total wet deposition at the surface
+!    !HG2mth_wd = HG2mth_wd + ( SUM(AD38(:,:,:,NN), DIM=3) + &
+!    !                          SUM(AD39(:,:,:,NN), DIM=3) ) / SCALEDYN
+!    !
+!    !! Hg0 total dry deposition at the surface
+!    !N         = id_Hg0
+!    !HG0mth_dd = HG0mth_dd + AD44(:,:,N,1) / SCALECHEM
+!    !
+!    !! Hg2 total dry deposition at the surface
+!    !N         = id_Hg2
+!    !HG2mth_dd = HG2mth_dd + AD44(:,:,N,1) / SCALECHEM
+!
+!  END SUBROUTINE UPDATE_DEP
+!!EOC
+!#endif
 
-    !=================================================================
-    ! UPDATE_DEP begins here!
-    !=================================================================
-
-    ! counter variables
-    SCALEDYN   = DBLE( GET_CT_DYN()  ) + 1e-32_fp
-    SCALECHEM  = DBLE( GET_CT_CHEM() ) + 1e-32_fp
-
-    !! Hg2 total wet deposition at the surface
-    !HG2mth_wd = HG2mth_wd + ( SUM(AD38(:,:,:,NN), DIM=3) + &
-    !                          SUM(AD39(:,:,:,NN), DIM=3) ) / SCALEDYN
-    !
-    !! Hg0 total dry deposition at the surface
-    !N         = id_Hg0
-    !HG0mth_dd = HG0mth_dd + AD44(:,:,N,1) / SCALECHEM
-    !
-    !! Hg2 total dry deposition at the surface
-    !N         = id_Hg2
-    !HG2mth_dd = HG2mth_dd + AD44(:,:,N,1) / SCALECHEM
-
-  END SUBROUTINE UPDATE_DEP
-!EOC
-#endif
 !------------------------------------------------------------------------------
 !                  GEOS-Chem Global Chemical Transport Model                  !
 !------------------------------------------------------------------------------
@@ -930,8 +935,8 @@ CONTAINS
     ! INIT_DEPO_MERCURY begins here!
     !=================================================================
 
-    ! GTMM restart file name
-    GTMM_RST_FILE = Input_Opt%GTMM_RST_FILE
+!    ! GTMM restart file name
+!    GTMM_RST_FILE = Input_Opt%GTMM_RST_FILE
 
     !================================================================
     ! Initialize local Hg indexing variables
@@ -941,47 +946,47 @@ CONTAINS
     N_Hg_CATS     = State_Chm%N_Hg_CATS
 
     ! Hg species index corresponding to a given Hg category number
-    Hg0_Id_List   => State_Chm%Hg0_Id_List
-    Hg2_Id_List   => State_Chm%Hg2_Id_List
-    HgP_Id_List   => State_Chm%HgP_Id_List
-
-    ! Category numbers for each Hg0 tracer
-    ALLOCATE( Hg0_Cat( State_Chm%nSpecies ), STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'Hg0_Cat' )
-    Hg0_Cat = 0
-
-    ! Category numbers for each Hg2 tracer
-    ALLOCATE( Hg2_Cat( State_Chm%nSpecies ), STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'Hg0_Cat' )
-    Hg2_Cat = 0
-
-    ! Loop ovver all Hg species
-    DO N = 1, State_Chm%nSpecies
-
-       ! Point to the Species Database entry for tracer # N
-       SpcInfo => State_Chm%SpcData(N)%Info
-
-       ! Define local id_Hg0 and id_Hg2 flags
-       SELECT CASE( TRIM( SpcInfo%Name ) )
-       CASE( 'Hg0' )
-          id_Hg0 = SpcInfo%ModelId
-       CASE( 'Hg2' )
-          id_Hg2 = SpcInfo%ModelId
-       CASE DEFAULT
-          ! Do nothing
-       END SELECT
-
-       ! Store the Hg0 and Hg2 category numbers for each tracer
-       ! for future lookup in READ_GTMM_RESTART (bmy, 4/26/16)
-       IF ( SpcInfo%Is_Hg0 ) THEN
-          Hg0_Cat(N) = SpcInfo%Hg_Cat
-       ELSE iF ( SpcInfo%Is_Hg2 ) THEN
-          Hg2_Cat(N) = SpcInfo%Hg_Cat
-       ENDIF
-
-       ! Free pointer
-       SpcInfo => NULL()
-    ENDDO
+!    Hg0_Id_List   => State_Chm%Hg0_Id_List
+!    Hg2_Id_List   => State_Chm%Hg2_Id_List
+!    HgP_Id_List   => State_Chm%HgP_Id_List
+!
+!    ! Category numbers for each Hg0 tracer
+!    ALLOCATE( Hg0_Cat( State_Chm%nSpecies ), STAT=RC )
+!    IF ( RC /= 0 ) CALL ALLOC_ERR( 'Hg0_Cat' )
+!    Hg0_Cat = 0
+!
+!    ! Category numbers for each Hg2 tracer
+!    ALLOCATE( Hg2_Cat( State_Chm%nSpecies ), STAT=RC )
+!    IF ( RC /= 0 ) CALL ALLOC_ERR( 'Hg0_Cat' )
+!    Hg2_Cat = 0
+!
+!    ! Loop ovver all Hg species
+!    DO N = 1, State_Chm%nSpecies
+!
+!       ! Point to the Species Database entry for tracer # N
+!       SpcInfo => State_Chm%SpcData(N)%Info
+!
+!       ! Define local id_Hg0 and id_Hg2 flags
+!       SELECT CASE( TRIM( SpcInfo%Name ) )
+!       CASE( 'Hg0' )
+!          id_Hg0 = SpcInfo%ModelId
+!       CASE( 'Hg2' )
+!          id_Hg2 = SpcInfo%ModelId
+!       CASE DEFAULT
+!          ! Do nothing
+!       END SELECT
+!
+!       ! Store the Hg0 and Hg2 category numbers for each tracer
+!       ! for future lookup in READ_GTMM_RESTART (bmy, 4/26/16)
+!       IF ( SpcInfo%Is_Hg0 ) THEN
+!          Hg0_Cat(N) = SpcInfo%Hg_Cat
+!       ELSE iF ( SpcInfo%Is_Hg2 ) THEN
+!          Hg2_Cat(N) = SpcInfo%Hg_Cat
+!       ENDIF
+!
+!       ! Free pointer
+!       SpcInfo => NULL()
+!    ENDDO
 
     !================================================================
     ! Allocate arrays
@@ -1047,13 +1052,13 @@ CONTAINS
     IF ( ALLOCATED( HG2mth_dd   ) ) DEALLOCATE( HG2mth_dd   )
     IF ( ALLOCATED( HG2mth_wd   ) ) DEALLOCATE( HG2mth_wd   )
 
-    ! Free pointers
-    Hg0_Id_List => NULL()
-    Hg2_Id_List => NULL()
-    HgP_Id_List => NULL()
-
-    IF ( ASSOCIATED( Hg0_Cat ) ) DEALLOCATE( Hg0_CAT )
-    IF ( ASSOCIATED( Hg2_Cat ) ) DEALLOCATE( Hg2_CAT )
+!    ! Free pointers
+!    Hg0_Id_List => NULL()
+!    Hg2_Id_List => NULL()
+!    HgP_Id_List => NULL()
+!
+!    IF ( ASSOCIATED( Hg0_Cat ) ) DEALLOCATE( Hg0_CAT )
+!    IF ( ASSOCIATED( Hg2_Cat ) ) DEALLOCATE( Hg2_CAT )
 
   END SUBROUTINE CLEANUP_DEPO_MERCURY
 !EOC

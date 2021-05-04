@@ -182,7 +182,6 @@ MODULE State_Chm_Mod
      ! For the tagged Hg simulation
      !----------------------------------------------------------------------
      INTEGER                    :: N_HG_CATS            ! # of Hg categories
-     INTEGER                    :: N_HG2_CATS            ! # of Hg categories
      INTEGER,           POINTER :: Hg0_Id_List(:      ) ! Hg0 cat <-> tracer #
      INTEGER,           POINTER :: Hg2_Id_List(:      ) ! Hg2 cat <-> tracer #
      INTEGER,           POINTER :: HgP_Id_List(:      ) ! HgP cat <-> tracer #
@@ -430,7 +429,6 @@ CONTAINS
     N_Hg2_CATS                  =  0
     N_HgP_CATS                  =  0
     State_Chm%N_Hg_CATS         =  0
-    State_Chm%N_Hg2_CATS        =  0
     State_Chm%Hg_Cat_Name       => NULL()
     State_Chm%Hg0_Id_List       => NULL()
     State_Chm%Hg2_Id_List       => NULL()
@@ -510,10 +508,7 @@ CONTAINS
                             nKppFix  = State_Chm%nKppFix,                  &
                             nKppSpc  = State_Chm%nKppSpc,                  &
                             nPhotol  = State_Chm%nPhotol,                  &
-                            nWetDep  = State_Chm%nWetDep,                  &
-                            nHg0Cats = N_Hg0_CATS,                         &
-                            nHg2Cats = N_Hg2_CATS,                         &
-                            nHgPCats = N_HgP_CATS                         )
+                            nWetDep  = State_Chm%nWetDep                   )
 
     ! Also get the number of the prod/loss species.  For fullchem simulations,
     ! the prod/loss species are listed in FAM_NAMES in gckpp_Monitor.F90,
@@ -759,7 +754,7 @@ CONTAINS
        !--------------------------------------------------------------------
        ! Set up the mapping for DRYDEP SPECIES TO SAVE AT A GIVEN ALTITUDE
        !--------------------------------------------------------------------
-       IF ( ThisSpc%Is_DryAlt ) THEN
+       IF ( ThisSpc%Is_DryAlt .AND. ThisSpc%Is_Advected ) THEN
           C                       = ThisSpc%DryAltId
           State_Chm%Map_DryAlt(C) = ThisSpc%ModelId
        ENDIF
@@ -767,7 +762,7 @@ CONTAINS
        !--------------------------------------------------------------------
        ! Set up the mapping for DRYDEP SPECIES
        !--------------------------------------------------------------------
-       IF ( ThisSpc%Is_DryDep ) THEN
+       IF ( ThisSpc%Is_DryDep .AND. ThisSpc%Is_Advected ) THEN
           C                       = ThisSpc%DryDepId
           State_Chm%Map_Drydep(C) = ThisSpc%ModelId
        ENDIF
@@ -823,7 +818,7 @@ CONTAINS
        !--------------------------------------------------------------------
        ! Set up the mapping for WETDEP SPECIES
        !--------------------------------------------------------------------
-       IF ( ThisSpc%Is_WetDep ) THEN
+       IF ( ThisSpc%Is_WetDep .AND. ThisSpc%Is_Advected ) THEN
           C                       = ThisSpc%WetDepId
           State_Chm%Map_WetDep(C) = ThisSpc%ModelId
        ENDIF
@@ -902,8 +897,7 @@ CONTAINS
     ! Allocate and initialize quantities that are only relevant for the
     ! the various fullchem simulations or the aerosol-only simulation
     !=======================================================================
-    IF ( Input_Opt%ITS_A_FULLCHEM_SIM .or. Input_Opt%ITS_AN_AEROSOL_SIM &
-         .or. Input_Opt%ITS_A_MERCURY_SIM ) THEN
+    IF ( Input_Opt%ITS_A_FULLCHEM_SIM .or. Input_Opt%ITS_AN_AEROSOL_SIM ) THEN
 
        ! Save nAerosol to State_Chm
        State_Chm%nAeroType = nAerosol
@@ -1568,71 +1562,74 @@ CONTAINS
 
        ! Hg0, Hg2, HgP should all have the same number of categories as
        ! returned from the species database.  If not, there's an error.
-       IF ( N_Hg0_CATS == N_Hg2_CATS .and. N_Hg0_CATS == N_HgP_CATS ) THEN
-          State_Chm%N_Hg_CATS = N_Hg0_CATS
-          State_Chm%N_Hg2_CATS = N_Hg2_CATS
-       ELSE
-          ErrMsg = 'Inconsistent number of Hg categories!'
-          CALL GC_Error( ErrMsg, RC, ThisLoc )
-          RETURN
-       ENDIF
+!       IF ( N_Hg0_CATS == N_Hg2_CATS .and. N_Hg0_CATS == N_HgP_CATS ) THEN
+!          State_Chm%N_Hg_CATS = N_Hg0_CATS
+!       ELSE
+!          ErrMsg = 'Inconsistent number of Hg categories!'
+!          CALL GC_Error( ErrMsg, RC, ThisLoc )
+!          RETURN
+!       ENDIF
 
-       ! Index array: Hg0 species # <--> Hg0 category #
-       ALLOCATE( State_Chm%Hg0_Id_List( State_Chm%N_Hg_CATS ), STAT=RC )
-       IF ( RC /= GC_SUCCESS ) RETURN
-       State_Chm%Hg0_Id_List = 0
+       State_Chm%N_Hg_CATS = 1
 
-       ! Index array: Hg2 species # <--> Hg0 category #
-       ALLOCATE( State_Chm%Hg2_Id_List( State_Chm%N_Hg2_CATS ), STAT=RC )
-       IF ( RC /= GC_SUCCESS ) RETURN
-       State_Chm%Hg2_Id_List = 0
-
-       ! Index array: HgP species # <--> Hg0 category #
-       ALLOCATE( State_Chm%HgP_Id_List( State_Chm%N_Hg_CATS ), STAT=RC )
-       IF ( RC /= GC_SUCCESS ) RETURN
-       State_Chm%HgP_Id_List = 0
+!       ! Index array: Hg0 species # <--> Hg0 category #
+!       ALLOCATE( State_Chm%Hg0_Id_List( State_Chm%N_Hg_CATS ), STAT=RC )
+!       IF ( RC /= GC_SUCCESS ) RETURN
+!       State_Chm%Hg0_Id_List = 0
+!
+!       ! Index array: Hg2 species # <--> Hg0 category #
+!       ALLOCATE( State_Chm%Hg2_Id_List( State_Chm%N_Hg_CATS ), STAT=RC )
+!       IF ( RC /= GC_SUCCESS ) RETURN
+!       State_Chm%Hg2_Id_List = 0
+!
+!       ! Index array: HgP species # <--> Hg0 category #
+!       ALLOCATE( State_Chm%HgP_Id_List( State_Chm%N_Hg_CATS ), STAT=RC )
+!       IF ( RC /= GC_SUCCESS ) RETURN
+!       State_Chm%HgP_Id_List = 0
 
        ! Hg category names
        ALLOCATE( State_Chm%Hg_Cat_Name( State_Chm%N_Hg_CATS ), STAT=RC )
        IF ( RC /= GC_SUCCESS ) RETURN
        State_Chm%Hg_Cat_Name = ''
 
-       ! Loop over all species
-       DO N = 1, State_Chm%nSpecies
+!       ! Loop over all species
+!       DO N = 1, State_Chm%nSpecies
+!
+!          ! Point to Species Database entry for Hg species N
+!          ThisSpc => State_Chm%SpcData(N)%Info
+!
+!          ! Populate the Hg0 index array
+!          IF ( ThisSpc%Is_Hg0 ) THEN
+!             State_Chm%Hg0_Id_List(ThisSpc%Hg_Cat) = ThisSpc%ModelId
+!          ENDIF
+!
+!          ! Populate the Hg2 index array
+!          IF ( ThisSpc%Is_Hg2 ) THEN
+!             State_Chm%Hg2_Id_List(ThisSpc%Hg_Cat) = ThisSpc%ModelId
+!          ENDIF
+!
+!          ! Populate the HgP index array
+!          IF ( ThisSpc%Is_HgP ) THEN
+!             State_Chm%HgP_Id_List(ThisSpc%Hg_Cat) = ThisSpc%ModelId
+!          ENDIF
+!
+!          ! Free pointer
+!          ThisSpc => NULL()
+!       ENDDO
 
-          ! Point to Species Database entry for Hg species N
-          ThisSpc => State_Chm%SpcData(N)%Info
+       IF ( State_Chm%N_Hg_CATS > 1 ) THEN
+           ! Loop over Hg categories (except the first
+           DO C = 2, State_Chm%N_Hg_CATS
 
-          ! Populate the Hg0 index array
-          IF ( ThisSpc%Is_Hg0 ) THEN
-             State_Chm%Hg0_Id_List(ThisSpc%Hg_Cat) = ThisSpc%ModelId
-          ENDIF
+              ! Hg0 tracer number corresponding to this category
+              N                        =  State_Chm%Hg0_Id_List(C)
 
-          ! Populate the Hg2 index array
-          IF ( ThisSpc%Is_Hg2 ) THEN
-             State_Chm%Hg2_Id_List(ThisSpc%Hg_Cat) = ThisSpc%ModelId
-          ENDIF
-
-          ! Populate the HgP index array
-          IF ( ThisSpc%Is_HgP ) THEN
-             State_Chm%HgP_Id_List(ThisSpc%Hg_Cat) = ThisSpc%ModelId
-          ENDIF
-
-          ! Free pointer
-          ThisSpc => NULL()
-       ENDDO
-
-       ! Loop over Hg categories (except the first
-       DO C = 2, State_Chm%N_Hg_CATS
-
-          ! Hg0 tracer number corresponding to this category
-          N                        =  State_Chm%Hg0_Id_List(C)
-
-          ! The category name (e.g. "_can") follows the "Hg0"
-          ThisSpc                  => State_Chm%SpcData(N)%Info
-          State_Chm%Hg_Cat_Name(C) =  ThisSpc%Name(4:7)
-          ThisSpc                  => NULL()
-       ENDDO
+              ! The category name (e.g. "_can") follows the "Hg0"
+              ThisSpc                  => State_Chm%SpcData(N)%Info
+              State_Chm%Hg_Cat_Name(C) =  ThisSpc%Name(4:7)
+              ThisSpc                  => NULL()
+           ENDDO
+       ENDIF
 
        !--------------------------------------------------------------------
        ! Hg(0) ocean mass

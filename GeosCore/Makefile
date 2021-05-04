@@ -481,7 +481,7 @@ emissions_mod.o             : emissions_mod.F90                              \
 exchange_mod.o              : exchange_mod.F90
 
 fast_jx_mod.o               : fast_jx_mod.F90                                \
-                              toms_mod.o              mercury_mod.o
+                              toms_mod.o
 
 flexchem_mod.o              : flexchem_mod.F90                               \
                               aerosol_mod.o           diag_mod.o             \
@@ -589,7 +589,8 @@ mercury_mod.o               : mercury_mod.F90                                \
                               diag_mod.o              drydep_mod.o           \
                               global_br_mod.o         vdiff_pre_mod.o        \
                               land_mercury_mod.o      hco_interface_mod.o    \
-                              ocean_mercury_mod.o     pbl_mix_mod.o
+                              ocean_mercury_mod.o     pbl_mix_mod.o          \
+                              fast_jx_mod.o
 
 mixing_mod.o                : mixing_mod.F90                                 \
                               diagnostics_mod.o                              \

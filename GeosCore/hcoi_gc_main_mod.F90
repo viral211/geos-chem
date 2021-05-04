@@ -3659,7 +3659,7 @@ CONTAINS
 #ifdef APM
    USE APM_INIT_MOD,       ONLY : APMIDS
 #endif
-   USE OCEAN_MERCURY_MOD,  ONLY : CHECK_OCEAN_MERCURY
+!   USE OCEAN_MERCURY_MOD,  ONLY : CHECK_OCEAN_MERCURY
 !
 ! !INPUT PARAMETERS:
 !
@@ -3746,7 +3746,7 @@ CONTAINS
 
       ! Set Hg species index corresponding to a given Hg category number;
       ! total is always the first category
-      Total_Hg_Id   =  State_Chm%Hg0_Id_List(1)
+      Total_Hg_Id   =  1!State_Chm%Hg0_Id_List(1)
 
    ENDIF
 
@@ -4346,11 +4346,11 @@ CONTAINS
             ENDDO
          ENDDO
 
-         ! Make sure tagged & total species sum up
-         IF ( Input_Opt%USE_CHECKS ) THEN
-            CALL CHECK_OCEAN_MERCURY( State_Chm, State_Grid, &
-                                      'end of READ_GC_RESTART' )
-         ENDIF
+!         ! Make sure tagged & total species sum up
+!         IF ( Input_Opt%USE_CHECKS ) THEN
+!            CALL CHECK_OCEAN_MERCURY( State_Chm, State_Grid, &
+!                                      'end of READ_GC_RESTART' )
+!         ENDIF
       ENDIF
 
       !--------------------------------------------------------------

@@ -27,27 +27,12 @@ MODULE OCEAN_MERCURY_MOD
 ! !PUBLIC MEMBER FUNCTIONS:
 !
   PUBLIC :: INIT_OCEAN_MERCURY
-  PUBLIC :: CHECK_OCEAN_MERCURY
   PUBLIC :: CLEANUP_OCEAN_MERCURY
   PUBLIC :: OCEAN_MERCURY_FLUX
-  PUBLIC :: LDYNSEASALT, LGCAPEMIS, LPOLARBR, LBRCHEM, LBROCHEM
-  PUBLIC :: L_ADD_MBL_BR
-  PUBLIC :: LGEIA05
+  PUBLIC :: LDYNSEASALT, LPOLARBR
   PUBLIC :: LVEGEMIS
-  PUBLIC :: LRED_JNO2,   LGEOSLWC
-  PUBLIC :: LHALOGENCHEM
-  PUBLIC :: LHGAQCHEM
-  PUBLIC :: LRED_CLOUDONLY
-  PUBLIC :: LHg2HalfAerosol
-  PUBLIC :: STRAT_BR_FACTOR,        LAnthroHgOnly
-  PUBLIC :: LOHO3CHEM,              LnoUSAemis
-  PUBLIC :: LGCBROMINE
-  PUBLIC :: READ_HG2_PARTITIONING
-  PUBLIC :: Fp, Fg
-  PUBLIC :: LNEI2005
-  PUBLIC :: LInPlume
+  PUBLIC :: LAnthroHgOnly
   PUBLIC :: LOCEANCOEF
-  PUBLIC :: LNEW_MECH
 !
 ! !REMARKS:
 !  References:
@@ -154,40 +139,17 @@ MODULE OCEAN_MERCURY_MOD
   REAL(fpp),  ALLOCATABLE :: prevMLD(:,:)
   REAL(fpp),  ALLOCATABLE :: RAD(:,:)
 
-  ! added by hma for Hg2 partitioning
-  REAL(fpp),  ALLOCATABLE :: BULK_CONC(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: Fp(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: Fg(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: SO4_GC(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: NH4_CONC(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: NIT_CONC(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: OC_CONC(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: BC_CONC(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: DST_CONC(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: R(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: SO4_WAC(:,:,:)
-  REAL(fpp),  ALLOCATABLE :: SO4_CONC(:,:,:)
 
   ! For IAV in NPP (jaf, 3/19/13)
   REAL(fpp) :: NPP_SCF
 
   ! Logical switches for the mercury simulation, all of which are
   ! set in INIT_MERCURY (cdh, 9/1/09)
-  LOGICAL   :: LDYNSEASALT, LGCAPEMIS, LPOLARBR, LBRCHEM, LBROCHEM
-  LOGICAL   :: L_ADD_MBL_BR, LRED_CLOUDONLY
-  LOGICAL   :: LGEIA05
-  LOGICAL   :: LVEGEMIS 
-  LOGICAL   :: LRED_JNO2,   LGEOSLWC
-  LOGICAL   :: LHALOGENCHEM
-  LOGICAL   :: LHGAQCHEM
-  LOGICAL   :: LHg2HalfAerosol
-  LOGICAL   :: LAnthroHgOnly,          LOHO3CHEM
-  LOGICAL   :: LGCBROMINE
-  LOGICAL   :: LnoUSAemis
-  LOGICAL   :: LNEI2005, LInPlume
+  LOGICAL   :: LDYNSEASALT, LPOLARBR
+  LOGICAL   :: LVEGEMIS
+  LOGICAL   :: LAnthroHgOnly
   LOGICAL   :: LOCEANCOEF
-  LOGICAL   :: LNEW_MECH
-  REAL(fpp) :: STRAT_BR_FACTOR
+
 
   ! CDH Set this TRUE to use corrected area-flux relationship
   ! Set this to FALSE to use original Strode et al. (2007) model
@@ -217,6 +179,7 @@ MODULE OCEAN_MERCURY_MOD
 
   ! Scalars for Hg indexing
   INTEGER           :: N_Hg_CATS
+  INTEGER           :: id_Hg0
   INTEGER           :: ID_Hg_atl,  ID_Hg_nat,  ID_Hg_sat
   INTEGER           :: ID_Hg_npa,  ID_Hg_arc,  ID_Hg_ant
   INTEGER           :: ID_Hg_ocn,  ID_Hg_tot
@@ -224,350 +187,12 @@ MODULE OCEAN_MERCURY_MOD
   ! Pointers for Hg indexing
   ! NOTE: We can declare these NULL here because
   ! these are SAVED global pointers (bmy, 4/29/16)
-  INTEGER, POINTER  :: Hg0_Id_List(:) => NULL()
-  INTEGER, POINTER  :: Hg2_Id_List(:) => NULL()
-  INTEGER, POINTER  :: HgP_Id_List(:) => NULL()
+!  INTEGER, POINTER  :: Hg0_Id_List(:) => NULL()
+!  INTEGER, POINTER  :: Hg2_Id_List(:) => NULL()
+!  INTEGER, POINTER  :: HgP_Id_List(:) => NULL()
 
 CONTAINS
 !EOC
-!-------------------------------------------------------------------------
-!                  GEOS-Chem Global Chemical Transport Model                  !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: read_hg2_partitioning
-!
-! !DESCRIPTION: Subroutine READ\_HG2\_PARTITIONING calculates the fractions of
-!  Hg(II) is the particle gas phases.
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE READ_HG2_PARTITIONING( Input_Opt, State_Grid, State_Met, &
-                                    THISMONTH, RC )
-!
-! !USES:
-!
-#ifdef BPCH_DIAG
-    USE CMN_DIAG_MOD
-    USE DIAG03_MOD,         ONLY : ND03
-    USE TIME_MOD,           ONLY : SET_Hg2_DIAG
-#endif
-    USE ErrCode_Mod
-    USE ERROR_MOD,          ONLY : GEOS_CHEM_STOP, ERROR_STOP
-    USE HCO_INTERFACE_MOD,  ONLY : HcoState
-    USE HCO_EmisList_Mod,   ONLY : HCO_GetPtr
-    USE Input_Opt_Mod,      ONLY : OptInput
-    USE State_Grid_Mod,     ONLY : GrdState
-    USE State_Met_Mod,      ONLY : MetState
-!
-! !INPUT PARAMETERS:
-!
-    TYPE(OptInput), INTENT(IN)  :: Input_Opt   ! Input Options object
-    TYPE(MetState), INTENT(IN)  :: State_Met   ! Meteorology State object
-    TYPE(GrdState), INTENT(IN)  :: State_Grid  ! Grid State object
-    INTEGER,        INTENT(IN)  :: THISMONTH   ! Current month
-!
-! !OUTPUT PARAMETERS:
-!
-    INTEGER,        INTENT(OUT) :: RC          ! Success or failure?
-!
-! !REMARKS:
-!  Description of gas-particle partitioning of Hg2
-!  ===========================================================================
-!
-!  References:
-!   (1) Yamasaki et al (1982). Effects of Ambient Temperature on Aspects of
-!       Airbone Polycyclic Aromatic Hydrocarbons, Env Sci & Tech
-!   (2) Pankow (1994). An Absorption Model of Gas/Particle Partitioning of
-!       Organic Comounds in the Atmosphere, Atmos Env
-!   (3) Rutter and Schauer (2007). The effect of temperature on the gas-
-!       particle partitioning of reactive mercury in atmospheric aerosols,
-!       Atmos Env
-!   (4) Vijayaraghavan et al (2008). Plume-in-grid modeling of atmopsheric
-!       mercury
-!   (5) Amos et al. (2012, ACPD). Gas-particle partitioning of Hg(II)
-!       and its effect on global mercury deposition
-!
-!  Ratio of reactive mercury adsorbed onto particulate matter to reactive
-!  mercury in the gas phase:
-!
-!  (PHg,ads)/RGM = 10^(b/T - a)* PM
-!
-!      PHg,ads  =  adsorbed RGM                        (pg m^-3)
-!      RGM      =  reactive gaseous mercury            (pg m^-3)
-!      T        =  temperature                         (K)
-!      PM       =  ambient aerosol concentration       (ug m^-3)
-!      b        =  slope from simple linear regression
-!      a        =  y-intercept from simple linear regression
-!
-!  Aerosol concentrations are being taken from a GEOS-Chem v8-02-03,
-!  GEOS-5, 4x5, full-chem simulation run for 2007 by Lin Zhang. The units
-!  reported by GEOS-Chem are ppb for aerosol mixing ratio (IJ-AVG-$).
-!  Units must be converted from mol/mol to ug/m3.
-!
-!  Converting aerosol concentration ppbv --> ug/m3:
-!   ( Modeled after SUBROUTINE CONVER_UNITS in dao_mod.f )
-!
-!      1 ppbv = 1e-9 mol/mol
-!      AIRDEN = air density,  [kg/m3]
-!      CU     = aerosol molecular weight / molecular weight of air
-!             = [(aero kg/mol) / (air kg/mol)]
-!
-!            aero mol     air kg   aero kg/mol     1e9 ug
-!      PM = ---------- x ------- x ------------ x -------
-!            air  mol     air m3    air kg/mol       kg
-!
-!      PM = (IJ-AVG-$) * AIRDEN * CU
-!
-!  The objective of this subroutine is to determine the fraction of reactive
-!  mercury in the gas-phase (Fg) and the fraction in the particle-phase (Fp).
-!  That can be done easily once R is calculated, where R is the ratio of
-!  particle to gas:
-!
-!      R  = (HgP,ads)/RGM                              (unitless)
-!      Fg = 1/(R + 1)                                  (unitless)
-!      Fp = 1 - Fg   *or*  = R/(R + 1)                 (unitless)
-!
-! !REVISION HISTORY:
-!  See https://github.com/geoschem/geos-chem for complete history
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-!
-! !LOCAL VARIABLES:
-!
-    ! Pointers to fields in the HEMCO data structure
-    ! These have to be declared REAL(f4), aka REAL*4.
-    REAL(f4), POINTER  :: ARRAYso4 (:,:,:)
-    REAL(f4), POINTER  :: ARRAYnit (:,:,:)
-    REAL(f4), POINTER  :: ARRAYnh4 (:,:,:)
-    REAL(f4), POINTER  :: ARRAYbcpi(:,:,:)
-    REAL(f4), POINTER  :: ARRAYocpi(:,:,:)
-    REAL(f4), POINTER  :: ARRAYbcpo(:,:,:)
-    REAL(f4), POINTER  :: ARRAYocpo(:,:,:)
-    REAL(f4), POINTER  :: ARRAYdst1(:,:,:)
-
-    ! Arrays to hold bulk concentration and surface area
-    REAL(f4)           :: ARRAYtemp(State_Grid%NX,State_Grid%NY,State_Grid%NZ)
-    REAL(f4)           :: ARRAYconc(State_Grid%NX,State_Grid%NY,State_Grid%NZ)
-
-    ! Scalars
-    INTEGER                 :: I, J, L, NN, LL
-    CHARACTER(LEN=155)      :: FILENAME
-    CHARACTER(LEN=2)        :: MON                 ! for months 10-12
-    CHARACTER(LEN=1)        :: SMON                ! for months 1-9
-    REAL(fpp), PARAMETER    :: TINY  = 1e-16_fpp   ! to prevent NaN
-    REAL(fpp), DIMENSION(5) :: AERO_MW             ! aerosol molec weights
-    REAL(fpp)               :: AIR_MW = 2.897e-02_fpp ! avg molec weight of air
-    REAL(fpp), DIMENSION(5) :: CU                  ! ratio of aerosol/air MW
-
-    ! Strings
-    CHARACTER(LEN=255) :: LOC = 'READ_HG2_PARTITIONING (ocean_mercury_mod.F90)'
-
-    !=================================================================
-    ! READ_HG2_PARTITIONING begins here!
-    !=================================================================
-
-    ! Assume success
-    RC        =  GC_SUCCESS
-
-    ! Initialize pointers
-    ARRAYso4  => NULL() ! so4
-    ARRAYnit  => NULL() ! nit
-    ARRAYnh4  => NULL() ! nh4
-    ARRAYbcpi => NULL() ! bcpi
-    ARRAYocpi => NULL() ! ocpi
-    ARRAYbcpo => NULL() ! bcpo
-    ARRAYocpo => NULL() ! ocpo
-    ARRAYdst1 => NULL() ! dst1
-
-    !----------------------------------------!
-    ! Molecular weights, for unit conversion !
-    !----------------------------------------!
-
-    ! aerosol molecular weights, [kg/mol]
-    AERO_MW(1) = 9.6e-02_fpp    ! SO4, SO4s
-    AERO_MW(2) = 1.2e-02_fpp    ! OC, BC
-    AERO_MW(3) = 6.2e-02_fpp    ! NIT, NITs
-    AERO_MW(4) = 1.8e-02_fpp    ! NH4
-    AERO_MW(5) = 2.9e-02_fpp    ! DST
-
-    ! ratio of aerosol molecular weight / air molecular weight
-    CU = AERO_MW / AIR_MW   !  [kg aerosol / kg air]
-
-    !------------------------------------------------------!
-    ! Put aerosol mixing ratio (mol/mol) into arrays.
-    !------------------------------------------------------!
-
-    !---------------------------
-    ! Read SO4 from HEMCO
-    !---------------------------
-    CALL HCO_GetPtr( HcoState, 'AERO_SO4', ARRAYso4, RC )
-    IF ( RC /= GC_SUCCESS ) THEN
-       CALL ERROR_STOP ( 'Cannot get pointer to AERO_SO4', LOC )
-    ENDIF
-
-    ! convert REAL*4 to REAL(fpp)
-    SO4_GC(:,:,1:State_Grid%MaxChemLev) = ARRAYso4(:,:,1:State_Grid%MaxChemLev)
-
-    !---------------------------
-    ! Read NH4 from HEMCO
-    !---------------------------
-    CALL HCO_GetPtr( HcoState, 'AERO_NH4', ARRAYnh4, RC )
-    IF ( RC /= GC_SUCCESS ) THEN
-       CALL ERROR_STOP ( 'Cannot get pointer to AERO_SO4', LOC )
-    ENDIF
-
-    ! convert REAL*4 to REAL(fpp)
-    NH4_CONC(:,:,1:State_Grid%MaxChemLev) = ARRAYnh4(:,:,1:State_Grid%MaxChemLev)
-
-    !---------------------------
-    ! Read NIT from HEMCO
-    !---------------------------
-    CALL HCO_GetPtr( HcoState, 'AERO_NIT', ARRAYnit, RC )
-    IF ( RC /= GC_SUCCESS ) THEN
-       CALL ERROR_STOP ( 'Cannot get pointer to AERO_SO4', LOC )
-    ENDIF
-
-    ! convert REAL*4 to REAL(fpp)
-    NIT_CONC(:,:,1:State_Grid%MaxChemLev) = ARRAYnit(:,:,1:State_Grid%MaxChemLev)
-
-    !---------------------------
-    ! Read BCPI+BCPO from HEMCO
-    !---------------------------
-
-    ! BCPI
-    CALL HCO_GetPtr( HcoState, 'AERO_BCPI', ARRAYbcpi, RC )
-    IF ( RC /= GC_SUCCESS ) THEN
-       CALL ERROR_STOP ( 'Cannot get pointer to AERO_BCPI', LOC )
-    ENDIF
-
-    ! BCPO
-    CALL HCO_GetPtr( HcoState, 'AERO_BCPO', ARRAYbcpo, RC )
-    IF ( RC /= GC_SUCCESS ) THEN
-       CALL ERROR_STOP ( 'Cannot get pointer to AERO_BCPO', LOC )
-    ENDIF
-
-    ! First get the size of ARRAYbcpi.  ARRAYbcpo is the same size
-    ! since they are both stored in the same file (bmy, 3/13/15)
-    LL = size( ARRAYbcpi, 3 )
-
-    ! convert REAL*4 to REAL(fpp)
-    ARRAYtemp           = 0.e0_f4
-    ARRAYtemp(:,:,1:LL) = ARRAYbcpi + ARRAYbcpo
-    BC_CONC(:,:,1:State_Grid%MaxChemLev) = ARRAYtemp(:,:,1:State_Grid%MaxChemLev)
-
-    !---------------------------
-    ! Read OCPI+OCPO from HEMCO
-    !---------------------------
-
-    ! OCPI
-    CALL HCO_GetPtr( HcoState, 'AERO_OCPI', ARRAYocpi, RC )
-    IF ( RC /= GC_SUCCESS ) THEN
-       CALL ERROR_STOP ( 'Cannot get pointer to AERO_OCPI', LOC )
-    ENDIF
-
-    ! OCPO
-    CALL HCO_GetPtr( HcoState, 'AERO_OCPO', ARRAYocpo, RC )
-    IF ( RC /= GC_SUCCESS ) THEN
-       CALL ERROR_STOP ( 'Cannot get pointer to AERO_OCPO', LOC )
-    ENDIF
-
-    ! First get the size of ARRAYbcpi.  ARRAYbcpo is the same size
-    ! since they are both stored in the same file (bmy, 3/13/15)
-    LL = size( ARRAYocpi, 3 )
-
-    ! convert REAL*4 to REAL(fpp)
-    ARRAYtemp           = 0.e0_f4
-    ARRAYtemp(:,:,1:LL) = ARRAYocpi + ARRAYocpo
-    OC_CONC(:,:,1:State_Grid%MaxChemLev) = ARRAYtemp(:,:,1:State_Grid%MaxChemLev)
-
-    !---------------------------
-    ! Read DST1 from HEMCO
-    !---------------------------
-    CALL HCO_GetPtr( HcoState, 'AERO_DST1', ARRAYdst1, RC )
-    IF ( RC /= GC_SUCCESS ) THEN
-       CALL ERROR_STOP ( 'Cannot get pointer to AERO_DST1', LOC )
-    ENDIF
-
-    ! convert REAL*4 to REAL(fpp)
-    DST_CONC(:,:,1:State_Grid%MaxChemLev) = ARRAYdst1(:,:,1:State_Grid%MaxChemLev)
-
-    !$OMP PARALLEL DO       &
-    !$OMP DEFAULT( SHARED ) &
-    !$OMP PRIVATE( I, J, L )
-    DO L = 1, State_Grid%NZ
-    DO J = 1, State_Grid%NY
-    DO I = 1, State_Grid%NX
-
-       ! Sum aerosol types (ppbv) to get bulk aerosol
-       !
-       ! - Multiply species by CU factor as part of unit conversion from
-       !    ppbv --> ug/m3
-       ! Scale dust from 4x5 run (ref: Fairlie et al. (2010))
-       BULK_CONC(I,J,L) = CU(1)*SO4_CONC(I,J,L)                   + &
-                          CU(2)*(BC_CONC(I,J,L) + OC_CONC(I,J,L)) + &
-                          CU(3)*NIT_CONC(I,J,L)                   + &
-                          CU(4)*NH4_CONC(I,J,L) +                   &
-                          CU(5)*(DST_CONC(I,J,L)*2e+0_fpp)
-
-       ! convert bulk aerosol mass concentration  to ug/m3
-       BULK_CONC(I,J,L) = ( BULK_CONC(I,J,L) * State_Met%AIRDEN(I,J,L)  )
-
-       ! Calculate R = HgP_ads/RGM (i.e. the ratio of Hg2
-       ! adsorbed onto aerosol to Hg2 in the  gas phase)
-       R(I,J,L) = BULK_CONC(I,J,L) * &
-            ( 10e+0_fpp**( ( 2.5e+3_fpp / State_Met%T(I,J,L)) - 10e+0_fpp ))
-
-       ! Fraction of Hg(II) in the gas phase (unitless)
-       Fg(I,J,L) = 1e+0_fpp / (R(I,J,L) + 1e+0_fpp)
-
-       ! Fraction of Hg(II) in the particle phase (unitless)
-       Fp(I,J,L) = 1e+0_fpp - Fg(I,J,L)
-
-    ENDDO
-    ENDDO
-    ENDDO
-    !$OMP END PARALLEL DO
-
-#ifdef BPCH_DIAG
-    !-------------------------------------------!
-    ! Store Fg and Fp in ND03 diagnostic.       !
-    !-------------------------------------------!
-    !$OMP PARALLEL DO       &
-    !$OMP DEFAULT( SHARED ) &
-    !$OMP PRIVATE( I, J, L )
-    DO L = 1, State_Grid%NZ
-    DO J = 1, State_Grid%NY
-    DO I = 1, State_Grid%NX
-
-       ! error check
-       IF (Fg(I,J,L)+Fp(I,J,L) > 1) THEN
-          PRINT*, ' Fg + Fp > 1 @ ocean_mercury_mod.F90'
-          CALL GEOS_CHEM_STOP
-       ENDIF
-
-    ENDDO
-    ENDDO
-    ENDDO
-    !$OMP END PARALLEL DO
-
-    ! Increment diagnostic timestep counter.
-    CALL SET_Hg2_DIAG( INCREMENT=.TRUE. )
-#endif
-
-    ! Free pointers
-    ARRAYso4  => NULL()
-    ARRAYnit  => NULL()
-    ARRAYnh4  => NULL()
-    ARRAYbcpi => NULL()
-    ARRAYocpi => NULL()
-    ARRAYbcpo => NULL()
-    ARRAYocpo => NULL()
-    ARRAYdst1 => NULL()
-
-  END SUBROUTINE READ_HG2_PARTITIONING
 
 !------------------------------------------------------------------------------
 !          Harvard University Atmospheric Chemistry Modeling Group            !
@@ -1044,14 +669,14 @@ CONTAINS
     !-----------------------------------------------
     ! Check tagged & total sums (if necessary)
     !-----------------------------------------------
-    IF ( USE_CHECKS .and. LSPLIT ) THEN
-       CALL CHECK_ATMOS_MERCURY( State_Chm, State_Grid, &
-                                 'start of OCEAN_MERCURY_FLUX' )
-       CALL CHECK_OCEAN_MERCURY( State_Chm, State_Grid, &
-                                 'start of OCEAN_MERCURY_FLUX' )
-       CALL CHECK_OCEAN_FLUXES ( State_Grid, &
-                                 'start of OCEAN_MERCURY_FLUX' )
-    ENDIF
+!    IF ( USE_CHECKS .and. LSPLIT ) THEN
+!       CALL CHECK_ATMOS_MERCURY( State_Chm, State_Grid, &
+!                                 'start of OCEAN_MERCURY_FLUX' )
+!       CALL CHECK_OCEAN_MERCURY( State_Chm, State_Grid, &
+!                                 'start of OCEAN_MERCURY_FLUX' )
+!       CALL CHECK_OCEAN_FLUXES ( State_Grid, &
+!                                 'start of OCEAN_MERCURY_FLUX' )
+!    ENDIF
 
     !-----------------------------------------------------------------
     ! Read O3 data from HEMCO
@@ -1913,7 +1538,7 @@ CONTAINS
              !--------------------------------------------------------
 
              ! Hg0 tracer number (for Spc)
-             N             = Hg0_Id_List(NN)
+             N             = id_Hg0!Hg0_Id_List(NN)
 
              ! Add converted Hg(II) and subtract converted Hg(0) mass
              ! to the ocean mass of Hg(0) [kg]
@@ -2150,16 +1775,16 @@ CONTAINS
     !=================================================================
     ! Check tagged & total sums (if necessary)
     !=================================================================
-    IF ( USE_CHECKS .and. LSPLIT ) THEN
-       CALL CHECK_ATMOS_MERCURY( State_Chm, State_Grid, &
-                                 'end of OCEAN_MERCURY_FLUX' )
-       CALL CHECK_OCEAN_MERCURY( State_Chm, State_Grid, &
-                                 'end of OCEAN_MERCURY_FLUX' )
-       CALL CHECK_OCEAN_FLUXES ( State_Grid, &
-                                 'end of OCEAN_MERCURY_FLUX' )
-       CALL CHECK_FLUX_OUT( State_Grid, FLUX, &
-                            'end of OCEAN_MERCURY_FLUX' )
-    ENDIF
+!    IF ( USE_CHECKS .and. LSPLIT ) THEN
+!       CALL CHECK_ATMOS_MERCURY( State_Chm, State_Grid, &
+!                                 'end of OCEAN_MERCURY_FLUX' )
+!       CALL CHECK_OCEAN_MERCURY( State_Chm, State_Grid, &
+!                                 'end of OCEAN_MERCURY_FLUX' )
+!       CALL CHECK_OCEAN_FLUXES ( State_Grid, &
+!                                 'end of OCEAN_MERCURY_FLUX' )
+!       CALL CHECK_FLUX_OUT( State_Grid, FLUX, &
+!                            'end of OCEAN_MERCURY_FLUX' )
+!    ENDIF
 
   END SUBROUTINE OCEAN_MERCURY_FLUX
 !EOC
@@ -2767,542 +2392,7 @@ CONTAINS
 
   END SUBROUTINE MLD_ADJUSTMENT
 !EOC
-!------------------------------------------------------------------------------
-!                  GEOS-Chem Global Chemical Transport Model                  !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: check_atmos_mercury
-!
-! !DESCRIPTION: Subroutine CHECK\_ATMOS\_MERCURY tests whether the total and
-!  tagged tracers the GEOS-CHEM species array sum properly within each grid box.
-!  (cdh, bmy, 3/28/06)
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE CHECK_ATMOS_MERCURY( State_Chm, State_Grid, LOC )
-!
-! !USES:
-!
-    USE ERROR_MOD,           ONLY : ERROR_STOP
-    USE State_Chm_Mod,       ONLY : ChmState
-    USE State_Grid_Mod,      ONLY : GrdState
-!
-! !INPUT PARAMETERS:
-!
-    CHARACTER(LEN=*), INTENT(IN)    :: LOC         ! Calling routine
-    TYPE(GrdState),   INTENT(IN)    :: State_Grid  ! Grid State object
-    TYPE(ChmState),   INTENT(INOUT) :: State_Chm   ! Chemistry State object
-!
-! !REVISION HISTORY:
-!  See https://github.com/geoschem/geos-chem for complete history
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-!
-! !LOCAL VARIABLES:
-!
-    LOGICAL            :: FLAG
-    INTEGER            :: I,       J,       L
-    INTEGER            :: N,       NN
-    REAL(fpp)          :: Hg0_tot, Hg0_tag, RELERR0, ABSERR0
-    REAL(fpp)          :: Hg2_tot, Hg2_tag, RELERR2, ABSERR2
-    REAL(fpp)          :: HgP_tot, HgP_tag, RELERRP, ABSERRP
 
-    ! Pointers
-    REAL(fpp), POINTER :: Spc(:,:,:,:)
-
-    !=================================================================
-    ! CHECK_ATMOS_MERCURY begins here!
-    !=================================================================
-
-    ! Set error flags
-    FLAG = .FALSE.
-
-    ! Point to chemical species array [kg]
-    Spc => State_Chm%Species
-
-    ! Loop over grid boxes
-    !OMP PARALLEL DO       &
-    !OMP DEFAULT( SHARED ) &
-    !OMP PRIVATE( I,       J,       L,       N,      NN            ) &
-    !OMP PRIVATE( Hg0_tot, RELERR0, ABSERR0                        ) &
-    !OMP PRIVATE( Hg2_tot, RELERR2, ABSERR2                        ) &
-    !OMP PRIVATE( HgP_tot, RELERRP, ABSERRP                        ) &
-    !OMP REDUCTION( +:     Hg0_tag, Hg2_tag, HgP_tag               )
-    DO L = 1, State_Grid%NZ
-    DO J = 1, State_Grid%NY
-    DO I = 1, State_Grid%NX
-
-       ! Initialize
-       Hg0_tot = 0e+0_fpp
-       Hg0_tag = 0e+0_fpp
-       RELERR0 = 0e+0_fpp
-       ABSERR0 = 0e+0_fpp
-       Hg2_tot = 0e+0_fpp
-       Hg2_tag = 0e+0_fpp
-       RELERR2 = 0e+0_fpp
-       ABSERR2 = 0e+0_fpp
-       HgP_tot = 0e+0_fpp
-       Hgp_tag = 0e+0_fpp
-       RELERRP = 0e+0_fpp
-       ABSERRP = 0e+0_fpp
-
-       !--------
-       ! Hg(0)
-       !--------
-
-       ! Total Hg(0)
-       N       = Hg0_Id_List(ID_Hg_tot)
-       Hg0_tot = Spc(I,J,L,N)
-
-       ! Sum of tagged Hg(0)
-       DO NN = 2, N_Hg_CATS
-          N       = Hg0_Id_List(NN)
-          Hg0_tag = Hg0_tag + Spc(I,J,L,N)
-       ENDDO
-
-       ! Absolute error for Hg0
-       ABSERR0 = ABS( Hg0_tot - Hg0_tag )
-
-       ! Relative error for Hg0 (avoid div by zero)
-       IF ( Hg0_tot > 0e+0_fpp ) THEN
-          RELERR0 = ABS( ( Hg0_tot - Hg0_tag ) / Hg0_tot )
-       ELSE
-          RELERR0 = -999e+0_fpp
-       ENDIF
-
-       !--------
-       ! Hg(II)
-       !--------
-
-       ! Total Hg(II)
-       N       = Hg2_Id_List(ID_Hg_tot)
-       Hg2_tot = Spc(I,J,L,N)
-
-       ! Sum of tagged Hg(II)
-       DO NN = 2, N_Hg_CATS
-          N       = Hg2_Id_List(NN)
-          Hg2_tag = Hg2_tag + Spc(I,J,L,N)
-       ENDDO
-
-       ! Absolute error for Hg2
-       ABSERR2 = ABS( Hg2_tot - Hg2_tag )
-
-       ! Relative error for Hg2 (avoid div by zero)
-       IF ( Hg2_tot > 0e+0_fpp ) THEN
-          RELERR2 = ABS( ( Hg2_tot - Hg2_tag ) / Hg2_tot )
-       ELSE
-          RELERR2 = -999e+0_fpp
-       ENDIF
-
-       !--------
-       ! HgP
-       !--------
-
-       ! Total Hg(P)
-       N       = HgP_Id_List(ID_Hg_tot)
-       HgP_tot = Spc(I,J,L,N)
-
-       ! Sum of tagged Hg(P)
-       DO NN = 2, N_Hg_CATS
-          N = HgP_Id_List(NN)
-          IF ( N > 0 ) HgP_tag = HgP_tag + Spc(I,J,L,N)
-       ENDDO
-
-       ! Absolute error for HgP
-       ABSERRP = ABS( HgP_tot - HgP_tag )
-
-       ! Relative error for HgP (avoid div by zero)
-       IF ( HgP_tot > 0e+0_fpp ) THEN
-          RELERRP = ABS( ( HgP_tot - HgP_tag ) / HgP_tot )
-       ELSE
-          RELERRP = -999e+0_fpp
-       ENDIF
-
-       !----------------------------
-       ! Hg(0) error is too large
-       !----------------------------
-       IF ( RELERR0 > MAX_RELERR .and. ABSERR0 > MAX_ABSERR ) THEN
-          !OMP CRITICAL
-          FLAG = .TRUE.
-          WRITE( 6, 100 ) I, J, L, Hg0_tot, Hg0_tag, RELERR0, ABSERR0
-          !OMP END CRITICAL
-       ENDIF
-
-       !----------------------------
-       ! Hg(0) error is too large
-       !----------------------------
-       IF ( RELERR2 > MAX_RELERR .and. ABSERR2 > MAX_ABSERR ) THEN
-          !OMP CRITICAL
-          FLAG = .TRUE.
-          WRITE( 6, 110 ) I, J, L, Hg2_tot, Hg2_tag, RELERR2, ABSERR2
-          !OMP END CRITICAL
-       ENDIF
-
-       !----------------------------
-       ! HgP error is too large
-       !----------------------------
-       IF ( RELERRP > MAX_RELERR .and. ABSERRP > MAX_ABSERR ) THEN
-          !OMP CRITICAL
-          FLAG = .TRUE.
-          WRITE( 6, 120 ) I, J, L, HgP_tot, HgP_tag, RELERRP, ABSERRP
-          !OMP END CRITICAL
-       ENDIF
-    ENDDO
-    ENDDO
-    ENDDO
-    !OMP END PARALLEL DO
-
-    ! Free pointer
-    Spc => NULL()
-    
-    ! FORMAT strings
-100 FORMAT( 'Hg0 error: ', 3i5, 4es13.6 )
-110 FORMAT( 'Hg2 error: ', 3i5, 4es13.6 )
-120 FORMAT( 'HgP error: ', 3i5, 4es13.6 )
-
-    ! Stop if Hg0 and Hg2 errors are too large
-    IF ( FLAG ) THEN
-       CALL ERROR_STOP( 'Tagged Hg0, Hg2, HgP do not add up!', LOC )
-    ENDIF
-
-  END SUBROUTINE CHECK_ATMOS_MERCURY
-!EOC
-!------------------------------------------------------------------------------
-!                  GEOS-Chem Global Chemical Transport Model                  !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: check_ocean_mercury
-!
-! !DESCRIPTION: Subroutine CHECK\_OCEAN_MERCURY tests whether tagged tracers in
-!  Hg0aq and Hg2aq add properly within each grid box. (cdh, bmy, 3/28/06)
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE CHECK_OCEAN_MERCURY( State_Chm, State_Grid, LOC )
-!
-! !USES:
-!
-    USE ERROR_MOD,           ONLY : ERROR_STOP
-    USE State_Chm_Mod,       ONLY : ChmState
-    USE State_Grid_Mod,      ONLY : GrdState
-!
-! !INPUT PARAMETERS:
-!
-    CHARACTER(LEN=*), INTENT(IN)    :: LOC         ! Calling routine
-    TYPE(GrdState),   INTENT(IN)    :: State_Grid  ! Grid State object
-    TYPE(ChmState),   INTENT(INOUT) :: State_Chm   ! Chemistry State object
-!
-! !REVISION HISTORY:
-!  See https://github.com/geoschem/geos-chem for complete history
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-!
-! !LOCAL VARIABLES:
-!
-    LOGICAL, SAVE                :: FIRST = .TRUE.
-    LOGICAL                      :: FLAG
-    INTEGER                      :: I,       J
-    REAL(fpp)                    :: Hg0_tot, Hg0_tag, RELERR0, ABSERR0
-    REAL(fpp)                    :: Hg2_tot, Hg2_tag, RELERR2, ABSERR2
-
-    !=================================================================
-    ! CHECK_OCEAN_MERCURY begins here!
-    !=================================================================
-
-    ! Set error condition flag
-    FLAG = .FALSE.
-
-    ! Loop over ocean surface boxes
-    !OMP PARALLEL DO       &
-    !OMP DEFAULT( SHARED ) &
-    !OMP PRIVATE( I, J   ) &
-    !OMP PRIVATE( Hg0_tot, Hg0_tag, RELERR0, ABSERR0 )
-    !OMP PRIVATE( Hg2_tot, Hg2_tag, RELERR2, ABSERR2 )
-    DO J = 1, State_Grid%NY
-    DO I = 1, State_Grid%NX
-
-       !--------------------------------------
-       ! Relative and absolute errors for Hg0
-       !--------------------------------------
-       Hg0_tot = State_Chm%OceanHg0(I,J,ID_Hg_tot)
-       Hg0_tag = SUM( State_Chm%OceanHg0(I,J,2:N_Hg_CATS) )
-       ABSERR0 = ABS( Hg0_tot - Hg0_tag )
-
-       ! Avoid div by zero
-       IF ( Hg0_tot > 0e+0_fpp ) THEN
-          RELERR0 = ABS( ( Hg0_tot - Hg0_tag ) / Hg0_tot )
-       ELSE
-          RELERR0 = -999e+0_fpp
-       ENDIF
-
-       !--------------------------------------
-       ! Relative and absolute errors for Hg2
-       !--------------------------------------
-       Hg2_tot = State_Chm%OceanHg2(I,J,ID_Hg_tot)
-       Hg2_tag = SUM( State_Chm%OceanHg2(I,J,2:N_Hg_CATS) )
-       ABSERR2 = ABS( Hg2_tot - Hg2_tag )
-
-       ! Avoid div by zero
-       IF ( Hg2_tot > 0e+0_fpp ) THEN
-          RELERR2 = ABS( ( Hg2_tot - Hg2_tag ) / Hg2_tot )
-       ELSE
-          RELERR2 = -999e+0_fpp
-       ENDIF
-
-       !--------------------------------------
-       ! Hg(0) error is too large
-       !--------------------------------------
-       IF ( RELERR0 > MAX_RELERR .and. ABSERR0 > MAX_ABSERR ) THEN
-          !OMP CRITICAL
-          FLAG = .TRUE.
-          WRITE( 6, 100 ) I, J, Hg0_tot, Hg0_tag, RELERR0, ABSERR0
-          !OMP END CRITICAL
-       ENDIF
-
-       !--------------------------------------
-       ! Hg(II) error is too large
-       !--------------------------------------
-       IF ( RELERR2 > MAX_RELERR .and. ABSERR2 > MAX_ABSERR ) THEN
-          !OMP CRITICAL
-          FLAG = .TRUE.
-          WRITE( 6, 110 ) I, J, Hg2_tot, Hg2_tag, RELERR2, ABSERR2
-          !OMP END CRITICAL
-       ENDIF
-
-    ENDDO
-    ENDDO
-    !OMP END PARALLEL DO
-
-    ! FORMAT strings
-100 FORMAT( 'Hg0aq error: ', 2i5, 4es13.6 )
-110 FORMAT( 'Hg2aq error: ', 2i5, 4es13.6 )
-
-    ! Stop if Hg0 and Hg2 errors are too large
-    IF ( FLAG ) THEN
-       CALL ERROR_STOP( 'Tagged Hg0aq, Hg2aq do not add up!', LOC )
-    ENDIF
-
-  END SUBROUTINE CHECK_OCEAN_MERCURY
-!EOC
-!------------------------------------------------------------------------------
-!                  GEOS-Chem Global Chemical Transport Model                  !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: check_ocean_fluxes
-!
-! !DESCRIPTION: Subroutine CHECK\_OCEAN\_FLUXES tests whether the drydep and
-!  wetdep fluxes in DD_Hg2 and WD_Hg2 sum together in each grid box. (cdh, bmy,
-!  3/28/06)
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE CHECK_OCEAN_FLUXES( State_Grid, LOC )
-!
-! !USES:
-!
-    USE DEPO_MERCURY_MOD,    ONLY : DD_Hg2, WD_Hg2, DD_HgP, WD_HgP
-    USE ERROR_MOD,           ONLY : ERROR_STOP
-    USE State_Grid_Mod,      ONLY : GrdState
-!
-! !INPUT PARAMETERS:
-!
-    CHARACTER(LEN=*), INTENT(IN) :: LOC         ! Calling routine
-    TYPE(GrdState),   INTENT(IN) :: State_Grid  ! Grid State object
-!
-! !REVISION HISTORY:
-!  See https://github.com/geoschem/geos-chem for complete history
-!EOP
-!------------------------------------------------------------------------------
-!BOC
-!
-! !LOCAL VARIABLES:
-!
-    LOGICAL                      :: FLAG
-    INTEGER                      :: I,         J
-    REAL(fpp)                    :: DD_tot,    DD_tag
-    REAL(fpp)                    :: DD_RELERR, DD_ABSERR
-    REAL(fpp)                    :: WD_tot,    WD_tag
-    REAL(fpp)                    :: WD_RELERR, WD_ABSERR
-
-    !=================================================================
-    ! CHECK_OCEAN_MERCURY begins here!
-    !=================================================================
-
-    ! Echo
-    WRITE( 6, 100 )
-100 FORMAT( '     - In CHECK_OCEAN_FLUXES' )
-
-    ! Set error condition flag
-    FLAG = .FALSE.
-
-    ! Loop over ocean surface boxes
-    !OMP PARALLEL DO       &
-    !OMP DEFAULT( SHARED ) &
-    !OMP PRIVATE( I, J   ) &
-    !OMP PRIVATE( DD_tot, DD_tag, DD_RELERR, DD_ABSERR ) &
-    !OMP PRIVATE( WD_tot, WD_tag, WD_RELERR, WD_ABSERR )
-    DO J = 1, State_Grid%NY
-    DO I = 1, State_Grid%NX
-
-       !---------------------------------------
-       ! Absolute & relative errors for DD_Hg2
-       !---------------------------------------
-       DD_tot    = DD_Hg2(I,J,1)
-       DD_tag    = SUM( DD_Hg2(I,J,2:N_Hg_CATS) )
-       DD_ABSERR = ABS( DD_tot - DD_tag )
-
-       ! Avoid div by zero
-       IF ( DD_tot > 0e+0_fpp ) THEN
-          DD_RELERR = ABS( ( DD_tot - DD_tag ) / DD_tot )
-       ELSE
-          DD_RELERR = -999e+0_fpp
-       ENDIF
-
-       !---------------------------------------
-       ! Absolute & relative errors for WD_Hg2
-       !---------------------------------------
-       WD_tot    = WD_Hg2(I,J,1)
-       WD_tag    = SUM( WD_Hg2(I,J,2:N_Hg_CATS) )
-       WD_ABSERR = ABS( WD_tot - WD_tag )
-
-       ! Avoid div by zero
-       IF ( WD_tot > 0e+0_fpp ) THEN
-          WD_RELERR = ABS( ( WD_tot - WD_tag ) / WD_tot )
-       ELSE
-          WD_RELERR = -999e+0_fpp
-       ENDIF
-
-       !---------------------------------------
-       ! DD flux error is too large
-       !---------------------------------------
-       IF ( DD_RELERR > MAX_RELERR .and. DD_ABSERR > MAX_FLXERR ) THEN
-          !OMP CRITICAL
-          FLAG = .TRUE.
-          WRITE( 6, 110 ) I, J, DD_tot, DD_tag, DD_RELERR, DD_ABSERR
-          !OMP END CRITICAL
-       ENDIF
-
-       !---------------------------------------
-       ! WD flux error is too large
-       !---------------------------------------
-       IF ( WD_RELERR > MAX_RELERR .and. WD_ABSERR > MAX_FLXERR ) THEN
-          !OMP CRITICAL
-          FLAG = .TRUE.
-          WRITE( 6, 120 ) I, J, WD_tot, WD_tag, WD_RELERR, WD_ABSERR
-          !OMP END CRITICAL
-       ENDIF
-
-    ENDDO
-    ENDDO
-    !OMP END PARALLEL DO
-
-    ! FORMAT strings
-110 FORMAT( 'DD_Hg2 flux error: ', 2i5, 4es13.6 )
-120 FORMAT( 'WD_Hg2 flux error: ', 2i5, 4es13.6 )
-
-    ! Stop if Hg0 and Hg2 errors are too large
-    IF ( FLAG ) THEN
-       CALL ERROR_STOP( 'Tagged DD, WD fluxes do not add up!', LOC )
-    ENDIf
-
-  END SUBROUTINE CHECK_OCEAN_FLUXES
-!EOC
-!------------------------------------------------------------------------------
-!                  GEOS-Chem Global Chemical Transport Model                  !
-!------------------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: check_flux_out
-!
-! !DESCRIPTION: Subroutine CHECK\_FLUX\_OUT tests whether tagged quantities in
-!  FLUX sum together in each grid box. (cdh, bmy, 3/20/06)
-!\\
-!\\
-! !INTERFACE:
-!
-  SUBROUTINE CHECK_FLUX_OUT( State_Grid, FLUX, LOC )
-!
-! !USES:
-!
-    USE ERROR_MOD,           ONLY : ERROR_STOP
-    USE State_Grid_Mod,      ONLY : GrdState
-!
-! !INPUT PARAMETERS:
-!
-    TYPE(GrdState),   INTENT(IN) :: State_Grid
-    REAL(fpp),        INTENT(IN) :: FLUX(State_Grid%NX,State_Grid%NY,N_Hg_CATS)
-    CHARACTER(LEN=*), INTENT(IN) :: LOC
-
-    ! Local variables
-    LOGICAL                      :: FLAG
-    INTEGER                      :: I,          J
-    REAL(fpp)                    :: FLX_tot,    FLX_tag
-    REAL(fpp)                    :: FLX_RELERR, FLX_ABSERR
-
-    !=================================================================
-    ! CHECK_FLUX_OUT begins here!
-    !=================================================================
-
-    ! Echo
-    WRITE( 6, 100 )
-100 FORMAT( '     - In CHECK_FLUX_OUT' )
-
-    ! Set error condition flag
-    FLAG = .FALSE.
-
-    ! Loop over ocean surface boxes
-    !OMP PARALLEL DO       &
-    !OMP DEFAULT( SHARED ) &
-    !OMP PRIVATE( I, J, FLX_tot, FLX_tag, FLX_err )
-    DO J = 1, State_Grid%NY
-    DO I = 1, State_Grid%NX
-
-       !----------------------------------------
-       ! Absolute & relative errors for FLX_Hg2
-       !----------------------------------------
-       FLX_tot    = FLUX(I,J,1)
-       FLX_tag    = SUM( FLUX(I,J,2:N_Hg_CATS) )
-       FLX_ABSERR = ABS( FLX_tot - FLX_tag )
-
-       ! Avoid div by zero
-       IF ( FLX_tot > 0e+0_fpp ) THEN
-          FLX_RELERR = ABS( ( FLX_tot - FLX_tag ) / FLX_tot )
-       ELSE
-          FLX_RELERR = -999e+0_fpp
-       ENDIF
-
-       !----------------------------
-       ! Flux error is too large
-       !----------------------------
-       IF ( FLX_RELERR > MAX_RELERR  .and. FLX_ABSERR > MAX_ABSERR ) THEN
-          !OMP CRITICAL
-          FLAG = .TRUE.
-          WRITE( 6, 110 ) I, J, FLX_tot, FLX_tag, FLX_RELERR, FLX_ABSERR
-          !OMP END CRITICAL
-       ENDIF
-
-    ENDDO
-    ENDDO
-    !OMP END PARALLEL DO
-
-    ! FORMAT strings
-110 FORMAT( 'FLX_Hg2 flux error: ', 2i5, 4es13.6 )
-
-    ! Stop if Hg0 and Hg2 errors are too large
-    IF ( FLAG ) THEN
-       CALL ERROR_STOP( 'Tagged emission fluxes do not add up!', LOC )
-    ENDIf
-
-  END SUBROUTINE CHECK_FLUX_OUT
-!EOC
 !------------------------------------------------------------------------------
 !                  GEOS-Chem Global Chemical Transport Model                  !
 !------------------------------------------------------------------------------
@@ -3368,9 +2458,9 @@ CONTAINS
     N_Hg_CATS =  State_Chm%N_Hg_CATS
 
     ! Hg species index corresponding to a given Hg category number
-    Hg0_Id_List    => State_Chm%Hg0_Id_List
-    Hg2_Id_List    => State_Chm%Hg2_Id_List
-    HgP_Id_List    => State_Chm%HgP_Id_List
+!    Hg0_Id_List    => State_Chm%Hg0_Id_List
+!    Hg2_Id_List    => State_Chm%Hg2_Id_List
+!    HgP_Id_List    => State_Chm%HgP_Id_List
 
     ! Loop over all Hg species
     DO N = 1, State_Chm%nSpecies
@@ -3382,6 +2472,7 @@ CONTAINS
        SELECT CASE( TRIM( SpcInfo%Name ) )
        CASE( 'Hg0'     )
           ID_Hg_tot = SpcInfo%Hg_Cat
+          id_Hg0    = SpcInfo%ModelID
        CASE( 'Hg0_atl' )
           ID_Hg_atl = SpcInfo%Hg_Cat
        CASE( 'Hg0_nat' )
@@ -3404,67 +2495,6 @@ CONTAINS
        SpcInfo => NULL()
 
     ENDDO
-
-    !-----------------------------------------------------------------
-    ! Allocate these arrays regardless of whether you are using
-    ! the dynamic ocean.  These are needed for Hg2 partitioning.
-    ! (bmy, 3/30/15)
-    !-----------------------------------------------------------------
-
-    ALLOCATE( BULK_CONC( State_Grid%NX, State_Grid%NY, State_Grid%NZ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'BULK_CONC' )
-    BULK_CONC = 0e+0_fpp
-
-    ALLOCATE( SO4_GC( State_Grid%NX, State_Grid%NY, State_Grid%NZ ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'SO4_GC' )
-    SO4_GC = 0e+0_fpp
-
-    ALLOCATE( NIT_CONC( State_Grid%NX, State_Grid%NY, State_Grid%NZ ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'NIT_CONC' )
-    NIT_CONC = 0e+0_fpp
-
-    ALLOCATE( NH4_CONC( State_Grid%NX, State_Grid%NY, State_Grid%NZ ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'NH4_CONC' )
-    NH4_CONC = 0e+0_fpp
-
-    ALLOCATE( OC_CONC( State_Grid%NX, State_Grid%NY, State_Grid%NZ ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'OC_CONC' )
-    OC_CONC = 0e+0_fpp
-
-    ALLOCATE( BC_CONC( State_Grid%NX, State_Grid%NY, State_Grid%NZ ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'BC_CONC' )
-    BC_CONC = 0e+0_fpp
-
-    ALLOCATE( DST_CONC( State_Grid%NX, State_Grid%NY, State_Grid%NZ ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'DST_CONC' )
-    DST_CONC = 0e+0_fpp
-
-    ALLOCATE( R( State_Grid%NX, State_Grid%NY, State_Grid%NZ ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'R' )
-    R = 0e+0_fpp
-
-    ALLOCATE( SO4_CONC( State_Grid%NX, State_Grid%NY, State_Grid%NZ ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'SO4_CONC' )
-    SO4_CONC = 0e+0_fpp
-
-    ALLOCATE( Fg( State_Grid%NX, State_Grid%NY, State_Grid%NZ ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'Fg' )
-    Fg = 0e+0_fpp
-
-    ALLOCATE( Fp( State_Grid%NX, State_Grid%NY, State_Grid%NZ ), &
-              STAT=RC )
-    IF ( RC /= 0 ) CALL ALLOC_ERR( 'Fp' )
-    Fp = 0e+0_fpp
 
     !eds 5/15/12 fix
     ALLOCATE( Hgaq_tot (State_Grid%NX, State_Grid%NY, N_Hg_CATS ), &
@@ -3638,17 +2668,7 @@ CONTAINS
     IF ( ALLOCATED( MLDav     ) ) DEALLOCATE( MLDav     )
     IF ( ALLOCATED( newMLD    ) ) DEALLOCATE( newMLD    )
     IF ( ALLOCATED( prevMLD   ) ) DEALLOCATE( prevMLD   )
-    IF ( ALLOCATED( BULK_CONC ) ) DEALLOCATE( BULK_CONC )
-    IF ( ALLOCATED( Fg        ) ) DEALLOCATE( Fg        )
-    IF ( ALLOCATED( Fp        ) ) DEALLOCATE( Fp        )
-    IF ( ALLOCATED( SO4_GC    ) ) DEALLOCATE( SO4_GC    )
-    IF ( ALLOCATED( NIT_CONC  ) ) DEALLOCATE( NIT_CONC  )
-    IF ( ALLOCATED( NH4_CONC  ) ) DEALLOCATE( NH4_CONC  )
-    IF ( ALLOCATED( OC_CONC   ) ) DEALLOCATE( OC_CONC   )
-    IF ( ALLOCATED( BC_CONC   ) ) DEALLOCATE( BC_CONC   )
-    IF ( ALLOCATED( DST_CONC  ) ) DEALLOCATE( DST_CONC  )
-    IF ( ALLOCATED( R         ) ) DEALLOCATE( R         )
-    IF ( ALLOCATED( SO4_CONC  ) ) DEALLOCATE( SO4_CONC  )
+
 
     ! Free pointers
     CHL         => NULL()
@@ -3659,9 +2679,9 @@ CONTAINS
     UPVEL       => NULL()
     dMLD1       => NULL()
     dMLD2       => NULL()
-    Hg0_Id_List => NULL()
-    Hg2_Id_List => NULL()
-    HgP_Id_List => NULL()
+!    Hg0_Id_List => NULL()
+!    Hg2_Id_List => NULL()
+!    HgP_Id_List => NULL()
 
   END SUBROUTINE CLEANUP_OCEAN_MERCURY
 !EOC

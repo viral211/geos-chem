@@ -3650,14 +3650,17 @@ CONTAINS
                        DSpc        = DSpc(NW,:,I,J), &
                        Spc         = Spc(I,J,:,N),   &
                        RC          = RC )
+!
+!          ! Trap potential errors
+!          IF ( RC /= GC_SUCCESS ) THEN
+!             Spc      => NULL()
+!             ErrorMsg = 'Error encountered in "Safety"!'
+!             CALL GC_Error( ErrorMsg, RC, ThisLoc )
+!             RETURN
+!          ENDIF
 
-          ! Trap potential errors
-          IF ( RC /= GC_SUCCESS ) THEN
-             Spc      => NULL()
-             ErrorMsg = 'Error encountered in "Safety"!'
-             CALL GC_Error( ErrorMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
+            !Set species concentrations to zero
+            IF ( Spc(I,J,L,N) < 0e+0_fp ) Spc(I,J,L,N) = 0e+0_fp
 
        ENDIF
     ENDDO
@@ -4161,13 +4164,16 @@ CONTAINS
                        Spc         = Spc(I,J,:,N),   &
                        RC          = RC )
 
-          ! Trap potential errors
-          IF ( RC /= GC_SUCCESS ) THEN
-             Spc    => NULL()
-             ErrorMsg = 'Error encountered in "Safety"!'
-             CALL GC_Error( ErrorMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
+!          ! Trap potential errors
+!          IF ( RC /= GC_SUCCESS ) THEN
+!             Spc    => NULL()
+!             ErrorMsg = 'Error encountered in "Safety"!'
+!             CALL GC_Error( ErrorMsg, RC, ThisLoc )
+!             RETURN
+!          ENDIF
+            !Set species concentrations to zero
+            IF ( Spc(I,J,L,N) < 0e+0_fp ) Spc(I,J,L,N) = 0e+0_fp
+
        ENDIF
     ENDDO
 
@@ -4406,13 +4412,15 @@ CONTAINS
                        Spc         = Spc(I,J,:,N),   &
                        RC          = RC )
 
-          ! Trap potential errors
-          IF ( RC /= GC_SUCCESS ) THEN
-             Spc      => NULL()
-             ErrorMsg = 'Error encountered in "Safety"!'
-             CALL GC_Error( ErrorMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
+!          ! Trap potential errors
+!          IF ( RC /= GC_SUCCESS ) THEN
+!             Spc      => NULL()
+!             ErrorMsg = 'Error encountered in "Safety"!'
+!             CALL GC_Error( ErrorMsg, RC, ThisLoc )
+!             RETURN
+!          ENDIF
+            !Set species concentrations to zero
+            IF ( Spc(I,J,L,N) < 0e+0_fp ) Spc(I,J,L,N) = 0e+0_fp
        ENDIF
     ENDDO
 
@@ -4670,13 +4678,15 @@ CONTAINS
                        Spc         = Spc(I,J,:,N),   &
                        RC          = RC )
 
-          ! Trap potential errors
-          IF ( RC /= GC_SUCCESS ) THEN
-             Spc      => NULL()
-             ErrorMsg = 'Error encountered in "Safety"!'
-             CALL GC_Error( ErrorMsg, RC, ThisLoc )
-             RETURN
-          ENDIF
+!          ! Trap potential errors
+!          IF ( RC /= GC_SUCCESS ) THEN
+!             Spc      => NULL()
+!             ErrorMsg = 'Error encountered in "Safety"!'
+!             CALL GC_Error( ErrorMsg, RC, ThisLoc )
+!             RETURN
+!          ENDIF
+            !Set species concentrations to zero
+            IF ( Spc(I,J,L,N) < 0e+0_fp ) Spc(I,J,L,N) = 0e+0_fp
        ENDIF
     ENDDO
 
@@ -4784,7 +4794,7 @@ CONTAINS
     WRITE( 6, '(a)' ) REPEAT( '=', 79 )
 
     ! Return with error
-    CALL GC_Error( ErrMsg, RC, ThisLoc )
+    !CALL GC_Error( ErrMsg, RC, ThisLoc )
 
   END SUBROUTINE SAFETY
 !EOC

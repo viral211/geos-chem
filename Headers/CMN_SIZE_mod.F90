@@ -113,7 +113,8 @@ CONTAINS
     !=================================================================
 
     ! Number of aerosol categories
-    IF ( Input_Opt%LUCX ) THEN
+    IF ( Input_Opt%LUCX .OR. &
+         Input_Opt%ITS_A_MERCURY_SIM) THEN
        ! UCX-based mechanisms include stratospheric aerosols
        NAER = NRHAER + NSTRATAER
     ELSE

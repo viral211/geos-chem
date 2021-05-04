@@ -76,6 +76,10 @@ MODULE FAST_JX_MOD
   INTEGER, PUBLIC :: RXN_NO3   = -1
   INTEGER, PUBLIC :: RXN_N2O   = -1
 
+  ! For Hg chem
+  INTEGER, PUBLIC :: RXN_BrO   = -1
+  INTEGER, PUBLIC :: RXN_ClO   = -1
+
   ! Species ID flags
   INTEGER :: id_CH2IBr, id_IBr,  id_CH2ICl, id_ICl,   id_I2
   INTEGER :: id_HOI,    id_IO,   id_OIO,    id_INO,   id_IONO
@@ -124,7 +128,6 @@ CONTAINS
     USE TIME_MOD,           ONLY : GET_MONTH, GET_DAY, GET_DAY_OF_YEAR
     USE TIME_MOD,           ONLY : GET_TAU,   GET_YEAR
     USE TOMS_MOD,           ONLY : GET_OVERHEAD_O3
-    USE MERCURY_MOD,        ONLY : HEM_ODAer, HEM_ODDust
 
     IMPLICIT NONE
 
@@ -333,12 +336,12 @@ CONTAINS
            DO N = 1, NAER
            DO L = 1, State_Grid%NZ
               IOPT = ( (N-1) * NRH ) + IRHARR(NLON,NLAT,L)
-              OPTAER(L,IOPT) = HEM_ODAer(NLON,NLAT,L,N)
+              OPTAER(L,IOPT) = ODAER(NLON,NLAT,L,1,N)
            ENDDO
            ENDDO
            DO N = 1, NDUST
            DO L = 1, State_Grid%NZ
-              OPTDUST(L,N)  = HEM_ODDust(NLON,NLAT,L,N)
+              OPTDUST(L,N)  = ODMDUST(NLON,NLAT,L,1,N)
            ENDDO
            ENDDO
        ELSE
@@ -1871,7 +1874,7 @@ CONTAINS
           ELSE IF ( J == Rxn_O3_1 ) THEN
 
              !------------------------------------------------------------
-             ! O3 + hv -> O + O
+             ! O3 + hv -> O2 + O
              !
              ! UCX     : Save this as JO3_O3P in the nPhotol+2 slot
              ! non-UCX : undefined
@@ -3043,10 +3046,10 @@ CONTAINS
 
     !=================================================================
     ! Flag special reactions that will be later adjusted by
-    ! routine PHOTRATE_ADJ (called from FlexChem). Only in full-chem.
+    ! routine PHOTRATE_ADJ (called from FlexChem). Only in full-chem
     !=================================================================
 
-    IF ( Input_Opt%ITS_A_FULLCHEM_SIM ) THEN
+     IF ( Input_Opt%ITS_A_FULLCHEM_SIM ) THEN
         ! Loop over all photolysis reactions
         DO K = 1, NRATJ
 
@@ -3242,6 +3245,80 @@ CONTAINS
         ENDIF
     ENDIF
 
+    !=================================================================
+    ! Flag reactions for diagnostics (only in Hg chem)
+    !=================================================================
+    IF ( Input_Opt%ITS_A_MERCURY_SIM ) THEN
+        ! Loop over all photolysis reactions
+        DO K = 1, NRATJ
+
+           ! Strip all blanks from the reactants and products list
+           TEXT = JLABEL(K)
+           CALL CSTRIP( TEXT )
+
+           ! Look for certain reactions
+           SELECT CASE( TRIM( TEXT ) )
+
+           ! O3 + hv -> O2 + O
+           CASE( 'O3PHOTONO2O' )
+              RXN_O3_1 = K
+
+           ! O3 + hv -> O2 + O(1D)
+           CASE( 'O3PHOTONO2O(1D)' )
+              RXN_O3_2a = K
+
+           ! NO2 + hv -> NO + O
+           CASE( 'NO2PHOTONNOO' )
+              RXN_NO2 = K
+
+           ! BrO + hv -> Br + O
+           CASE( 'BrOPHOTONBrO' )
+              RXN_BrO = K
+
+           ! ClO + hv -> Cl + O
+           CASE( 'ClOPHOTONClO' )
+              RXN_ClO = K
+
+           CASE DEFAULT
+              ! Nothing
+           END SELECT
+
+        ENDDO
+
+        !---------------------------------------------------------------------
+        ! Error check the various rxn flags
+        !---------------------------------------------------------------------
+        IF ( RXN_O3_1 < 0 ) THEN
+           ErrMsg = 'Could not find rxn O3 + hv -> O2 + O'
+           CALL GC_Error( ErrMsg, RC, ThisLoc )
+           RETURN
+        ENDIF
+
+        IF ( RXN_O3_2a < 0 ) THEN
+           ErrMsg = 'Could not find rxn O3 + hv -> O2 + O(1D) #1'
+           CALL GC_Error( ErrMsg, RC, ThisLoc )
+           RETURN
+        ENDIF
+
+        IF ( RXN_NO2 < 0 ) THEN
+           ErrMsg = 'Could not find rxn NO2 + hv -> NO + O'
+           CALL GC_Error( ErrMsg, RC, ThisLoc )
+           RETURN
+        ENDIF
+
+        IF ( RXN_BrO < 0 ) THEN
+           ErrMsg = 'Could not find rxn BrO + hv -> Br + O'
+           CALL GC_Error( ErrMsg, RC, ThisLoc )
+           RETURN
+        ENDIF
+
+        IF ( RXN_ClO < 0 ) THEN
+           ErrMsg = 'Could not find rxn ClO + hv -> Cl + O'
+           CALL GC_Error( ErrMsg, RC, ThisLoc )
+           RETURN
+        ENDIF
+
+    ENDIF
     ! FORMAT statements
 100 FORMAT( a                                                 )
 110 FORMAT( 'Photo rxn flags saved for use in PHOTRATE_ADJ:', / )

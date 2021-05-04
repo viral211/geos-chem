@@ -192,45 +192,45 @@ CONTAINS
     !-----------------------------------------------------------------------
     ! Diagnostics for the mercury and tagged mercury simulations
     !-----------------------------------------------------------------------
-    IF ( Input_Opt%ITS_A_MERCURY_SIM ) THEN
-
-       ! Get species indices for Hg2 and HgP
-       IF ( FIRST ) THEN
-          id_Hg2 = Ind_('Hg2')
-          id_HgP = Ind_('HgP')
-          FIRST  = .FALSE.
-       ENDIF
-
-       !--------------------------------------------
-       ! Ractive gaseous mercury (RGM) [pptv]
-       !--------------------------------------------
-       IF ( id_Hg2 > 0 .and. State_Diag%Archive_ReactiveGaseousHg ) THEN
-
-          ! Conversion factor to pptv
-          ToPptv = ( AIRMW                                  /                &
-                     State_Chm%SpcData(id_Hg2)%Info%EmMW_g  *                &
-                     1.0e+12_fp                               )
-
-          ! Save into State_diag
-          State_Diag%ReactiveGaseousHg = State_Chm%Species(:,:,:,id_Hg2)     &
-                                       * ToPptv
-       ENDIF
-
-       !--------------------------------------------
-       ! Ractive particulate mercury (RGM) [pptv]
-       !--------------------------------------------
-       IF ( id_HgP > 0 .and. State_Diag%Archive_ParticulateBoundHg ) THEN
-
-          ! Conversion factor to pptv
-          ToPptv = ( AIRMW                                  /                &
-                     State_Chm%SpcData(id_HgP)%Info%EmMW_g  *                &
-                     1.0e+12_fp                               )
-
-          ! Save into State_Diag
-          State_Diag%ParticulateBoundHg = State_Chm%Species(:,:,:,id_HgP)    &
-                                        * ToPptv
-       ENDIF
-    ENDIF
+!    IF ( Input_Opt%ITS_A_MERCURY_SIM ) THEN
+!
+!       ! Get species indices for Hg2 and HgP
+!       IF ( FIRST ) THEN
+!          id_Hg2 = Ind_('Hg2')
+!          id_HgP = Ind_('HgP')
+!          FIRST  = .FALSE.
+!       ENDIF
+!
+!       !--------------------------------------------
+!       ! Ractive gaseous mercury (RGM) [pptv]
+!       !--------------------------------------------
+!       IF ( id_Hg2 > 0 .and. State_Diag%Archive_ReactiveGaseousHg ) THEN
+!
+!          ! Conversion factor to pptv
+!          ToPptv = ( AIRMW                                  /                &
+!                     State_Chm%SpcData(id_Hg2)%Info%EmMW_g  *                &
+!                     1.0e+12_fp                               )
+!
+!          ! Save into State_diag
+!          State_Diag%ReactiveGaseousHg = State_Chm%Species(:,:,:,id_Hg2)     &
+!                                       * ToPptv
+!       ENDIF
+!
+!       !--------------------------------------------
+!       ! Ractive particulate mercury (RGM) [pptv]
+!       !--------------------------------------------
+!       IF ( id_HgP > 0 .and. State_Diag%Archive_ParticulateBoundHg ) THEN
+!
+!          ! Conversion factor to pptv
+!          ToPptv = ( AIRMW                                  /                &
+!                     State_Chm%SpcData(id_HgP)%Info%EmMW_g  *                &
+!                     1.0e+12_fp                               )
+!
+!          ! Save into State_Diag
+!          State_Diag%ParticulateBoundHg = State_Chm%Species(:,:,:,id_HgP)    &
+!                                        * ToPptv
+!       ENDIF
+!    ENDIF
 
   END SUBROUTINE Set_Diagnostics_EndofTimestep
 !EOC

@@ -1837,9 +1837,6 @@ contains
     USE DEPO_MERCURY_MOD,   ONLY : ADD_Hg2_DD, ADD_HgP_DD
     USE DEPO_MERCURY_MOD,   ONLY : ADD_Hg2_SNOWPACK
     USE MERCURY_MOD,        ONLY : HG_EMIS
-    USE OCEAN_MERCURY_MOD,  ONLY : Fg !hma
-    USE OCEAN_MERCURY_MOD,  ONLY : OMMFP => Fp
-    USE OCEAN_MERCURY_MOD,  ONLY : LHg2HalfAerosol !cdh
 
     ! HEMCO update
     USE HCO_INTERFACE_MOD,  ONLY : GetHcoID, GetHcoVal, GetHcoDiagn
@@ -2231,8 +2228,8 @@ contains
              ! first (lowest) model layer
              ! given that as2 is in v/v
              ! Now add to existing dflx (ckeller, 10/16/2014).
-             dflx(I,J,NN) = dflx(I,J,NN) &
-                          + DEPSAV(I,J,N) * (wk1/(wk2+1.e-30_fp))  &
+             dflx(I,J,N) = dflx(I,J,N) &
+                          + DEPSAV(I,J,ND) * (wk1/(wk2+1.e-30_fp))  &
                           / ( AIRMW / SpcInfo%emMW_g )
 
 

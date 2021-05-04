@@ -27,7 +27,6 @@ SUBROUTINE CLEANUP( Input_Opt, State_Grid, ERROR, RC )
   USE ErrCode_Mod
   USE ERROR_MOD,               ONLY : DEBUG_MSG
   USE FLEXCHEM_MOD,            ONLY : CLEANUP_FLEXCHEM
-  USE GLOBAL_Br_MOD,           ONLY : CLEANUP_GLOBAL_Br
   USE GLOBAL_CH4_MOD,          ONLY : CLEANUP_GLOBAL_CH4
   USE Grid_Registry_Mod,       ONLY : Cleanup_Grid_Registry
   USE History_Mod,             ONLY : History_Cleanup
@@ -230,13 +229,6 @@ SUBROUTINE CLEANUP( Input_Opt, State_Grid, ERROR, RC )
   CALL CLEANUP_DEPO_MERCURY()
   CALL CLEANUP_LAND_MERCURY()
   CALL CLEANUP_PLANEFLIGHT()
-
-  CALL Cleanup_Global_Br( RC )
-  IF ( RC /= GC_SUCCESS ) THEN
-     ErrMsg = 'Error encountered in "Cleanup_Global_Br"!'
-     CALL GC_Error( ErrMsg, RC, ThisLoc )
-     RETURN
-  ENDIF
 
   CALL Cleanup_POPs( RC )
   IF ( RC /= GC_SUCCESS ) THEN
