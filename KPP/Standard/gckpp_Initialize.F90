@@ -13,7 +13,7 @@
 !        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany
 ! 
 ! File                 : gckpp_Initialize.f90
-! Time                 : Sat Jul 25 22:40:36 2020
+! Time                 : Wed May  5 11:00:29 2021
 ! Working directory    : /net/seasasfs02/srv/export/seasasfs02/share_root/vshah/Hg/GC_Hg/KPP/Standard
 ! Equation file        : gckpp.kpp
 ! Output root filename : gckpp
@@ -58,6 +58,16 @@ SUBROUTINE Initialize ( )
   END DO
 
 ! constant rate coefficients
+  RCONST(3) = 3.9e-11
+  RCONST(4) = 3e-12
+  RCONST(10) = 3e-11
+  RCONST(13) = 3e-11
+  RCONST(15) = 3.9e-11
+  RCONST(16) = 3e-12
+  RCONST(21) = 3e-11
+  RCONST(22) = 3e-11
+  RCONST(23) = 3e-11
+  RCONST(34) = 3e-11
 ! END constant rate coefficients
 
 ! INLINED initializations

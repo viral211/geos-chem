@@ -36,6 +36,8 @@ MODULE GCKPP_HETRATES
 !
   PUBLIC  :: SET_HET
   PUBLIC  :: ARSL1K
+  PUBLIC  :: CLD_PARAMS
+  PUBLIC  :: ReactoDiff_Corr
 !
 ! !PRIVATE MEMBER FUNCTIONS:
 !
@@ -88,7 +90,6 @@ MODULE GCKPP_HETRATES
   PRIVATE :: Gamma_HOBr_X
   PRIVATE :: Gamma_HX_Uptake
   PRIVATE :: Coth
-  PRIVATE :: ReactoDiff_Corr
   PRIVATE :: Gamma_HOBr_CLD     !qjc
   PRIVATE :: Gamma_HOBr_AER     !qjc
 
@@ -100,7 +101,6 @@ MODULE GCKPP_HETRATES
   PRIVATE :: HETBrNO3_HCl
 
   ! These are subfunctions to calculate rates on/in clouds and SSA
-  PRIVATE :: CLD_PARAMS
   PRIVATE :: GET_HALIDE_CLDConc
   Private :: Get_Halide_SSAConc
   PRIVATE :: COMPUTE_L2G_LOCAL
@@ -719,14 +719,14 @@ MODULE GCKPP_HETRATES
 
       ! Zero the HET array
        HET = 0.0_dp
-       HET(ind_HGBRNO2, 1) = CloudHet( 'HG2', CldFr, Aliq, &
-            Aice, rLiq, rIce, TempK, XDenA )
-       HET(ind_HGBRNO2, 2) = HetHGAER( 0.327e+0_fp, 1.0E-1_fp )
-       IF ((I .eq. 35) .and. (J .eq. 35) .and. (L .eq. 4)) THEN
-          PRINT *, HET(ind_HGBRNO2, 1)
-          PRINT *, HET(ind_HGBRNO2, 2)
-          PRINT *, '-'
-       ENDIF
+!       HET(ind_HGBRNO2, 1) = CloudHet( 'HG2', CldFr, Aliq, &
+!            Aice, rLiq, rIce, TempK, XDenA )
+!       HET(ind_HGBRNO2, 2) = HetHGAER( 0.327e+0_fp, 1.0E-1_fp )
+!       IF ((I .eq. 35) .and. (J .eq. 35) .and. (L .eq. 4)) THEN
+!          PRINT *, HET(ind_HGBRNO2, 1)
+!          PRINT *, HET(ind_HGBRNO2, 2)
+!          PRINT *, '-'
+!       ENDIF
        ! ! Calculate genuine first-order uptake reactions first
       ! HET(ind_HO2,    1) = HetHO2(        MW_HO2,    2E-1_fp)
       ! HET(ind_NO2,    1) = HetNO2(        MW_NO2,    1E-4_fp)
